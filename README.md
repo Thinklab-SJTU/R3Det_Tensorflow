@@ -109,8 +109,32 @@ tensorboard --logdir=.
 
 ![4](scalars.png)
 
+## Citation
+
+If this is useful for your research, please consider cite.
+
+```
+@article{yang2019r3det,
+	title={R3Det: Refined Single-Stage Detector with Feature Refinement for Rotating Object},
+	author={Yang, Xue and Liu, Qingqing and Yan, Junchi and Li, Ang and Zhiqiang, Zhang and Gang, Yu},
+	journal={arXiv preprint arXiv:1908.05612},
+	year={2019}
+}
+
+@inproceedings{xia2018dota,
+  title={DOTA: A large-scale dataset for object detection in aerial images},
+  author={Xia, Gui-Song and Bai, Xiang and Ding, Jian and Zhu, Zhen and Belongie, Serge and Luo, Jiebo and Datcu, Mihai and Pelillo, Marcello and Zhang, Liangpei},
+  booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
+  pages={3974--3983},
+  year={2018}
+}
+
+```
+
 ## Reference
 1、https://github.com/endernewton/tf-faster-rcnn   
 2、https://github.com/zengarden/light_head_rcnn   
 3、https://github.com/tensorflow/models/tree/master/research/object_detection    
 4、https://github.com/fizyr/keras-retinanet     
+
+
