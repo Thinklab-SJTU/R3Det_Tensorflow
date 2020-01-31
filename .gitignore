@@ -100,6 +100,7 @@ ENV/
 # mypy
 .mypy_cache/
 
+.idea/
 .pyc
 .so
 *.data-00000-of-00001
@@ -107,14 +108,19 @@ ENV/
 *.meta
 events.*
 checkpoint
-.idea/
 __pycache__/
 *.json
 *.zip
+*events.out.tfevents*
+*.ckpt
+*.pb
+*.tfrecord*
+*plusplus*
+*refine_feature_multi_stage*
 
-*/tools/demos/*
-*/tools/test_dota/*
-*/tools/test_icdar2015/*
-*/output/*
-*/data/pretrained_weights/*
-*/data/tfrecord/*
+tools/demos/*
+tools/test_dota/*
+tools/test_icdar2015/*
+output/summary/*
+data/pretrained_weights/*
+data/tfrecord/*

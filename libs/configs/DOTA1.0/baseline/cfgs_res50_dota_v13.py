@@ -5,38 +5,38 @@ import tensorflow as tf
 import math
 
 """
+v5 repeat
 This is your result for task 1:
 
-    mAP: 0.6276150206677873
+    mAP: 0.6887560239475758
     ap of each class:
-    plane:0.8870014421735071,
-    baseball-diamond:0.705325371100668,
-    bridge:0.32269463142075816,
-    ground-track-field:0.6392568489085992,
-    small-vehicle:0.6464182762763873,
-    large-vehicle:0.7101301530966344,
-    ship:0.6862044731417514,
-    tennis-court:0.9032288696055735,
-    basketball-court:0.7489848430301138,
-    storage-tank:0.7666316830070047,
-    soccer-ball-field:0.47762755855141725,
-    roundabout:0.5789849516428702,
-    harbor:0.5351731784765689,
-    swimming-pool:0.5525642677310019,
-    helicopter:0.2539987618539514
+    plane:0.8940529652135962,
+    baseball-diamond:0.7474486698392037,
+    bridge:0.3643166649129069,
+    ground-track-field:0.662924268693916,
+    small-vehicle:0.6616918317735657,
+    large-vehicle:0.7637966336747759,
+    ship:0.7775309381402764,
+    tennis-court:0.907857598484631,
+    basketball-court:0.8105264053192953,
+    storage-tank:0.8012307433913947,
+    soccer-ball-field:0.5642786809836354,
+    roundabout:0.6258372702184064,
+    harbor:0.6188599073641682,
+    swimming-pool:0.6492325004864525,
+    helicopter:0.4817552807174126
 
 The submitted information is :
 
-Description: RetinaNet_DOTA_1x_20190527_54w
-Username: SJTU-Det
-Institute: SJTU
-Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
-TeamMembers: yangxue
-
+Description: RetinaNet_DOTA_1x_20191119_54w
+Username: liuqingiqng
+Institute: Central South University
+Emailadress: liuqingqing@csu.edu.cn
+TeamMembers: liuqingqing
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_1x_20190527'
+VERSION = 'RetinaNet_DOTA_1x_20191119'
 NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -44,7 +44,7 @@ ADD_BOX_IN_TENSORBOARD = True
 ROOT_PATH = os.path.abspath('../')
 print(20*"++--")
 print(ROOT_PATH)
-GPU_GROUP = "2"
+GPU_GROUP = "0"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200
@@ -75,7 +75,7 @@ GRADIENT_CLIPPING_BY_NORM = 10.0  # if None, will not clip
 
 CLS_WEIGHT = 1.0
 REG_WEIGHT = 1.0
-REG_LOSS_MODE = None
+REG_LOSS_MODE = 0
 
 BATCH_SIZE = 1
 EPSILON = 1e-5
