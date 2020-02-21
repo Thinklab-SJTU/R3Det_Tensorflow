@@ -132,10 +132,17 @@ def train():
                                                          is_training=True)
 
         with tf.name_scope('get_batch'):
+            if cfgs.IMAGE_PYRAMID:
+                shortside_len_list = tf.constant(cfgs.IMG_SHORT_SIDE_LEN)
+                shortside_len = tf.random_shuffle(shortside_len_list)[0]
+
+            else:
+                shortside_len = cfgs.IMG_SHORT_SIDE_LEN
+
             img_name_batch, img_batch, gtboxes_and_label_batch, num_objects_batch, img_h_batch, img_w_batch = \
                 next_batch(dataset_name=cfgs.DATASET_NAME,
                            batch_size=cfgs.BATCH_SIZE * num_gpu,
-                           shortside_len=cfgs.IMG_SHORT_SIDE_LEN,
+                           shortside_len=shortside_len,
                            is_training=True)
 
         # data processing

@@ -14,7 +14,7 @@ sys.path.append("../")
 
 from data.io.image_preprocess import short_side_resize_for_inference_data
 from libs.configs import cfgs
-from libs.networks import build_whole_network
+from libs.networks import build_whole_network_r3det
 from libs.box_utils import draw_box_in_img
 from help_utils import tools
 
@@ -98,8 +98,8 @@ def inference(test_dir, inference_save_path):
     assert len(test_imgname_list) != 0, 'test_dir has no imgs there.' \
                                         ' Note that, we only support img format of (.jpg, .png, and .tiff) '
 
-    faster_rcnn = build_whole_network.DetectionNetwork(base_network_name=cfgs.NET_NAME,
-                                                       is_training=False)
+    faster_rcnn = build_whole_network_r3det.DetectionNetwork(base_network_name=cfgs.NET_NAME,
+                                                             is_training=False)
     detect(det_net=faster_rcnn, inference_save_path=inference_save_path, real_test_imgname_list=test_imgname_list)
 
 
