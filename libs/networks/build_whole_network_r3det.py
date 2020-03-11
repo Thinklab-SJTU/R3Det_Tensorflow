@@ -172,7 +172,7 @@ class DetectionNetwork(object):
                 for level in cfgs.LEVEL:
 
                     if cfgs.SHARE_NET:
-                        reuse_flag = None if level == 'P3' else True
+                        reuse_flag = None if level == cfgs.LEVEL[0] else True
                         scope_list = ['conv2d_3x3_cls', 'conv2d_3x3_reg', 'rpn_classification', 'rpn_regression']
                     else:
                         reuse_flag = None
@@ -204,7 +204,7 @@ class DetectionNetwork(object):
                 for level in cfgs.LEVEL:
 
                     if cfgs.SHARE_NET:
-                        reuse_flag = None if level == 'P3' else True
+                        reuse_flag = None if level == cfgs.LEVEL[0] else True
                         scope_list = ['conv2d_3x3_cls', 'conv2d_3x3_reg', 'refine_classification', 'refine_regression']
                     else:
                         reuse_flag = None
