@@ -116,6 +116,7 @@ __pycache__/
 *.pb
 *.tfrecord*
 *plusplus*
+*_csl*
 *refine_feature_multi_stage*
 
 tools/demos/*
