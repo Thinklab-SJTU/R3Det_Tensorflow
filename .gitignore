@@ -123,5 +123,4 @@ tools/demos/*
 tools/test_dota/*
 tools/test_icdar2015/*
 output/summary/*
-data/pretrained_weights/*
 data/tfrecord/*
