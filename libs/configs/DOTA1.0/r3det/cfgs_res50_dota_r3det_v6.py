@@ -5,14 +5,14 @@ import tensorflow as tf
 import math
 
 """
-
+v4 + anchor free + P2
 
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_plusplus_3x_20200319'
-NET_NAME = 'resnet101_v1d'  # 'MobilenetV2'
+VERSION = 'RetinaNet_DOTA_R3Det_2x_20200309'
+NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config
@@ -23,7 +23,7 @@ GPU_GROUP = "0,1,2,3"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200
-SAVE_WEIGHTS_INTE = 27000 * 3
+SAVE_WEIGHTS_INTE = 27000 * 2
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -69,9 +69,9 @@ IMG_SHORT_SIDE_LEN = 800
 IMG_MAX_LENGTH = 800
 CLASS_NUM = 15
 
-IMG_ROTATE = True
-RGB2GRAY = True
-VERTICAL_FLIP = True
+IMG_ROTATE = False
+RGB2GRAY = False
+VERTICAL_FLIP = False
 HORIZONTAL_FLIP = True
 IMAGE_PYRAMID = False
 
@@ -83,16 +83,16 @@ FINAL_CONV_BIAS_INITIALIZER = tf.constant_initializer(value=-math.log((1.0 - PRO
 WEIGHT_DECAY = 1e-4
 USE_GN = False
 NUM_SUBNET_CONV = 4
-NUM_REFINE_STAGE = 1
+NUM_REFINE_STAGE = 2
 USE_RELU = False
 FPN_CHANNEL = 256
 
 # ---------------------------------------------Anchor config
-LEVEL = ['P3', 'P4', 'P5', 'P6', 'P7']
-BASE_ANCHOR_SIZE_LIST = [32, 64, 128, 256, 512]
-ANCHOR_STRIDE = [8, 16, 32, 64, 128]
-ANCHOR_SCALES = [2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)]
-ANCHOR_RATIOS = [1, 1 / 2, 2., 1 / 3., 3., 5., 1 / 5.]
+LEVEL = ['P2', 'P3', 'P4', 'P5', 'P6', 'P7']
+BASE_ANCHOR_SIZE_LIST = [16, 32, 64, 128, 256, 512]
+ANCHOR_STRIDE = [4, 8, 16, 32, 64, 128]
+ANCHOR_SCALES = [1.]
+ANCHOR_RATIOS = [1.]
 ANCHOR_ANGLES = [-90, -75, -60, -45, -30, -15]
 ANCHOR_SCALE_FACTORS = None
 USE_CENTER_OFFSET = True
@@ -103,10 +103,10 @@ ANGLE_RANGE = 90
 # --------------------------------------------RPN config
 SHARE_NET = True
 USE_P5 = True
-IOU_POSITIVE_THRESHOLD = 0.5
-IOU_NEGATIVE_THRESHOLD = 0.4
-REFINE_IOU_POSITIVE_THRESHOLD = [0.6, 0.7]
-REFINE_IOU_NEGATIVE_THRESHOLD = [0.5, 0.6]
+IOU_POSITIVE_THRESHOLD = 0.35
+IOU_NEGATIVE_THRESHOLD = 0.25
+REFINE_IOU_POSITIVE_THRESHOLD = [0.5, 0.6]
+REFINE_IOU_NEGATIVE_THRESHOLD = [0.4, 0.5]
 
 NMS = True
 NMS_IOU_THRESHOLD = 0.1
@@ -115,12 +115,12 @@ FILTERED_SCORE = 0.05
 VIS_SCORE = 0.4
 
 # --------------------------------------------MASK config
-USE_SUPERVISED_MASK = True
+USE_SUPERVISED_MASK = False
 MASK_TYPE = 'r'  # r or h
 BINARY_MASK = False
 SIGMOID_ON_DOT = False
 MASK_ACT_FET = True  # weather use mask generate 256 channels to dot feat.
 GENERATE_MASK_LIST = ["P3", "P4", "P5", "P6", "P7"]
-ADDITION_LAYERS = [1, 1, 1, 1, 1]  # add 4 layer to generate P2_mask, 2 layer to generate P3_mask
+ADDITION_LAYERS = [4, 4, 3, 2, 2]  # add 4 layer to generate P2_mask, 2 layer to generate P3_mask
 ENLAEGE_RF_LIST = ["P3", "P4", "P5", "P6", "P7"]
 SUPERVISED_MASK_LOSS_WEIGHT = 1.0

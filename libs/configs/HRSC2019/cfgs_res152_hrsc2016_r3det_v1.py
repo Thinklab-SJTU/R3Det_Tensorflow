@@ -5,25 +5,28 @@ import tensorflow as tf
 import math
 
 """
+anchor free
 
-
+cls : ship|| Recall: 0.9535830618892508 || Precison: 0.2536278969027507|| AP: 0.8938264420182536
+F1:0.9282455412691829 P:0.9459002535925612 R:0.9112377850162866
+mAP is : 0.8938264420182536
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_plusplus_3x_20200319'
-NET_NAME = 'resnet101_v1d'  # 'MobilenetV2'
+VERSION = 'RetinaNet_HRSC2016_R3Det_2x_20200312'
+NET_NAME = 'resnet152_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config
 ROOT_PATH = os.path.abspath('../')
 print(20*"++--")
 print(ROOT_PATH)
-GPU_GROUP = "0,1,2,3"
+GPU_GROUP = "0,1"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200
-SAVE_WEIGHTS_INTE = 27000 * 3
+SAVE_WEIGHTS_INTE = 10000 * 2
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -37,13 +40,14 @@ else:
 
 PRETRAINED_CKPT = ROOT_PATH + '/data/pretrained_weights/' + weights_name + '.ckpt'
 TRAINED_CKPT = os.path.join(ROOT_PATH, 'output/trained_weights')
-EVALUATE_DIR = ROOT_PATH + '/output/evaluate_result_pickle/'
+EVALUATE_R_DIR = ROOT_PATH + '/output/evaluate_result_pickle/'
 
 # ------------------------------------------ Train config
 RESTORE_FROM_RPN = False
 FIXED_BLOCKS = 1  # allow 0~3
 FREEZE_BLOCKS = [True, False, False, False, False]  # for gluoncv backbone
 USE_07_METRIC = True
+EVAL_THRESHOLD = 0.5
 
 MUTILPY_BIAS_GRADIENT = 2.0  # if None, will not multipy
 GRADIENT_CLIPPING_BY_NORM = 10.0  # if None, will not clip
@@ -61,13 +65,13 @@ MAX_ITERATION = SAVE_WEIGHTS_INTE*20
 WARM_SETP = int(1.0 / 4.0 * SAVE_WEIGHTS_INTE)
 
 # -------------------------------------------- Data_preprocess_config
-DATASET_NAME = 'DOTA'  # 'pascal', 'coco'
+DATASET_NAME = 'HRSC2016'  # 'pascal', 'coco'
 PIXEL_MEAN = [123.68, 116.779, 103.939]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
 PIXEL_MEAN_ = [0.485, 0.456, 0.406]
 PIXEL_STD = [0.229, 0.224, 0.225]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
 IMG_SHORT_SIDE_LEN = 800
 IMG_MAX_LENGTH = 800
-CLASS_NUM = 15
+CLASS_NUM = 1
 
 IMG_ROTATE = True
 RGB2GRAY = True
@@ -83,7 +87,7 @@ FINAL_CONV_BIAS_INITIALIZER = tf.constant_initializer(value=-math.log((1.0 - PRO
 WEIGHT_DECAY = 1e-4
 USE_GN = False
 NUM_SUBNET_CONV = 4
-NUM_REFINE_STAGE = 1
+NUM_REFINE_STAGE = 2
 USE_RELU = False
 FPN_CHANNEL = 256
 
@@ -91,8 +95,8 @@ FPN_CHANNEL = 256
 LEVEL = ['P3', 'P4', 'P5', 'P6', 'P7']
 BASE_ANCHOR_SIZE_LIST = [32, 64, 128, 256, 512]
 ANCHOR_STRIDE = [8, 16, 32, 64, 128]
-ANCHOR_SCALES = [2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)]
-ANCHOR_RATIOS = [1, 1 / 2, 2., 1 / 3., 3., 5., 1 / 5.]
+ANCHOR_SCALES = [1.]
+ANCHOR_RATIOS = [1.]
 ANCHOR_ANGLES = [-90, -75, -60, -45, -30, -15]
 ANCHOR_SCALE_FACTORS = None
 USE_CENTER_OFFSET = True
@@ -103,10 +107,10 @@ ANGLE_RANGE = 90
 # --------------------------------------------RPN config
 SHARE_NET = True
 USE_P5 = True
-IOU_POSITIVE_THRESHOLD = 0.5
-IOU_NEGATIVE_THRESHOLD = 0.4
-REFINE_IOU_POSITIVE_THRESHOLD = [0.6, 0.7]
-REFINE_IOU_NEGATIVE_THRESHOLD = [0.5, 0.6]
+IOU_POSITIVE_THRESHOLD = 0.35
+IOU_NEGATIVE_THRESHOLD = 0.25
+REFINE_IOU_POSITIVE_THRESHOLD = [0.5, 0.6]
+REFINE_IOU_NEGATIVE_THRESHOLD = [0.4, 0.5]
 
 NMS = True
 NMS_IOU_THRESHOLD = 0.1
@@ -115,12 +119,12 @@ FILTERED_SCORE = 0.05
 VIS_SCORE = 0.4
 
 # --------------------------------------------MASK config
-USE_SUPERVISED_MASK = True
+USE_SUPERVISED_MASK = False
 MASK_TYPE = 'r'  # r or h
 BINARY_MASK = False
 SIGMOID_ON_DOT = False
 MASK_ACT_FET = True  # weather use mask generate 256 channels to dot feat.
 GENERATE_MASK_LIST = ["P3", "P4", "P5", "P6", "P7"]
-ADDITION_LAYERS = [1, 1, 1, 1, 1]  # add 4 layer to generate P2_mask, 2 layer to generate P3_mask
+ADDITION_LAYERS = [4, 4, 3, 2, 2]  # add 4 layer to generate P2_mask, 2 layer to generate P3_mask
 ENLAEGE_RF_LIST = ["P3", "P4", "P5", "P6", "P7"]
 SUPERVISED_MASK_LOSS_WEIGHT = 1.0

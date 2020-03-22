@@ -9,6 +9,7 @@ import cv2
 
 from libs.configs import cfgs
 from libs.label_name_dict.label_dict import LABEL_NAME_MAP
+from help_utils.tools import get_dota_short_names
 NOT_DRAW_BOXES = 0
 ONLY_DRAW_BOXES = -1
 ONLY_DRAW_BOXES_WITH_SCORES = -2
@@ -108,7 +109,37 @@ def draw_label_with_scores(draw_obj, box, label, score, color):
                   font=FONT)
 
 
-def draw_boxes_with_label_and_scores(img_array, boxes, labels, scores, method, in_graph=True):
+def draw_label_with_scores_csl(draw_obj, box, label, score, color):
+    x, y = box[0], box[1]
+    draw_obj.rectangle(xy=[x, y, x + 60, y + 20],
+                       fill=color)
+
+    if cfgs.DATASET_NAME == 'DOTA':
+        label_name = get_dota_short_names(LABEL_NAME_MAP[label])
+    else:
+        label_name = LABEL_NAME_MAP[label]
+    txt = label_name + ':' + str(round(score, 2))
+    # txt = ' ' + label_name
+    draw_obj.text(xy=(x, y),
+                  text=txt,
+                  fill='black',
+                  font=FONT)
+    if cfgs.ANGLE_RANGE == 180:
+        if box[2] < box[3]:
+            angle = box[-1] + 90
+        else:
+            angle = box[-1]
+    else:
+        angle = box[-1]
+    txt_angle = 'angle:%.1f' % angle
+    # txt_angle = ' %.1f' % angle
+    draw_obj.text(xy=(x, y+10),
+                  text=txt_angle,
+                  fill='black',
+                  font=FONT)
+
+
+def draw_boxes_with_label_and_scores(img_array, boxes, labels, scores, method, is_csl=False, in_graph=True):
     if in_graph:
         if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d']:
             img_array = (img_array * np.array(cfgs.PIXEL_STD) + np.array(cfgs.PIXEL_MEAN_)) * 255
@@ -124,6 +155,7 @@ def draw_boxes_with_label_and_scores(img_array, boxes, labels, scores, method, i
 
     draw_obj = ImageDraw.Draw(img_obj)
     num_of_objs = 0
+
     for box, a_label, a_score in zip(boxes, labels, scores):
 
         if a_label != NOT_DRAW_BOXES:
@@ -133,16 +165,18 @@ def draw_boxes_with_label_and_scores(img_array, boxes, labels, scores, method, i
                 continue
             elif a_label == ONLY_DRAW_BOXES_WITH_SCORES:  # -2
                  only_draw_scores(draw_obj, box, a_score, color='White')
-                 continue
             else:
-                draw_label_with_scores(draw_obj, box, a_label, a_score, color='White')
+                if is_csl:
+                    draw_label_with_scores_csl(draw_obj, box, a_label, a_score, color='White')
+                else:
+                    draw_label_with_scores(draw_obj, box, a_label, a_score, color='White')
 
     out_img_obj = Image.blend(raw_img_obj, img_obj, alpha=0.7)
 
     return np.array(out_img_obj)
 
 
-def draw_boxes(img_array, boxes, labels, scores, color, method, in_graph=True):
+def draw_boxes(img_array, boxes, labels, scores, color, method, is_csl=False, in_graph=True):
     if in_graph:
         if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d']:
             img_array = (img_array * np.array(cfgs.PIXEL_STD) + np.array(cfgs.PIXEL_MEAN_)) * 255
@@ -168,9 +202,11 @@ def draw_boxes(img_array, boxes, labels, scores, color, method, in_graph=True):
                 continue
             elif a_label == ONLY_DRAW_BOXES_WITH_SCORES:  # -2
                  only_draw_scores(draw_obj, box, a_score, color='White')
-                 continue
             else:
-                draw_label_with_scores(draw_obj, box, a_label, a_score, color='White')
+                if is_csl:
+                    draw_label_with_scores_csl(draw_obj, box, a_label, a_score, color='White')
+                else:
+                    draw_label_with_scores(draw_obj, box, a_label, a_score, color='White')
 
     out_img_obj = Image.blend(raw_img_obj, img_obj, alpha=0.7)
 

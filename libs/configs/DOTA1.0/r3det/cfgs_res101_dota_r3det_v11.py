@@ -11,7 +11,7 @@ import math
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_plusplus_3x_20200319'
+VERSION = 'RetinaNet_DOTA_R3Det_3x_20200318'
 NET_NAME = 'resnet101_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -115,12 +115,12 @@ FILTERED_SCORE = 0.05
 VIS_SCORE = 0.4
 
 # --------------------------------------------MASK config
-USE_SUPERVISED_MASK = True
+USE_SUPERVISED_MASK = False
 MASK_TYPE = 'r'  # r or h
 BINARY_MASK = False
 SIGMOID_ON_DOT = False
 MASK_ACT_FET = True  # weather use mask generate 256 channels to dot feat.
 GENERATE_MASK_LIST = ["P3", "P4", "P5", "P6", "P7"]
-ADDITION_LAYERS = [1, 1, 1, 1, 1]  # add 4 layer to generate P2_mask, 2 layer to generate P3_mask
+ADDITION_LAYERS = [4, 4, 3, 2, 2]  # add 4 layer to generate P2_mask, 2 layer to generate P3_mask
 ENLAEGE_RF_LIST = ["P3", "P4", "P5", "P6", "P7"]
 SUPERVISED_MASK_LOSS_WEIGHT = 1.0

@@ -87,7 +87,6 @@ def mobilenetv2_scope(is_training=True,
                       bn_decay=0.997):
   """Defines Mobilenet training scope.
   In default. We do not use BN
-
   ReWrite the scope.
   """
   batch_norm_params = {

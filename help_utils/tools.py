@@ -29,3 +29,25 @@ def get_feature_map_size(src_len):
         feature_map_size.append((src_len, src_len))
 
     return feature_map_size
+
+
+def get_dota_short_names(label):
+    DOTA_SHORT_NAMES = {
+        'roundabout': 'RA',
+        'tennis-court': 'TC',
+        'swimming-pool': 'SP',
+        'storage-tank': 'ST',
+        'soccer-ball-field': 'SBF',
+        'small-vehicle': 'SV',
+        'ship': 'SH',
+        'plane': 'PL',
+        'large-vehicle': 'LV',
+        'helicopter': 'HC',
+        'harbor': 'HA',
+        'ground-track-field': 'GTF',
+        'bridge': 'BR',
+        'basketball-court': 'BC',
+        'baseball-diamond': 'BD'
+    }
+
+    return DOTA_SHORT_NAMES[label]

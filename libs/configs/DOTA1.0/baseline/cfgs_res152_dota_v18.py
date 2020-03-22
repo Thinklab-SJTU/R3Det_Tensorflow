@@ -5,51 +5,24 @@ import tensorflow as tf
 import math
 
 """
-v3 + single gpu
-This is your result for task 1:
-
-    mAP: 0.6317708176766469
-    ap of each class:
-    plane:0.8852653294283945,
-    baseball-diamond:0.7498262295051162,
-    bridge:0.41145566588430577,
-    ground-track-field:0.6776071064117907,
-    small-vehicle:0.5374548529638528,
-    large-vehicle:0.48302905195645396,
-    ship:0.5591965949336322,
-    tennis-court:0.9018964535303656,
-    basketball-court:0.8126298860759724,
-    storage-tank:0.7912348207016853,
-    soccer-ball-field:0.5282200549286691,
-    roundabout:0.6197750079280963,
-    harbor:0.55768062609549,
-    swimming-pool:0.5671700322865507,
-    helicopter:0.3941205525193267
-
-The submitted information is :
-
-Description: RetinaNet_DOTA_1x_20190530_54w
-Username: DetectionTeamCSU
-Institute: CSU
-Emailadress: yangxue@csu.edu.cn
-TeamMembers: YangXue
+RetinaNet-H + data aug. + res152
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_1x_20190530'
-NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
+VERSION = 'RetinaNet_DOTA_4x_20200203'
+NET_NAME = 'resnet152_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config
 ROOT_PATH = os.path.abspath('../')
 print(20*"++--")
 print(ROOT_PATH)
-GPU_GROUP = "0"
+GPU_GROUP = "0,1,2,3"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200
-SAVE_WEIGHTS_INTE = 27000
+SAVE_WEIGHTS_INTE = 27000 * 4
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -94,6 +67,12 @@ PIXEL_STD = [0.229, 0.224, 0.225]  # R, G, B. In tf, channel is RGB. In openCV, 
 IMG_SHORT_SIDE_LEN = 800
 IMG_MAX_LENGTH = 800
 CLASS_NUM = 15
+
+IMG_ROTATE = True
+RGB2GRAY = True
+VERTICAL_FLIP = True
+HORIZONTAL_FLIP = True
+IMAGE_PYRAMID = False
 
 # --------------------------------------------- Network_config
 SUBNETS_WEIGHTS_INITIALIZER = tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=None)
