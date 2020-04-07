@@ -107,7 +107,7 @@ def smooth_l1_loss_rcnn(bbox_targets, bbox_pred, anchor_state, sigma=3.0):
     return bbox_loss
 
 
-def smooth_l1_loss(targets, preds, anchor_state, sigma=3.0):
+def smooth_l1_loss(targets, preds, anchor_state, sigma=3.0, weight=None):
     sigma_squared = sigma ** 2
     indices = tf.reshape(tf.where(tf.equal(anchor_state, 1)), [-1, ])
     preds = tf.gather(preds, indices)
@@ -124,6 +124,11 @@ def smooth_l1_loss(targets, preds, anchor_state, sigma=3.0):
         regression_diff - 0.5 / sigma_squared
     )
 
+    if weight is not None:
+        regression_loss = tf.reduce_sum(regression_loss, axis=-1)
+        weight = tf.gather(weight, indices)
+        regression_loss *= weight
+
     normalizer = tf.stop_gradient(tf.where(tf.equal(anchor_state, 1)))
     normalizer = tf.cast(tf.shape(normalizer)[0], tf.float32)
     normalizer = tf.maximum(1.0, normalizer)
@@ -134,7 +139,7 @@ def smooth_l1_loss(targets, preds, anchor_state, sigma=3.0):
     return tf.reduce_sum(regression_loss) / normalizer
 
 
-def smooth_l1_loss_atan(targets, preds, anchor_state, sigma=3.0):
+def smooth_l1_loss_atan(targets, preds, anchor_state, sigma=3.0, weight=None):
 
     sigma_squared = sigma ** 2
     indices = tf.reshape(tf.where(tf.equal(anchor_state, 1)), [-1, ])
@@ -157,6 +162,11 @@ def smooth_l1_loss_atan(targets, preds, anchor_state, sigma=3.0):
         0.5 * sigma_squared * tf.pow(regression_diff, 2),
         regression_diff - 0.5 / sigma_squared
     )
+
+    if weight is not None:
+        regression_loss = tf.reduce_sum(regression_loss, axis=-1)
+        weight = tf.gather(weight, indices)
+        regression_loss *= weight
 
     normalizer = tf.stop_gradient(tf.where(tf.equal(anchor_state, 1)))
     normalizer = tf.cast(tf.shape(normalizer)[0], tf.float32)

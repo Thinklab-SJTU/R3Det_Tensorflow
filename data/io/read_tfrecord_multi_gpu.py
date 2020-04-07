@@ -108,8 +108,10 @@ def next_batch(dataset_name, batch_size, shortside_len, is_training):
 
     filename_queue = tf.train.string_input_producer(filename_tensorlist)
 
-    img_name, img, gtboxes_and_label, num_obs, img_h, img_w = read_and_prepocess_single_img(filename_queue, shortside_len,
+    img_name, img, gtboxes_and_label, num_obs, img_h, img_w = read_and_prepocess_single_img(filename_queue,
+                                                                                            shortside_len,
                                                                                             is_training=is_training)
+    
     img_name_batch, img_batch, gtboxes_and_label_batch, num_obs_batch, img_h_batch, img_w_batch = \
         tf.train.batch(
                        [img_name, img, gtboxes_and_label, num_obs, img_h, img_w],
