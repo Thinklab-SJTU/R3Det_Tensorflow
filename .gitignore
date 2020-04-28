@@ -115,7 +115,8 @@ __pycache__/
 *.ckpt
 *.pb
 *.tfrecord*
-*plusplus*
+*plusplus_.py*
+*flops_param*
 *_csl*
 *refine_feature_multi_stage*
 
