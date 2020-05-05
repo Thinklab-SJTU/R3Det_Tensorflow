@@ -1,7 +1,7 @@
 # R<sup>3</sup>Det: Refined Single-Stage Detector with Feature Refinement for Rotating Object
 
 ## Abstract
-[R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) and [R<sup>3</sup>Det](https://arxiv.org/abs/2004.13316)++ are based on [Focal Loss for Dense Object Detection](https://arxiv.org/pdf/1708.02002.pdf), and it is completed by [YangXue](https://yangxue0827.github.io/).
+[R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) and [R<sup>3</sup>Det++](https://arxiv.org/abs/2004.13316) are based on [Focal Loss for Dense Object Detection](https://arxiv.org/pdf/1708.02002.pdf), and it is completed by [YangXue](https://yangxue0827.github.io/).
 
 ## Pipeline
 ![5](pipeline.png)
@@ -128,6 +128,13 @@ If this is useful for your research, please consider cite.
     author={Yang, Xue and Yan, Junchi and Yang, Xiaokang and Tang, Jin and Liao, Wenglong and He, Tao},
     journal={arXiv preprint arXiv:2004.13316},
     year={2020}
+}
+
+@inproceedings{yang2019scrdet,
+    title={SCRDet: Towards More Robust Detection for Small, Cluttered and Rotated Objects},
+    author={Yang, Xue and Yang, Jirui and Yan, Junchi and Zhang, Yue and Zhan, Tengfei and Guo, Zhi and Xian, Sun and Fu, Kun},
+    booktitle={Proc. ICCV},
+    year={2019}
 }
 
 @inproceedings{xia2018dota,
