@@ -28,6 +28,7 @@ More results and trained models are available in the [MODEL_ZOO.md](MODEL_ZOO.md
 | [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612) | **ResNet152_v1d** 600->800 | DOTA1.0 trainval | DOTA1.0 test | 73.74 | 8X GeForce RTX 2080 Ti | 1 | H + R | smooth L1 | **4x** | Yes | - |
 |  |  |  |  |  |  |  |  |  |  |  |  |  |
 | **[R<sup>3</sup>Det++](https://yangxue0827.github.io/SCRDet++.html)** | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 69.07 | 8X GeForce RTX 2080 Ti | 1 | H + R | smooth L1 | 2x | No | cfgs_res50_dota_r3det_plusplus_v2.py |
+| [R<sup>3</sup>Det++](https://yangxue0827.github.io/SCRDet++.html) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 70.08 | 4X GeForce RTX 2080 Ti | 1 | H + R | [**iou-smooth L1**](https://arxiv.org/abs/1811.07126) | 2x | No | cfgs_res50_dota_r3det_plusplus_v9.py |
 | [R<sup>3</sup>Det++](https://yangxue0827.github.io/SCRDet++.html) | **ResNet152_v1d** 600->800 | DOTA1.0 trainval | DOTA1.0 test | 74.41 | 8X GeForce RTX 2080 Ti | 1 | H + R | smooth L1 | 4x | Yes | - |
 | [R<sup>3</sup>Det++](https://yangxue0827.github.io/SCRDet++.html) | ResNet152_v1d **MS** | DOTA1.0 trainval | DOTA1.0 test | 76.56 | 4X GeForce RTX 2080 Ti | 1 | H + R + more | smooth L1 | 6x | Yes | cfgs_res152_dota_r3det_plusplus_v1.py |
 
