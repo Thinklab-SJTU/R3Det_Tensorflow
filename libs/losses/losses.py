@@ -215,7 +215,59 @@ def iou_smooth_l1_loss(targets, preds, anchor_state, target_boxes, anchors, sigm
 
     overlaps = tf.reshape(overlaps, [-1, 1])
     regression_loss = tf.reshape(tf.reduce_sum(regression_loss, axis=1), [-1, 1])
+    # -ln(x)
     iou_factor = tf.stop_gradient(-1 * tf.log(overlaps)) / (tf.stop_gradient(regression_loss) + cfgs.EPSILON)
+    # iou_factor = tf.Print(iou_factor, [iou_factor], 'iou_factor', summarize=50)
+
+    normalizer = tf.stop_gradient(tf.where(tf.equal(anchor_state, 1)))
+    normalizer = tf.cast(tf.shape(normalizer)[0], tf.float32)
+    normalizer = tf.maximum(1.0, normalizer)
+
+    # normalizer = tf.stop_gradient(tf.cast(tf.equal(anchor_state, 1), tf.float32))
+    # normalizer = tf.maximum(tf.reduce_sum(normalizer), 1)
+
+    return tf.reduce_sum(regression_loss * iou_factor) / normalizer
+
+
+def iou_smooth_l1_loss_(targets, preds, anchor_state, target_boxes, anchors, sigma=3.0, is_refine=False):
+    if cfgs.METHOD == 'H' and not is_refine:
+        x_c = (anchors[:, 2] + anchors[:, 0]) / 2
+        y_c = (anchors[:, 3] + anchors[:, 1]) / 2
+        h = anchors[:, 2] - anchors[:, 0] + 1
+        w = anchors[:, 3] - anchors[:, 1] + 1
+        theta = -90 * tf.ones_like(x_c)
+        anchors = tf.transpose(tf.stack([x_c, y_c, w, h, theta]))
+
+    sigma_squared = sigma ** 2
+    indices = tf.reshape(tf.where(tf.equal(anchor_state, 1)), [-1, ])
+
+    preds = tf.gather(preds, indices)
+    targets = tf.gather(targets, indices)
+    target_boxes = tf.gather(target_boxes, indices)
+    anchors = tf.gather(anchors, indices)
+
+    boxes_pred = bbox_transform.rbbox_transform_inv(boxes=anchors, deltas=preds,
+                                                    scale_factors=cfgs.ANCHOR_SCALE_FACTORS)
+
+    # compute smooth L1 loss
+    # f(x) = 0.5 * (sigma * x)^2          if |x| < 1 / sigma / sigma
+    #        |x| - 0.5 / sigma / sigma    otherwise
+    regression_diff = preds - targets
+    regression_diff = tf.abs(regression_diff)
+    regression_loss = tf.where(
+        tf.less(regression_diff, 1.0 / sigma_squared),
+        0.5 * sigma_squared * tf.pow(regression_diff, 2),
+        regression_diff - 0.5 / sigma_squared
+    )
+
+    overlaps = tf.py_func(iou_rotate_calculate2,
+                          inp=[tf.reshape(boxes_pred, [-1, 5]), tf.reshape(target_boxes[:, :-1], [-1, 5])],
+                          Tout=[tf.float32])
+
+    overlaps = tf.reshape(overlaps, [-1, 1])
+    regression_loss = tf.reshape(tf.reduce_sum(regression_loss, axis=1), [-1, 1])
+    # 1-exp(1-x)
+    iou_factor = tf.stop_gradient(tf.exp(1-overlaps)-1) / (tf.stop_gradient(regression_loss) + cfgs.EPSILON)
     # iou_factor = tf.Print(iou_factor, [iou_factor], 'iou_factor', summarize=50)
 
     normalizer = tf.stop_gradient(tf.where(tf.equal(anchor_state, 1)))

@@ -7,6 +7,33 @@ import math
 """
 v3 + iou-smooth l1 loss
 
+This is your result for task 1:
+
+    mAP: 0.7007692803221528
+    ap of each class:
+    plane:0.8869085219087487,
+    baseball-diamond:0.7863564890420646,
+    bridge:0.4841934769081011,
+    ground-track-field:0.6553479412012608,
+    small-vehicle:0.7329533508847295,
+    large-vehicle:0.7478460844218014,
+    ship:0.7913431220606855,
+    tennis-court:0.9083852978140723,
+    basketball-court:0.7937235171900185,
+    storage-tank:0.8266521002347584,
+    soccer-ball-field:0.5340372839446457,
+    roundabout:0.6195198573302646,
+    harbor:0.581827275405277,
+    swimming-pool:0.6840022392917975,
+    helicopter:0.47844264719406826
+
+The submitted information is :
+
+Description: RetinaNet_DOTA_R3Det_plusplus_2x_20200502_70.2w
+Username: SJTU-Det
+Institute: SJTU
+Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
+TeamMembers: yangxue
 
 """
 
