@@ -111,6 +111,10 @@ checkpoint
 __pycache__/
 *.json
 *.zip
+*.pb
+*.pbtxt
+*.tflite
+*info.txt
 *events.out.tfevents*
 *.ckpt
 *.pb
