@@ -13,7 +13,7 @@ import time
 sys.path.append("../")
 
 from libs.configs import cfgs
-from libs.networks import build_whole_network_r3det
+from libs.networks import build_whole_network_r3det_efficientnet
 from data.io.read_tfrecord_multi_gpu import next_batch
 from libs.box_utils.show_box_in_tensor import draw_boxes_with_categories, draw_boxes_with_categories_and_scores
 from help_utils import tools
@@ -142,7 +142,7 @@ def train():
                            is_training=True)
 
         optimizer = tf.train.MomentumOptimizer(lr, momentum=cfgs.MOMENTUM)
-        retinanet = build_whole_network_r3det.DetectionNetwork(
+        retinanet = build_whole_network_r3det_efficientnet.DetectionNetwork(
             base_network_name=cfgs.NET_NAME,
             is_training=True)
 

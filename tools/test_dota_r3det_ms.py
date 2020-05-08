@@ -35,7 +35,7 @@ def worker(gpu_id, images, det_net, args, result_queue):
                                                      target_shortside_len=cfgs.IMG_SHORT_SIDE_LEN,
                                                      length_limitation=cfgs.IMG_MAX_LENGTH,
                                                      is_resize=False)
-    if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d']:
+    if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d'] or 'efficientnet' in cfgs.NET_NAME:
         img_batch = (img_batch / 255 - tf.constant(cfgs.PIXEL_MEAN_)) / tf.constant(cfgs.PIXEL_STD)
     else:
         img_batch = img_batch - tf.constant(cfgs.PIXEL_MEAN)

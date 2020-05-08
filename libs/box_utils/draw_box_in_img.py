@@ -141,7 +141,7 @@ def draw_label_with_scores_csl(draw_obj, box, label, score, color):
 
 def draw_boxes_with_label_and_scores(img_array, boxes, labels, scores, method, is_csl=False, in_graph=True):
     if in_graph:
-        if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d']:
+        if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d'] or 'efficientnet' in cfgs.NET_NAME:
             img_array = (img_array * np.array(cfgs.PIXEL_STD) + np.array(cfgs.PIXEL_MEAN_)) * 255
         else:
             img_array = img_array + np.array(cfgs.PIXEL_MEAN)
@@ -178,7 +178,7 @@ def draw_boxes_with_label_and_scores(img_array, boxes, labels, scores, method, i
 
 def draw_boxes(img_array, boxes, labels, scores, color, method, is_csl=False, in_graph=True):
     if in_graph:
-        if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d']:
+        if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d'] or 'efficientnet' in cfgs.NET_NAME:
             img_array = (img_array * np.array(cfgs.PIXEL_STD) + np.array(cfgs.PIXEL_MEAN_)) * 255
         else:
             img_array = img_array + np.array(cfgs.PIXEL_MEAN)

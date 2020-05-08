@@ -5,13 +5,13 @@ import tensorflow as tf
 import math
 
 """
-v12 + noisy_student_efficientnet-b1
+v12 + noisy student efficientnet-b0
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_2x_20200508'
-NET_NAME = 'efficientnet-b1'  # 'MobilenetV2'
+VERSION = 'RetinaNet_DOTA_R3Det_2x_20200509'
+NET_NAME = 'efficientnet-b0'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config
@@ -32,7 +32,7 @@ if NET_NAME.startswith("resnet"):
 elif NET_NAME.startswith("MobilenetV2"):
     weights_name = "mobilenet/mobilenet_v2_1.0_224"
 elif 'efficientnet' in NET_NAME:
-    weights_name = "/efficientnet/noisy-student-{}/model".format(NET_NAME)
+    weights_name = "/efficientnet/noisy_student_{}/model".format(NET_NAME)
 else:
     raise Exception('net name must in [resnet_v1_101, resnet_v1_50, MobilenetV2, efficient]')
 
@@ -87,7 +87,7 @@ NUM_SUBNET_CONV = 4
 NUM_REFINE_STAGE = 2
 USE_RELU = False
 efficientdet_model_param_dict = {'efficientnet-b0': dict(fpn_num_filters=64, fpn_cell_repeats=3, box_class_repeats=3),
-                                 'efficientnet-b1': dict(fpn_num_filters=88, fpn_cell_repeats=4, box_class_repeats=3),
+                                 'noisy_student_efficientnet-b1': dict(fpn_num_filters=88, fpn_cell_repeats=4, box_class_repeats=3),
                                  'efficientnet-b2': dict(fpn_num_filters=112, fpn_cell_repeats=5, box_class_repeats=3),
                                  'efficientnet-b3': dict(fpn_num_filters=160, fpn_cell_repeats=6, box_class_repeats=4),
                                  'efficientnet-b4': dict(fpn_num_filters=224, fpn_cell_repeats=7, box_class_repeats=4),

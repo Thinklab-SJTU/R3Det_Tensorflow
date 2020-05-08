@@ -57,7 +57,7 @@ def fusion_two_layer(C_i, P_j, scope):
                                               name='up_sample_'+level_name)
 
         reduce_dim_c = slim.conv2d(C_i,
-                                   num_outputs=256,
+                                   num_outputs=cfgs.FPN_CHANNEL,
                                    kernel_size=[1, 1], stride=1,
                                    scope='reduce_dim_'+level_name)
 
@@ -167,7 +167,7 @@ def resnet_base(img_batch, scope_name, is_training=True):
                             activation_fn=None, normalizer_fn=None):
 
             P5 = slim.conv2d(feature_dict['C5'],
-                             num_outputs=256,
+                             num_outputs=cfgs.FPN_CHANNEL,
                              kernel_size=[1, 1],
                              stride=1, scope='build_P5')
 
@@ -180,18 +180,18 @@ def resnet_base(img_batch, scope_name, is_training=True):
                                                                scope='build_P%d' % level)
             for level in range(5, 2, -1):
                 pyramid_dict['P%d' % level] = slim.conv2d(pyramid_dict['P%d' % level],
-                                                          num_outputs=256, kernel_size=[3, 3], padding="SAME",
+                                                          num_outputs=cfgs.FPN_CHANNEL, kernel_size=[3, 3], padding="SAME",
                                                           stride=1, scope="fuse_P%d" % level)
 
             p6 = slim.conv2d(pyramid_dict['P5'] if cfgs.USE_P5 else feature_dict['C5'],
-                             num_outputs=256, kernel_size=[3, 3], padding="SAME",
+                             num_outputs=cfgs.FPN_CHANNEL, kernel_size=[3, 3], padding="SAME",
                              stride=2, scope='p6_conv')
             pyramid_dict['P6'] = p6
 
             p7 = tf.nn.relu(p6, name='p6_relu')
 
             p7 = slim.conv2d(p7,
-                             num_outputs=256, kernel_size=[3, 3], padding="SAME",
+                             num_outputs=cfgs.FPN_CHANNEL, kernel_size=[3, 3], padding="SAME",
                              stride=2, scope='p7_conv')
 
             pyramid_dict['P7'] = p7

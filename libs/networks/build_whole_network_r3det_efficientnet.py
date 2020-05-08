@@ -8,6 +8,7 @@ import tensorflow.contrib.slim as slim
 import numpy as np
 
 from libs.networks import resnet, resnet_gluoncv_r3det, mobilenet_v2
+from libs.networks.efficientnet import efficientnet_builder
 from libs.box_utils import anchor_utils, generate_anchors, generate_rotate_anchors
 from libs.configs import cfgs
 from libs.losses import losses
@@ -44,14 +45,19 @@ class DetectionNetwork(object):
         elif self.base_network_name.startswith('MobilenetV2'):
             return mobilenet_v2.mobilenetv2_base(input_img_batch, is_training=self.is_training)
 
+        elif 'efficientnet' in self.base_network_name:
+
+            return efficientnet_builder.build_model_fpn_base(input_img_batch, model_name=self.base_network_name,
+                                                             training=True)
+
         else:
             raise ValueError('Sry, we only support resnet, mobilenet_v2')
 
     def rpn_cls_net(self, inputs, scope_list, reuse_flag, level):
         rpn_conv2d_3x3 = inputs
-        for i in range(4):
+        for i in range(cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['box_class_repeats']):
             rpn_conv2d_3x3 = slim.conv2d(inputs=rpn_conv2d_3x3,
-                                         num_outputs=cfgs.FPN_CHANNEL,
+                                         num_outputs=cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['fpn_num_filters'],
                                          kernel_size=[3, 3],
                                          stride=1,
                                          activation_fn=tf.nn.relu,
@@ -78,9 +84,9 @@ class DetectionNetwork(object):
 
     def refine_cls_net(self, inputs, scope_list, reuse_flag, level):
         rpn_conv2d_3x3 = inputs
-        for i in range(4):
+        for i in range(cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['box_class_repeats']):
             rpn_conv2d_3x3 = slim.conv2d(inputs=rpn_conv2d_3x3,
-                                         num_outputs=cfgs.FPN_CHANNEL,
+                                         num_outputs=cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['fpn_num_filters'],
                                          kernel_size=[3, 3],
                                          stride=1,
                                          activation_fn=tf.nn.relu,
@@ -107,9 +113,9 @@ class DetectionNetwork(object):
 
     def rpn_reg_net(self, inputs, scope_list, reuse_flag, level):
         rpn_delta_boxes = inputs
-        for i in range(4):
+        for i in range(cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['box_class_repeats']):
             rpn_delta_boxes = slim.conv2d(inputs=rpn_delta_boxes,
-                                          num_outputs=cfgs.FPN_CHANNEL,
+                                          num_outputs=cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['fpn_num_filters'],
                                           kernel_size=[3, 3],
                                           weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
                                           biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
@@ -134,9 +140,9 @@ class DetectionNetwork(object):
 
     def refine_reg_net(self, inputs, scope_list, reuse_flag, level):
         rpn_delta_boxes = inputs
-        for i in range(4):
+        for i in range(cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['box_class_repeats']):
             rpn_delta_boxes = slim.conv2d(inputs=rpn_delta_boxes,
-                                          num_outputs=cfgs.FPN_CHANNEL,
+                                          num_outputs=cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['fpn_num_filters'],
                                           kernel_size=[3, 3],
                                           weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
                                           biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
@@ -386,7 +392,10 @@ class DetectionNetwork(object):
             checkpoint_path = cfgs.PRETRAINED_CKPT
             print("model restore from pretrained mode, path is :", checkpoint_path)
 
-            model_variables = slim.get_model_variables()
+            if 'efficientnet' in cfgs.NET_NAME:
+                model_variables = tf.global_variables()
+            else:
+                model_variables = slim.get_model_variables()
 
             # for var in model_variables:
             #     print(var.name)
@@ -406,7 +415,8 @@ class DetectionNetwork(object):
 
             nameInCkpt_Var_dict = {}
             for var in model_variables:
-
+                if 'efficientnet' in cfgs.NET_NAME and '/Momentum' in var.name:
+                    continue
                 if var.name.startswith('Fast-RCNN/'+self.base_network_name):  # +'/block4'
                     var_name_in_ckpt = name_in_ckpt_fastrcnn_head(var)
                     nameInCkpt_Var_dict[var_name_in_ckpt] = var
@@ -481,7 +491,7 @@ class DetectionNetwork(object):
         right_top = tf.cast(tf.transpose(tf.stack([xmax, ymin], axis=0)), tf.int32)
 
         feature_1x5 = slim.conv2d(inputs=feature_map,
-                                  num_outputs=cfgs.FPN_CHANNEL,
+                                  num_outputs=cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['fpn_num_filters'],
                                   kernel_size=[1, 5],
                                   weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
                                   biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
@@ -490,7 +500,7 @@ class DetectionNetwork(object):
                                   scope='refine_1x5_{}'.format(name))
 
         feature5x1 = slim.conv2d(inputs=feature_1x5,
-                                 num_outputs=cfgs.FPN_CHANNEL,
+                                 num_outputs=cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['fpn_num_filters'],
                                  kernel_size=[5, 1],
                                  weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
                                  biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
@@ -499,7 +509,7 @@ class DetectionNetwork(object):
                                  scope='refine_5x1_{}'.format(name))
 
         feature_1x1 = slim.conv2d(inputs=feature_map,
-                                  num_outputs=cfgs.FPN_CHANNEL,
+                                  num_outputs=cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['fpn_num_filters'],
                                   kernel_size=[1, 1],
                                   weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
                                   biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
@@ -516,18 +526,18 @@ class DetectionNetwork(object):
 
         refine_feature = right_bottom_feature * tf.tile(
             tf.reshape((tf.abs((points[:, 0] - xmin) * (points[:, 1] - ymin))), [-1, 1]),
-            [1, cfgs.FPN_CHANNEL]) \
+            [1, cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['fpn_num_filters']]) \
                          + left_top_feature * tf.tile(
             tf.reshape((tf.abs((xmax - points[:, 0]) * (ymax - points[:, 1]))), [-1, 1]),
-            [1, cfgs.FPN_CHANNEL]) \
+            [1, cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['fpn_num_filters']]) \
                          + right_top_feature * tf.tile(
             tf.reshape((tf.abs((points[:, 0] - xmin) * (ymax - points[:, 1]))), [-1, 1]),
-            [1, cfgs.FPN_CHANNEL]) \
+            [1, cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['fpn_num_filters']]) \
                          + left_bottom_feature * tf.tile(
             tf.reshape((tf.abs((xmax - points[:, 0]) * (points[:, 1] - ymin))), [-1, 1]),
-            [1, cfgs.FPN_CHANNEL])
+            [1, cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['fpn_num_filters']])
 
-        refine_feature = tf.reshape(refine_feature, [1, tf.cast(h, tf.int32), tf.cast(w, tf.int32), cfgs.FPN_CHANNEL])
+        refine_feature = tf.reshape(refine_feature, [1, tf.cast(h, tf.int32), tf.cast(w, tf.int32), cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['fpn_num_filters']])
 
         # refine_feature = tf.reshape(refine_feature, [1, tf.cast(feature_size[1], tf.int32),
         #                                              tf.cast(feature_size[0], tf.int32), 256])
