@@ -123,7 +123,7 @@ If this is useful for your research, please consider cite.
     year={2019}
 }
 
-@article{yang2020r3det++,
+@article{yang2020scrdet++,
     title={SCRDet++: Detecting Small, Cluttered and Rotated Objects via Instance-Level Feature Denoising and Rotation Loss Smoothing},
     author={Yang, Xue and Yan, Junchi and Yang, Xiaokang and Tang, Jin and Liao, Wenglong and He, Tao},
     journal={arXiv preprint arXiv:2004.13316},
@@ -131,16 +131,17 @@ If this is useful for your research, please consider cite.
 }
 
 @inproceedings{yang2019scrdet,
-    title={SCRDet: Towards More Robust Detection for Small, Cluttered and Rotated Objects},
-    author={Yang, Xue and Yang, Jirui and Yan, Junchi and Zhang, Yue and Zhan, Tengfei and Guo, Zhi and Xian, Sun and Fu, Kun},
-    booktitle={Proc. ICCV},
+    title={SCRDet: Towards more robust detection for small, cluttered and rotated objects},
+    author={Yang, Xue and Yang, Jirui and Yan, Junchi and Zhang, Yue and Zhang, Tengfei and Guo, Zhi and Sun, Xian and Fu, Kun},
+    booktitle={Proceedings of the IEEE International Conference on Computer Vision (ICCV)},
+    pages={8232--8241},
     year={2019}
 }
 
 @inproceedings{xia2018dota,
     title={DOTA: A large-scale dataset for object detection in aerial images},
     author={Xia, Gui-Song and Bai, Xiang and Ding, Jian and Zhu, Zhen and Belongie, Serge and Luo, Jiebo and Datcu, Mihai and Pelillo, Marcello and Zhang, Liangpei},
-    booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
+    booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
     pages={3974--3983},
     year={2018}
 }

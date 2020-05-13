@@ -31,15 +31,19 @@ import numpy as np
 import six
 import tensorflow as tf
 
-from libs.networks.efficientnet import utils
+from libs.networks.efficientnet import  utils
 from libs.networks.efficientnet.condconv import condconv_layers
 
 GlobalParams = collections.namedtuple('GlobalParams', [
     'batch_norm_momentum', 'batch_norm_epsilon', 'dropout_rate', 'data_format',
     'num_classes', 'width_coefficient', 'depth_coefficient', 'depth_divisor',
-    'min_depth', 'drop_connect_rate', 'relu_fn', 'batch_norm', 'use_se',
-    'local_pooling', 'condconv_num_experts', 'clip_projection_output'
+    'min_depth', 'survival_prob', 'relu_fn', 'batch_norm', 'use_se',
+    'local_pooling', 'condconv_num_experts', 'clip_projection_output',
+    'blocks_args', 'fix_head_stem',
 ])
+# Note: the default value of None is not necessarily valid. It is valid to leave
+# width_coefficient, depth_coefficient at None, which is treated as 1.0 (and
+# which also allows depth_divisor and min_depth to be left at None).
 GlobalParams.__new__.__defaults__ = (None,) * len(GlobalParams._fields)
 
 BlockArgs = collections.namedtuple('BlockArgs', [
@@ -122,13 +126,13 @@ def superpixel_kernel_initializer(shape, dtype='float32', partition_info=None):
   return filters
 
 
-def round_filters(filters, global_params):
+def round_filters(filters, global_params, skip=False):
   """Round number of filters based on depth multiplier."""
   orig_f = filters
   multiplier = global_params.width_coefficient
   divisor = global_params.depth_divisor
   min_depth = global_params.min_depth
-  if not multiplier:
+  if skip or not multiplier:
     return filters
 
   filters *= multiplier
@@ -141,10 +145,10 @@ def round_filters(filters, global_params):
   return int(new_filters)
 
 
-def round_repeats(repeats, global_params):
+def round_repeats(repeats, global_params, skip=False):
   """Round number of filters based on depth multiplier."""
   multiplier = global_params.depth_coefficient
-  if not multiplier:
+  if skip or not multiplier:
     return repeats
   return int(math.ceil(multiplier * repeats))
 
@@ -163,6 +167,7 @@ class MBConvBlock(tf.keras.layers.Layer):
     """
     super(MBConvBlock, self).__init__()
     self._block_args = block_args
+    self._local_pooling = global_params.local_pooling
     self._batch_norm_momentum = global_params.batch_norm_momentum
     self._batch_norm_epsilon = global_params.batch_norm_epsilon
     self._batch_norm = global_params.batch_norm
@@ -307,18 +312,29 @@ class MBConvBlock(tf.keras.layers.Layer):
     Returns:
       A output tensor, which should have the same shape as input.
     """
-    se_tensor = tf.reduce_mean(input_tensor, self._spatial_dims, keepdims=True)
+    if self._local_pooling:
+      shape = input_tensor.get_shape().as_list()
+      kernel_size = [
+          1, shape[self._spatial_dims[0]], shape[self._spatial_dims[1]], 1]
+      se_tensor = tf.nn.avg_pool(
+          input_tensor,
+          ksize=kernel_size,
+          strides=[1, 1, 1, 1],
+          padding='VALID')
+    else:
+      se_tensor = tf.reduce_mean(
+          input_tensor, self._spatial_dims, keepdims=True)
     se_tensor = self._se_expand(self._relu_fn(self._se_reduce(se_tensor)))
     logging.info('Built Squeeze and Excitation with tensor shape: %s',
                  (se_tensor.shape))
     return tf.sigmoid(se_tensor) * input_tensor
 
-  def call(self, inputs, training=True, drop_connect_rate=None):
+  def call(self, inputs, training=True, survival_prob=None):
     """Implementation of call().
     Args:
       inputs: the inputs tensor.
       training: boolean, whether the model is constructed for training.
-      drop_connect_rate: float, between 0 to 1, drop connect rate.
+      survival_prob: float, between 0 to 1, drop connect rate.
     Returns:
       A output tensor.
     """
@@ -383,10 +399,10 @@ class MBConvBlock(tf.keras.layers.Layer):
     if self._block_args.id_skip:
       if all(
           s == 1 for s in self._block_args.strides
-      ) and inputs.get_shape().as_list()[-1] == x.get_shape().as_list()[-1]:
-        # only apply drop_connect if skip presents.
-        if drop_connect_rate:
-          x = utils.drop_connect(x, training, drop_connect_rate)
+      ) and self._block_args.input_filters == self._block_args.output_filters:
+        # Apply only if skip connection presents.
+        if survival_prob:
+          x = utils.drop_connect(x, training, survival_prob)
         x = tf.add(x, inputs)
     logging.info('Project: %s shape: %s', x.name, x.shape)
     return x
@@ -426,12 +442,12 @@ class MBConvBlockWithoutDepthwise(MBConvBlock):
         momentum=self._batch_norm_momentum,
         epsilon=self._batch_norm_epsilon)
 
-  def call(self, inputs, training=True, drop_connect_rate=None):
+  def call(self, inputs, training=True, survival_prob=None):
     """Implementation of call().
     Args:
       inputs: the inputs tensor.
       training: boolean, whether the model is constructed for training.
-      drop_connect_rate: float, between 0 to 1, drop connect rate.
+      survival_prob: float, between 0 to 1, drop connect rate.
     Returns:
       A output tensor.
     """
@@ -455,9 +471,9 @@ class MBConvBlockWithoutDepthwise(MBConvBlock):
       if all(
           s == 1 for s in self._block_args.strides
       ) and self._block_args.input_filters == self._block_args.output_filters:
-        # only apply drop_connect if skip presents.
-        if drop_connect_rate:
-          x = utils.drop_connect(x, training, drop_connect_rate)
+        # Apply only if skip connection presents.
+        if survival_prob:
+          x = utils.drop_connect(x, training, survival_prob)
         x = tf.add(x, inputs)
     logging.info('Project: %s shape: %s', x.name, x.shape)
     return x
@@ -483,6 +499,7 @@ class Model(tf.keras.Model):
     self._blocks_args = blocks_args
     self._relu_fn = global_params.relu_fn or tf.nn.swish
     self._batch_norm = global_params.batch_norm
+    self._fix_head_stem = global_params.fix_head_stem
 
     self.endpoints = None
 
@@ -506,7 +523,7 @@ class Model(tf.keras.Model):
 
     # Stem part.
     self._conv_stem = tf.layers.Conv2D(
-        filters=round_filters(32, self._global_params),
+        filters=round_filters(32, self._global_params, self._fix_head_stem),
         kernel_size=[3, 3],
         strides=[2, 2],
         kernel_initializer=conv_kernel_initializer,
@@ -519,19 +536,24 @@ class Model(tf.keras.Model):
         epsilon=batch_norm_epsilon)
 
     # Builds blocks.
-    for block_args in self._blocks_args:
+    for i, block_args in enumerate(self._blocks_args):
       assert block_args.num_repeat > 0
       assert block_args.super_pixel in [0, 1, 2]
       # Update block input and output filters based on depth multiplier.
       input_filters = round_filters(block_args.input_filters,
                                     self._global_params)
+
       output_filters = round_filters(block_args.output_filters,
                                      self._global_params)
       kernel_size = block_args.kernel_size
+      if self._fix_head_stem and (i == 0 or i == len(self._blocks_args) - 1):
+        repeats = block_args.num_repeat
+      else:
+        repeats = round_repeats(block_args.num_repeat, self._global_params)
       block_args = block_args._replace(
           input_filters=input_filters,
           output_filters=output_filters,
-          num_repeat=round_repeats(block_args.num_repeat, self._global_params))
+          num_repeat=repeats)
 
       # The first block needs to take care of stride and filter size increase.
       conv_block = self._get_conv_block(block_args.conv_type)
@@ -569,11 +591,12 @@ class Model(tf.keras.Model):
 
     # Head part.
     self._conv_head = tf.layers.Conv2D(
-        filters=round_filters(1280, self._global_params),
+        filters=round_filters(1280, self._global_params, self._fix_head_stem),
         kernel_size=[1, 1],
         strides=[1, 1],
         kernel_initializer=conv_kernel_initializer,
         padding='same',
+        data_format=self._global_params.data_format,
         use_bias=False)
     self._bn1 = self._batch_norm(
         axis=channel_axis,
@@ -635,12 +658,13 @@ class Model(tf.keras.Model):
         reduction_idx += 1
 
       with tf.variable_scope('blocks_%s' % idx):
-        drop_rate = self._global_params.drop_connect_rate
-        if drop_rate:
-          drop_rate *= float(idx) / len(self._blocks)
-          logging.info('block_%s drop_connect_rate: %s', idx, drop_rate)
+        survival_prob = self._global_params.survival_prob
+        if survival_prob:
+          drop_rate = 1.0 - survival_prob
+          survival_prob = 1.0 - drop_rate * float(idx) / len(self._blocks)
+          logging.info('block_%s survival_prob: %s', idx, survival_prob)
         outputs = block.call(
-            outputs, training=training, drop_connect_rate=drop_rate)
+            outputs, training=training, survival_prob=survival_prob)
         self.endpoints['block_%s' % idx] = outputs
         if is_reduction:
           self.endpoints['reduction_%s' % reduction_idx] = outputs

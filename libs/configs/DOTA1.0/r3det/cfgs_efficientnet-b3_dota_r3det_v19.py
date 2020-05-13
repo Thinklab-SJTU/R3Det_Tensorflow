@@ -5,15 +5,41 @@ import tensorflow as tf
 import math
 
 """
-v12 + efficientnet-b5
+v12 + efficientnet-b3
 
+This is your result for task 1:
 
+    mAP: 0.6411528517923154
+    ap of each class:
+    plane:0.8871609727393316,
+    baseball-diamond:0.6651965166562268,
+    bridge:0.4437241725354731,
+    ground-track-field:0.5754256479197026,
+    small-vehicle:0.6570068801930949,
+    large-vehicle:0.7069192196938723,
+    ship:0.6939857710507807,
+    tennis-court:0.9082466960113107,
+    basketball-court:0.7565020477262299,
+    storage-tank:0.7743804095676698,
+    soccer-ball-field:0.44134762946690864,
+    roundabout:0.570446583741574,
+    harbor:0.5419281091569005,
+    swimming-pool:0.6427508797814565,
+    helicopter:0.35227124064419946
+
+The submitted information is :
+
+Description: RetinaNet_DOTA_R3Det_2x_20200512_70.2w
+Username: SJTU-Det
+Institute: SJTU
+Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
+TeamMembers: yangxue
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_2x_20200514'
-NET_NAME = 'efficientnet-b5'  # 'MobilenetV2'
+VERSION = 'RetinaNet_DOTA_R3Det_2x_20200512'
+NET_NAME = 'efficientnet-b3'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config

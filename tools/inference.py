@@ -28,7 +28,7 @@ def detect(det_net, inference_save_path, real_test_imgname_list, draw_imgs):
     img_batch = short_side_resize_for_inference_data(img_tensor=img_batch,
                                                      target_shortside_len=cfgs.IMG_SHORT_SIDE_LEN,
                                                      length_limitation=cfgs.IMG_MAX_LENGTH)
-    if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d'] or 'efficientnet' in cfgs.NET_NAME:
+    if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d']:
         img_batch = (img_batch / 255 - tf.constant(cfgs.PIXEL_MEAN_)) / tf.constant(cfgs.PIXEL_STD)
     else:
         img_batch = img_batch - tf.constant(cfgs.PIXEL_MEAN)
@@ -75,7 +75,7 @@ def detect(det_net, inference_save_path, real_test_imgname_list, draw_imgs):
 
                 draw_img = np.squeeze(resized_img, 0)
 
-                if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d'] or 'efficientnet' in cfgs.NET_NAME:
+                if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d']:
                     draw_img = (draw_img * np.array(cfgs.PIXEL_STD) + np.array(cfgs.PIXEL_MEAN_)) * 255
                 else:
                     draw_img = draw_img + np.array(cfgs.PIXEL_MEAN)

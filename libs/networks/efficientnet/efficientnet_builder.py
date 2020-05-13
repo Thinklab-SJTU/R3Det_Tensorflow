@@ -21,15 +21,16 @@ from __future__ import print_function
 import functools
 import os
 import re
-import itertools
 from absl import logging
 import numpy as np
+import six
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
 from libs.networks.efficientnet import efficientnet_model
 from libs.networks.efficientnet import utils
 from libs.configs import cfgs
+
 MEAN_RGB = [0.485 * 255, 0.456 * 255, 0.406 * 255]
 STDDEV_RGB = [0.229 * 255, 0.224 * 255, 0.225 * 255]
 
@@ -47,6 +48,7 @@ def efficientnet_params(model_name):
       'efficientnet-b6': (1.8, 2.6, 528, 0.5),
       'efficientnet-b7': (2.0, 3.1, 600, 0.5),
       'efficientnet-b8': (2.2, 3.6, 672, 0.5),
+      'efficientnet-l2': (4.3, 5.3, 800, 0.5),
   }
   return params_dict[model_name]
 
@@ -56,7 +58,10 @@ class BlockDecoder(object):
 
   def _decode_block_string(self, block_string):
     """Gets a block through a string notation of arguments."""
-    assert isinstance(block_string, str)
+    if six.PY2:
+      assert isinstance(block_string, (str, unicode))
+    else:
+      assert isinstance(block_string, str)
     ops = block_string.split('_')
     options = {}
     for op in ops:
@@ -159,22 +164,25 @@ def swish(features, use_native=True, use_hard=False):
   return features * tf.nn.sigmoid(features)
 
 
+_DEFAULT_BLOCKS_ARGS = [
+    'r1_k3_s11_e1_i32_o16_se0.25', 'r2_k3_s22_e6_i16_o24_se0.25',
+    'r2_k5_s22_e6_i24_o40_se0.25', 'r3_k3_s22_e6_i40_o80_se0.25',
+    'r3_k5_s11_e6_i80_o112_se0.25', 'r4_k5_s22_e6_i112_o192_se0.25',
+    'r1_k3_s11_e6_i192_o320_se0.25',
+]
+
+
 def efficientnet(width_coefficient=None,
                  depth_coefficient=None,
                  dropout_rate=0.2,
-                 drop_connect_rate=0.2):
+                 survival_prob=0.8):
   """Creates a efficientnet model."""
-  blocks_args = [
-      'r1_k3_s11_e1_i32_o16_se0.25', 'r2_k3_s22_e6_i16_o24_se0.25',
-      'r2_k5_s22_e6_i24_o40_se0.25', 'r3_k3_s22_e6_i40_o80_se0.25',
-      'r3_k5_s11_e6_i80_o112_se0.25', 'r4_k5_s22_e6_i112_o192_se0.25',
-      'r1_k3_s11_e6_i192_o320_se0.25',
-  ]
   global_params = efficientnet_model.GlobalParams(
+      blocks_args=_DEFAULT_BLOCKS_ARGS,
       batch_norm_momentum=0.99,
       batch_norm_epsilon=1e-3,
       dropout_rate=dropout_rate,
-      drop_connect_rate=drop_connect_rate,
+      survival_prob=survival_prob,
       data_format='channels_last',
       num_classes=1000,
       width_coefficient=width_coefficient,
@@ -184,12 +192,10 @@ def efficientnet(width_coefficient=None,
       relu_fn=tf.nn.swish,
       # The default is TPU-specific batch norm.
       # The alternative is tf.layers.BatchNormalization.
-      # batch_norm=utils.TpuBatchNormalization,  # TPU-specific requirement.
       batch_norm=utils.BatchNormalization,  # TPU-specific requirement.
       use_se=True,
       clip_projection_output=False)
-  decoder = BlockDecoder()
-  return decoder.decode(blocks_args), global_params
+  return global_params
 
 
 def get_model_params(model_name, override_params):
@@ -197,7 +203,7 @@ def get_model_params(model_name, override_params):
   if model_name.startswith('efficientnet'):
     width_coefficient, depth_coefficient, _, dropout_rate = (
         efficientnet_params(model_name))
-    blocks_args, global_params = efficientnet(
+    global_params = efficientnet(
         width_coefficient, depth_coefficient, dropout_rate)
   else:
     raise NotImplementedError('model name is not pre-defined: %s' % model_name)
@@ -207,8 +213,10 @@ def get_model_params(model_name, override_params):
     # in global_params.
     global_params = global_params._replace(**override_params)
 
+  decoder = BlockDecoder()
+  blocks_args = decoder.decode(global_params.blocks_args)
+
   logging.info('global_params= %s', global_params)
-  logging.info('blocks_args= %s', blocks_args)
   return blocks_args, global_params
 
 
@@ -220,7 +228,7 @@ def build_model(images,
                 fine_tuning=False,
                 features_only=False,
                 pooled_features_only=False):
-  """A helper functiion to creates a model and returns predicted logits.
+  """A helper function to create a model and return predicted logits.
   Args:
     images: input images tensor.
     model_name: string, the predefined model name.
@@ -242,6 +250,11 @@ def build_model(images,
   """
   assert isinstance(images, tf.Tensor)
   assert not (features_only and pooled_features_only)
+
+  # For backward compatibility.
+  if override_params and override_params.get('drop_connect_rate', None):
+    override_params['survival_prob'] = 1 - override_params['drop_connect_rate']
+
   if not training or fine_tuning:
     if not override_params:
       override_params = {}
@@ -278,7 +291,7 @@ def build_model(images,
 
 
 def build_model_base(images, model_name, training, override_params=None):
-  """A helper functiion to create a base model and return global_pool.
+  """Create a base feature network and return the features before pooling.
   Args:
     images: input images tensor.
     model_name: string, the predefined model name.
@@ -286,13 +299,17 @@ def build_model_base(images, model_name, training, override_params=None):
     override_params: A dictionary of params for overriding. Fields must exist in
       efficientnet_model.GlobalParams.
   Returns:
-    features: global pool features.
+    features: base features before pooling.
     endpoints: the endpoints for each layer.
   Raises:
     When model_name specified an undefined model, raises NotImplementedError.
     When override_params has invalid fields, raises ValueError.
   """
   assert isinstance(images, tf.Tensor)
+  # For backward compatibility.
+  if override_params and override_params.get('drop_connect_rate', None):
+    override_params['survival_prob'] = 1 - override_params['drop_connect_rate']
+
   blocks_args, global_params = get_model_params(model_name, override_params)
 
   with tf.variable_scope(model_name):

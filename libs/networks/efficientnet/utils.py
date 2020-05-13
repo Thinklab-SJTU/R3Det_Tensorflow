@@ -26,6 +26,8 @@ from absl import logging
 import numpy as np
 import tensorflow as tf
 
+# from tensorflow.python.tpu import tpu_function  # pylint:disable=g-direct-tensorflow-import
+
 
 def build_learning_rate(initial_lr,
                         global_step,
@@ -84,54 +86,54 @@ def build_optimizer(learning_rate,
   return optimizer
 
 
-class TpuBatchNormalization(tf.layers.BatchNormalization):
-  # class TpuBatchNormalization(tf.layers.BatchNormalization):
-  """Cross replica batch normalization."""
-
-  def __init__(self, fused=False, **kwargs):
-    if fused in (True, None):
-      raise ValueError('TpuBatchNormalization does not support fused=True.')
-    super(TpuBatchNormalization, self).__init__(fused=fused, **kwargs)
-
-  def _cross_replica_average(self, t, num_shards_per_group):
-    """Calculates the average value of input tensor across TPU replicas."""
-    num_shards = tpu_function.get_tpu_context().number_of_shards
-    group_assignment = None
-    if num_shards_per_group > 1:
-      if num_shards % num_shards_per_group != 0:
-        raise ValueError('num_shards: %d mod shards_per_group: %d, should be 0'
-                         % (num_shards, num_shards_per_group))
-      num_groups = num_shards // num_shards_per_group
-      group_assignment = [[
-          x for x in range(num_shards) if x // num_shards_per_group == y
-      ] for y in range(num_groups)]
-    return tf.tpu.cross_replica_sum(t, group_assignment) / tf.cast(
-        num_shards_per_group, t.dtype)
-
-  def _moments(self, inputs, reduction_axes, keep_dims):
-    """Compute the mean and variance: it overrides the original _moments."""
-    shard_mean, shard_variance = super(TpuBatchNormalization, self)._moments(
-        inputs, reduction_axes, keep_dims=keep_dims)
-
-    num_shards = tpu_function.get_tpu_context().number_of_shards or 1
-    if num_shards <= 8:  # Skip cross_replica for 2x2 or smaller slices.
-      num_shards_per_group = 1
-    else:
-      num_shards_per_group = max(8, num_shards // 8)
-    logging.info('TpuBatchNormalization with num_shards_per_group %s',
-                 num_shards_per_group)
-    if num_shards_per_group > 1:
-      # Compute variance using: Var[X]= E[X^2] - E[X]^2.
-      shard_square_of_mean = tf.math.square(shard_mean)
-      shard_mean_of_square = shard_variance + shard_square_of_mean
-      group_mean = self._cross_replica_average(
-          shard_mean, num_shards_per_group)
-      group_mean_of_square = self._cross_replica_average(
-          shard_mean_of_square, num_shards_per_group)
-      group_variance = group_mean_of_square - tf.math.square(group_mean)
-      return (group_mean, group_variance)
-    else:
-      return (shard_mean, shard_variance)
+# class TpuBatchNormalization(tf.layers.BatchNormalization):
+#   # class TpuBatchNormalization(tf.layers.BatchNormalization):
+#   """Cross replica batch normalization."""
+#
+#   def __init__(self, fused=False, **kwargs):
+#     if fused in (True, None):
+#       raise ValueError('TpuBatchNormalization does not support fused=True.')
+#     super(TpuBatchNormalization, self).__init__(fused=fused, **kwargs)
+#
+#   def _cross_replica_average(self, t, num_shards_per_group):
+#     """Calculates the average value of input tensor across TPU replicas."""
+#     num_shards = tpu_function.get_tpu_context().number_of_shards
+#     group_assignment = None
+#     if num_shards_per_group > 1:
+#       if num_shards % num_shards_per_group != 0:
+#         raise ValueError('num_shards: %d mod shards_per_group: %d, should be 0'
+#                          % (num_shards, num_shards_per_group))
+#       num_groups = num_shards // num_shards_per_group
+#       group_assignment = [[
+#           x for x in range(num_shards) if x // num_shards_per_group == y
+#       ] for y in range(num_groups)]
+#     return tf.tpu.cross_replica_sum(t, group_assignment) / tf.cast(
+#         num_shards_per_group, t.dtype)
+#
+#   def _moments(self, inputs, reduction_axes, keep_dims):
+#     """Compute the mean and variance: it overrides the original _moments."""
+#     shard_mean, shard_variance = super(TpuBatchNormalization, self)._moments(
+#         inputs, reduction_axes, keep_dims=keep_dims)
+#
+#     num_shards = tpu_function.get_tpu_context().number_of_shards or 1
+#     if num_shards <= 8:  # Skip cross_replica for 2x2 or smaller slices.
+#       num_shards_per_group = 1
+#     else:
+#       num_shards_per_group = max(8, num_shards // 8)
+#     logging.info('TpuBatchNormalization with num_shards_per_group %s',
+#                  num_shards_per_group)
+#     if num_shards_per_group > 1:
+#       # Compute variance using: Var[X]= E[X^2] - E[X]^2.
+#       shard_square_of_mean = tf.math.square(shard_mean)
+#       shard_mean_of_square = shard_variance + shard_square_of_mean
+#       group_mean = self._cross_replica_average(
+#           shard_mean, num_shards_per_group)
+#       group_mean_of_square = self._cross_replica_average(
+#           shard_mean_of_square, num_shards_per_group)
+#       group_variance = group_mean_of_square - tf.math.square(group_mean)
+#       return (group_mean, group_variance)
+#     else:
+#       return (shard_mean, shard_variance)
 
 
 class BatchNormalization(tf.layers.BatchNormalization):
@@ -141,21 +143,21 @@ class BatchNormalization(tf.layers.BatchNormalization):
     super(BatchNormalization, self).__init__(name=name, **kwargs)
 
 
-def drop_connect(inputs, is_training, drop_connect_rate):
-  """Apply drop connect."""
+def drop_connect(inputs, is_training, survival_prob):
+  """Drop the entire conv with given survival probability."""
+  # "Deep Networks with Stochastic Depth", https://arxiv.org/pdf/1603.09382.pdf
   if not is_training:
     return inputs
 
-  # Compute keep_prob
-  # TODO(tanmingxing): add support for training progress.
-  keep_prob = 1.0 - drop_connect_rate
-
-  # Compute drop_connect tensor
+  # Compute tensor.
   batch_size = tf.shape(inputs)[0]
-  random_tensor = keep_prob
+  random_tensor = survival_prob
   random_tensor += tf.random_uniform([batch_size, 1, 1, 1], dtype=inputs.dtype)
   binary_tensor = tf.floor(random_tensor)
-  output = tf.div(inputs, keep_prob) * binary_tensor
+  # Unlike conventional way that multiply survival_prob at test time, here we
+  # divide survival_prob at training time, such that no addition compute is
+  # needed at test time.
+  output = tf.div(inputs, survival_prob) * binary_tensor
   return output
 
 
@@ -228,6 +230,7 @@ class EvalCkptDriver(object):
     image_size: int. Input image size, determined by model name.
     num_classes: int. Number of classes, default to 1000 for ImageNet.
     include_background_label: whether to include extra background label.
+    advprop_preprocessing: whether to use advprop preprocessing.
   """
 
   def __init__(self,
@@ -235,13 +238,15 @@ class EvalCkptDriver(object):
                batch_size=1,
                image_size=224,
                num_classes=1000,
-               include_background_label=False):
+               include_background_label=False,
+               advprop_preprocessing=False):
     """Initialize internal variables."""
     self.model_name = model_name
     self.batch_size = batch_size
     self.num_classes = num_classes
     self.include_background_label = include_background_label
     self.image_size = image_size
+    self.advprop_preprocessing = advprop_preprocessing
 
   def restore_model(self, sess, ckpt_dir, enable_ema=True, export_ckpt=None):
     """Restore variables from checkpoint dir."""

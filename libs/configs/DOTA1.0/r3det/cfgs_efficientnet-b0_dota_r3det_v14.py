@@ -9,31 +9,31 @@ v12 + efficientnet-b0
 
 This is your result for task 1:
 
-    mAP: 0.6029497407279398
+    mAP: 0.618376191005381
     ap of each class:
-    plane:0.8431575297888173,
-    baseball-diamond:0.627275049142723,
-    bridge:0.4078551416023289,
-    ground-track-field:0.5626007035529952,
-    small-vehicle:0.6503533901303012,
-    large-vehicle:0.6581003350035809,
-    ship:0.6788574638941842,
-    tennis-court:0.9079975643498643,
-    basketball-court:0.6843903186775995,
-    storage-tank:0.7456208170800375,
-    soccer-ball-field:0.3385574205648121,
-    roundabout:0.5804213139065293,
-    harbor:0.4444497708547192,
-    swimming-pool:0.5840748822421656,
-    helicopter:0.33053441012844065
+    plane:0.8732304757139724,
+    baseball-diamond:0.6660871969254017,
+    bridge:0.4172897541358919,
+    ground-track-field:0.5465076015701161,
+    small-vehicle:0.6545278241906022,
+    large-vehicle:0.6966573950691419,
+    ship:0.6898909393540738,
+    tennis-court:0.9078228487852539,
+    basketball-court:0.7247693289371898,
+    storage-tank:0.769286170585402,
+    soccer-ball-field:0.3419552989359052,
+    roundabout:0.5814102875529091,
+    harbor:0.46423553225952596,
+    swimming-pool:0.57332721817521,
+    helicopter:0.3686449928901182
 
 The submitted information is :
 
 Description: RetinaNet_DOTA_R3Det_2x_20200507_70.2w
-Username: SJTU-Det
-Institute: SJTU
-Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
-TeamMembers: yangxue
+Username: yangxue
+Institute: DetectionTeamUCAS
+Emailadress: yangxue16@mails.ucas.ac.cn
+TeamMembers: yangxue, yangjirui
 
 """
 
@@ -46,7 +46,7 @@ ADD_BOX_IN_TENSORBOARD = True
 ROOT_PATH = os.path.abspath('../')
 print(20*"++--")
 print(ROOT_PATH)
-GPU_GROUP = "2,3"
+GPU_GROUP = "0,1,2,3"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200
@@ -84,7 +84,7 @@ USE_IOU_FACTOR = True
 BATCH_SIZE = 1
 EPSILON = 1e-5
 MOMENTUM = 0.9
-LR = 5e-4
+LR = 5e-4 * BATCH_SIZE * NUM_GPU
 DECAY_STEP = [SAVE_WEIGHTS_INTE*12, SAVE_WEIGHTS_INTE*16, SAVE_WEIGHTS_INTE*20]
 MAX_ITERATION = SAVE_WEIGHTS_INTE*20
 WARM_SETP = int(1.0 / 4.0 * SAVE_WEIGHTS_INTE)
@@ -115,7 +115,7 @@ NUM_SUBNET_CONV = 4
 NUM_REFINE_STAGE = 2
 USE_RELU = False
 efficientdet_model_param_dict = {'efficientnet-b0': dict(fpn_num_filters=64, fpn_cell_repeats=3, box_class_repeats=3),
-                                 'noisy_student_efficientnet-b1': dict(fpn_num_filters=88, fpn_cell_repeats=4, box_class_repeats=3),
+                                 'efficientnet-b1': dict(fpn_num_filters=88, fpn_cell_repeats=4, box_class_repeats=3),
                                  'efficientnet-b2': dict(fpn_num_filters=112, fpn_cell_repeats=5, box_class_repeats=3),
                                  'efficientnet-b3': dict(fpn_num_filters=160, fpn_cell_repeats=6, box_class_repeats=4),
                                  'efficientnet-b4': dict(fpn_num_filters=224, fpn_cell_repeats=7, box_class_repeats=4),

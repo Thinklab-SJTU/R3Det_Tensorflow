@@ -5,15 +5,15 @@ import tensorflow as tf
 import math
 
 """
-v12 + efficientnet-b5
+v12 + efficientnet-b4
 
 
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_2x_20200514'
-NET_NAME = 'efficientnet-b5'  # 'MobilenetV2'
+VERSION = 'RetinaNet_DOTA_R3Det_2x_20200513'
+NET_NAME = 'efficientnet-b4'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config

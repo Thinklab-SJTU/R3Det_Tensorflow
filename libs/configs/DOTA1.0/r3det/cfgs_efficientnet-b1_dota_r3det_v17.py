@@ -5,22 +5,48 @@ import tensorflow as tf
 import math
 
 """
-v12 + efficientnet-b5
+v12 + efficientnet-b1
 
+This is your result for task 1:
 
+    mAP: 0.6261398342061525
+    ap of each class:
+    plane:0.8832782546627675,
+    baseball-diamond:0.6552088844384489,
+    bridge:0.43867518182814624,
+    ground-track-field:0.5643544069773578,
+    small-vehicle:0.660604206478718,
+    large-vehicle:0.6968619072601661,
+    ship:0.6948851308401217,
+    tennis-court:0.9086043670789434,
+    basketball-court:0.7108134290727005,
+    storage-tank:0.760367404414557,
+    soccer-ball-field:0.38886735671049283,
+    roundabout:0.583791348885809,
+    harbor:0.47698143089859335,
+    swimming-pool:0.6135408243338392,
+    helicopter:0.355263379211626
+
+The submitted information is :
+
+Description: RetinaNet_DOTA_R3Det_2x_20200510_70.2w
+Username: yangxue
+Institute: DetectionTeamUCAS
+Emailadress: yangxue16@mails.ucas.ac.cn
+TeamMembers: yangxue, yangjirui
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_2x_20200514'
-NET_NAME = 'efficientnet-b5'  # 'MobilenetV2'
+VERSION = 'RetinaNet_DOTA_R3Det_2x_20200510'
+NET_NAME = 'efficientnet-b1'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config
 ROOT_PATH = os.path.abspath('../')
 print(20*"++--")
 print(ROOT_PATH)
-GPU_GROUP = "0,1,2,3"
+GPU_GROUP = "2,3"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200
