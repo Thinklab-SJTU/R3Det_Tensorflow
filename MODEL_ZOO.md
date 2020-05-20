@@ -77,11 +77,11 @@ We have provided a list of EfficientNet checkpoints for EfficientNet checkpoints
 
 |               |   B0    |  B1   |  B2    |  B3   |  B4   |  B5    | B6 | B7 | B8 | L2-475 | L2 |
 |----------     |--------  | ------| ------|------ |------ |------ | --- | --- | --- | --- |--- |
-| Baseline preprocessing | 61.84 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v14.py)) | 62.61 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v17.py)) | 63.00 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v18.py)) | 64.12 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v19.py)) |  |  | | || | | |
+| Baseline preprocessing | 61.84 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v14.py)) | 62.61 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v17.py)) | 63.00 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v18.py)) | 64.12 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v19.py)) | 64.72 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v20.py)) | 65.23 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v21.py)) | | || | | |
 | AutoAugment (AA) |    |  |  |  |  |  |   |  || | |
 | RandAugment (RA) |  |  |  |  |  |  |  |  |  | | |
 | AdvProp + AA |  |   |  |  |  |  |  |  | || | |
-| NoisyStudent + RA |  |  |  |  | |  |  | |  | |  | 
+| NoisyStudent + RA | 62.02 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_noisy-student-efficientnet-b0_dota_r3det_v15.py)) |  |  |  | |  |  | 67.44 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_noisy-student-efficientnet-b7_dota_r3det_v22.py)) |  | |  | 
 
 
 [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612): R<sup>3</sup>Det with two refinement stages      

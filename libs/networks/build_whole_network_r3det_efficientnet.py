@@ -8,7 +8,7 @@ import tensorflow.contrib.slim as slim
 import numpy as np
 
 from libs.networks import resnet, resnet_gluoncv_r3det, mobilenet_v2
-from libs.networks.efficientnet import efficientnet_builder
+from libs.networks.efficientnet import efficientnet_builder, efficientnet_lite_builder
 from libs.box_utils import anchor_utils, generate_anchors, generate_rotate_anchors
 from libs.configs import cfgs
 from libs.losses import losses
@@ -45,8 +45,11 @@ class DetectionNetwork(object):
         elif self.base_network_name.startswith('MobilenetV2'):
             return mobilenet_v2.mobilenetv2_base(input_img_batch, is_training=self.is_training)
 
-        elif 'efficientnet' in self.base_network_name:
+        elif 'efficientnet-lite' in self.base_network_name:
+            return efficientnet_lite_builder.build_model_fpn_base(input_img_batch, model_name=self.base_network_name,
+                                                                  training=True)
 
+        elif 'efficientnet' in self.base_network_name:
             return efficientnet_builder.build_model_fpn_base(input_img_batch, model_name=self.base_network_name,
                                                              training=True)
 

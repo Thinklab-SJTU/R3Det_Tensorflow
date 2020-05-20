@@ -3,6 +3,12 @@
 ## Abstract
 [R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) and [R<sup>3</sup>Det++](https://arxiv.org/abs/2004.13316) are based on [Focal Loss for Dense Object Detection](https://arxiv.org/pdf/1708.02002.pdf), and it is completed by [YangXue](https://yangxue0827.github.io/).
 
+Techniques:     
+- [x] [ResNet](https://arxiv.org/abs/1512.03385), [MobileNetV2](https://arxiv.org/abs/1801.04381), [EfficientNet](https://arxiv.org/abs/1905.11946)
+- [x] [Feature Refinement Module (FRM)](https://arxiv.org/abs/1908.05612)
+- [x] [Instance Level Denoising (InLD)](https://arxiv.org/abs/2004.13316)
+- [x] [IoU-Smooth L1 Loss](https://arxiv.org/abs/1811.07126)
+
 ## Pipeline
 ![5](pipeline.png)
 

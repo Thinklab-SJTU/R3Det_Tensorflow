@@ -5,15 +5,15 @@ import tensorflow as tf
 import math
 
 """
-v12 + efficientnet-b5
+v12 + noisy student efficientnet-b7
 
 
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_2x_20200514'
-NET_NAME = 'efficientnet-b5'  # 'MobilenetV2'
+VERSION = 'RetinaNet_DOTA_R3Det_2x_20200516'
+NET_NAME = 'efficientnet-b7'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config
@@ -34,7 +34,7 @@ if NET_NAME.startswith("resnet"):
 elif NET_NAME.startswith("MobilenetV2"):
     weights_name = "mobilenet/mobilenet_v2_1.0_224"
 elif 'efficientnet' in NET_NAME:
-    weights_name = "/efficientnet/{}/model".format(NET_NAME)
+    weights_name = "/efficientnet/noisy-student-{}/model".format(NET_NAME)
 else:
     raise Exception('net name must in [resnet_v1_101, resnet_v1_50, MobilenetV2, efficient]')
 
@@ -59,7 +59,7 @@ BATCH_SIZE = 1
 EPSILON = 1e-5
 MOMENTUM = 0.9
 LR = 5e-4 * BATCH_SIZE * NUM_GPU
-DECAY_STEP = [SAVE_WEIGHTS_INTE*12, SAVE_WEIGHTS_INTE*16, SAVE_WEIGHTS_INTE*20]
+DECAY_STEP = [SAVE_WEIGHTS_INTE*10, SAVE_WEIGHTS_INTE*14, SAVE_WEIGHTS_INTE*20]
 MAX_ITERATION = SAVE_WEIGHTS_INTE*20
 WARM_SETP = int(1.0 / 4.0 * SAVE_WEIGHTS_INTE)
 
@@ -89,7 +89,7 @@ NUM_SUBNET_CONV = 4
 NUM_REFINE_STAGE = 2
 USE_RELU = False
 efficientdet_model_param_dict = {'efficientnet-b0': dict(fpn_num_filters=64, fpn_cell_repeats=3, box_class_repeats=3),
-                                 'efficientnet-b1': dict(fpn_num_filters=88, fpn_cell_repeats=4, box_class_repeats=3),
+                                 'noisy_student_efficientnet-b1': dict(fpn_num_filters=88, fpn_cell_repeats=4, box_class_repeats=3),
                                  'efficientnet-b2': dict(fpn_num_filters=112, fpn_cell_repeats=5, box_class_repeats=3),
                                  'efficientnet-b3': dict(fpn_num_filters=160, fpn_cell_repeats=6, box_class_repeats=4),
                                  'efficientnet-b4': dict(fpn_num_filters=224, fpn_cell_repeats=7, box_class_repeats=4),

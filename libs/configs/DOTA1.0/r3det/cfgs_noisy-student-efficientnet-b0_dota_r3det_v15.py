@@ -7,10 +7,38 @@ import math
 """
 v12 + noisy student efficientnet-b0
 
+This is your result for task 1:
+
+    mAP: 0.6202449460620075
+    ap of each class:
+    plane:0.8745462332694063,
+    baseball-diamond:0.6731179191378253,
+    bridge:0.41997937456796963,
+    ground-track-field:0.56475588968927,
+    small-vehicle:0.6602488947561846,
+    large-vehicle:0.6950836152669552,
+    ship:0.6909831920287621,
+    tennis-court:0.9078541030755255,
+    basketball-court:0.7147855897127402,
+    storage-tank:0.7750298406373529,
+    soccer-ball-field:0.35123461547386015,
+    roundabout:0.5313349548736945,
+    harbor:0.4615224287746767,
+    swimming-pool:0.6157147924802956,
+    helicopter:0.36748274718559654
+
+The submitted information is :
+
+Description: RetinaNet_DOTA_R3Det_2x_20200515_108w
+Username: SJTU-Det
+Institute: SJTU
+Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
+TeamMembers: yangxue
+
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_2x_20200509'
+VERSION = 'RetinaNet_DOTA_R3Det_2x_20200515'
 NET_NAME = 'efficientnet-b0'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -56,7 +84,7 @@ USE_IOU_FACTOR = True
 BATCH_SIZE = 1
 EPSILON = 1e-5
 MOMENTUM = 0.9
-LR = 5e-4
+LR = 5e-4 * BATCH_SIZE * NUM_GPU
 DECAY_STEP = [SAVE_WEIGHTS_INTE*12, SAVE_WEIGHTS_INTE*16, SAVE_WEIGHTS_INTE*20]
 MAX_ITERATION = SAVE_WEIGHTS_INTE*20
 WARM_SETP = int(1.0 / 4.0 * SAVE_WEIGHTS_INTE)

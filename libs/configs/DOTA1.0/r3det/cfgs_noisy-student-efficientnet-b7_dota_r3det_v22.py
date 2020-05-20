@@ -5,12 +5,40 @@ import tensorflow as tf
 import math
 
 """
-v12 + noisy_student_efficientnet-b7
+v12 + noisy student efficientnet-b7
+
+This is your result for task 1:
+
+    mAP: 0.6743870733156078
+    ap of each class:
+    plane:0.8926371561943417,
+    baseball-diamond:0.6910511631792542,
+    bridge:0.463452106066626,
+    ground-track-field:0.6233406156343534,
+    small-vehicle:0.6702088282364265,
+    large-vehicle:0.7265800185432247,
+    ship:0.7521589298961135,
+    tennis-court:0.9083027809304589,
+    basketball-court:0.7617093610132986,
+    storage-tank:0.8062657602245793,
+    soccer-ball-field:0.48140700296646927,
+    roundabout:0.604866743612208,
+    harbor:0.6211852192176545,
+    swimming-pool:0.661394189871849,
+    helicopter:0.4512462241472583
+
+The submitted information is :
+
+Description: RetinaNet_DOTA_R3Det_2x_20200516_70.2w
+Username: yangxue
+Institute: DetectionTeamUCAS
+Emailadress: yangxue16@mails.ucas.ac.cn
+TeamMembers: yangxue, yangjirui
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_2x_20200510'
+VERSION = 'RetinaNet_DOTA_R3Det_2x_20200516'
 NET_NAME = 'efficientnet-b7'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -56,7 +84,7 @@ USE_IOU_FACTOR = True
 BATCH_SIZE = 1
 EPSILON = 1e-5
 MOMENTUM = 0.9
-LR = 5e-4
+LR = 5e-4 * BATCH_SIZE * NUM_GPU
 DECAY_STEP = [SAVE_WEIGHTS_INTE*12, SAVE_WEIGHTS_INTE*16, SAVE_WEIGHTS_INTE*20]
 MAX_ITERATION = SAVE_WEIGHTS_INTE*20
 WARM_SETP = int(1.0 / 4.0 * SAVE_WEIGHTS_INTE)
@@ -87,7 +115,7 @@ NUM_SUBNET_CONV = 4
 NUM_REFINE_STAGE = 2
 USE_RELU = False
 efficientdet_model_param_dict = {'efficientnet-b0': dict(fpn_num_filters=64, fpn_cell_repeats=3, box_class_repeats=3),
-                                 'efficientnet-b1': dict(fpn_num_filters=88, fpn_cell_repeats=4, box_class_repeats=3),
+                                 'noisy_student_efficientnet-b1': dict(fpn_num_filters=88, fpn_cell_repeats=4, box_class_repeats=3),
                                  'efficientnet-b2': dict(fpn_num_filters=112, fpn_cell_repeats=5, box_class_repeats=3),
                                  'efficientnet-b3': dict(fpn_num_filters=160, fpn_cell_repeats=6, box_class_repeats=4),
                                  'efficientnet-b4': dict(fpn_num_filters=224, fpn_cell_repeats=7, box_class_repeats=4),

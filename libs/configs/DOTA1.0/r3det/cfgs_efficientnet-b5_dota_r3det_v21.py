@@ -7,7 +7,33 @@ import math
 """
 v12 + efficientnet-b5
 
+This is your result for task 1:
 
+    mAP: 0.6523289929344229
+    ap of each class:
+    plane:0.8885050583446055,
+    baseball-diamond:0.6625306726435614,
+    bridge:0.45621360367429786,
+    ground-track-field:0.6074556327852775,
+    small-vehicle:0.6491801966284957,
+    large-vehicle:0.7218392995796338,
+    ship:0.7101694129752802,
+    tennis-court:0.9084793359853228,
+    basketball-court:0.7552903701077572,
+    storage-tank:0.7921155693611729,
+    soccer-ball-field:0.44388735471047697,
+    roundabout:0.5784766733874839,
+    harbor:0.5638510590057048,
+    swimming-pool:0.6500710592305314,
+    helicopter:0.39686959559674134
+
+The submitted information is :
+
+Description: RetinaNet_DOTA_R3Det_2x_20200514_81w
+Username: SJTU-Det
+Institute: SJTU
+Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
+TeamMembers: yangxue
 
 """
 

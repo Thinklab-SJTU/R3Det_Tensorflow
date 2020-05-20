@@ -31,7 +31,7 @@ import numpy as np
 import six
 import tensorflow as tf
 
-from libs.networks.efficientnet import  utils
+from libs.networks.efficientnet import utils
 from libs.networks.efficientnet.condconv import condconv_layers
 
 GlobalParams = collections.namedtuple('GlobalParams', [
