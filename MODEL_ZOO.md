@@ -67,21 +67,13 @@
 |:------------:|:------------:|:------------:|:---------:|:----------:|:-----------:|:----------:|:-----------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:---------:|:---------:|   
 | [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612) | **EfficientNet** 600->800 | DOTA1.0 trainval | DOTA1.0 test | H + R | [1.] | [1.] | [0.35, 0.5, 0.6] | [0.25, 0.4, 0.5] | [**iou-smooth L1 [1-exp(1-x)]**](https://arxiv.org/abs/1811.07126) | 90 | 2x | No | 2X GeForce RTX 2080 Ti | 1 |
 
-We have provided a list of EfficientNet checkpoints for EfficientNet checkpoints:.
-
-  * With baseline ResNet preprocessing, we achieve similar results to the original ICML paper.
-  * With [AutoAugment](https://arxiv.org/abs/1805.09501) preprocessing, we achieve higher accuracy than the original ICML paper.
-  * With [RandAugment](https://arxiv.org/abs/1909.13719) preprocessing, accuracy is further improved.
-  * With [AdvProp](https://arxiv.org/abs/1911.09665), state-of-the-art results (w/o extra data) are achieved.
-  * With [NoisyStudent](https://arxiv.org/abs/1911.04252), state-of-the-art results (w/ extra JFT-300M unlabeled data) are achieved.
-
 |               |   B0    |  B1   |  B2    |  B3   |  B4   |  B5    | B6 | B7 | B8 | L2-475 | L2 |
 |----------     |--------  | ------| ------|------ |------ |------ | --- | --- | --- | --- |--- |
 | Baseline preprocessing | 61.84 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v14.py)) | 62.61 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v17.py)) | 63.00 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v18.py)) | 64.12 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v19.py)) | 64.72 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v20.py)) | 65.23 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_efficientnet-b0_dota_r3det_v21.py)) | | || | | |
-| AutoAugment (AA) |    |  |  |  |  |  |   |  || | |
-| RandAugment (RA) |  |  |  |  |  |  |  |  |  | | |
-| AdvProp + AA |  |   |  |  |  |  |  |  | || | |
-| NoisyStudent + RA | 62.02 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_noisy-student-efficientnet-b0_dota_r3det_v15.py)) |  |  |  | |  |  | 67.44 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_noisy-student-efficientnet-b7_dota_r3det_v22.py)) |  | |  | 
+| [AutoAugment](https://arxiv.org/abs/1805.09501) (AA) |    |  |  |  |  |  |   |  || | |
+| [RandAugment](https://arxiv.org/abs/1909.13719) (RA) |  |  |  |  |  |  |  |  |  | | |
+| [AdvProp](https://arxiv.org/abs/1911.09665) + AA |  |   |  |  |  |  |  |  | || | |
+| [NoisyStudent](https://arxiv.org/abs/1911.04252) + RA | 62.02 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_noisy-student-efficientnet-b0_dota_r3det_v15.py)) |  |  |  | |  |  | 67.44 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_noisy-student-efficientnet-b7_dota_r3det_v22.py)) |  | |  | 
 
 
 [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612): R<sup>3</sup>Det with two refinement stages      
