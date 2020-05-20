@@ -8,6 +8,7 @@ Techniques:
 - [x] [Feature Refinement Module (FRM)](https://arxiv.org/abs/1908.05612)
 - [x] [Instance Level Denoising (InLD)](https://arxiv.org/abs/2004.13316)
 - [x] [IoU-Smooth L1 Loss](https://arxiv.org/abs/1811.07126)
+- [x] Anchor Free (one anchor per feature point)
 
 ## Pipeline
 ![5](pipeline.png)
