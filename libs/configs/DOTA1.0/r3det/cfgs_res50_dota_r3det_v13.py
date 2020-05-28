@@ -5,31 +5,31 @@ import tensorflow as tf
 import math
 
 """
-v7 + iou-smooth l1 loss
+v7 + diou-smooth l1 loss
 
 This is your result for task 1:
 
-    mAP: 0.6949672314782958
+    mAP: 0.6912858881591691
     ap of each class:
-    plane:0.885386792983877,
-    baseball-diamond:0.7331968839644771,
-    bridge:0.4898628104022108,
-    ground-track-field:0.6400479115497535,
-    small-vehicle:0.6804863040286401,
-    large-vehicle:0.7272874790497282,
-    ship:0.7602937054410586,
-    tennis-court:0.9083344898088754,
-    basketball-court:0.784327582019443,
-    storage-tank:0.8013993994143976,
-    soccer-ball-field:0.5483354704539025,
-    roundabout:0.6171343622691822,
-    harbor:0.5801559667600483,
-    swimming-pool:0.6858516206184136,
-    helicopter:0.582407693410429
+    plane:0.8853755367998271,
+    baseball-diamond:0.7580455187943885,
+    bridge:0.4744133779208826,
+    ground-track-field:0.6060575836710009,
+    small-vehicle:0.6804449349687576,
+    large-vehicle:0.7271701663190965,
+    ship:0.76165948770848,
+    tennis-court:0.9080151420124567,
+    basketball-court:0.8149106346889827,
+    storage-tank:0.8290394010663257,
+    soccer-ball-field:0.5440114805548373,
+    roundabout:0.6118153705418471,
+    harbor:0.575791714854329,
+    swimming-pool:0.6754177556962848,
+    helicopter:0.5171202167900394
 
 The submitted information is :
 
-Description: RetinaNet_DOTA_R3Det_2x_20200501_91.8w
+Description: RetinaNet_DOTA_R3Det_2x_20200521_91.8w
 Username: SJTU-Det
 Institute: SJTU
 Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
@@ -38,7 +38,7 @@ TeamMembers: yangxue
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_2x_20200501'
+VERSION = 'RetinaNet_DOTA_R3Det_2x_20200521'
 NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 

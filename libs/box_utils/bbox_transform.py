@@ -52,8 +52,8 @@ def bbox_transform(ex_rois, gt_rois, scale_factors=None):
 
     targets_dx = (gt_ctr_x - ex_ctr_x) / ex_widths
     targets_dy = (gt_ctr_y - ex_ctr_y) / ex_heights
-    targets_dw = np.log(gt_widths / ex_widths)
-    targets_dh = np.log(gt_heights / ex_heights)
+    targets_dw = np.log(gt_widths / ex_widths + 1e-5)
+    targets_dh = np.log(gt_heights / ex_heights + 1e-5)
 
     if scale_factors:
         targets_dx *= scale_factors[0]
@@ -95,8 +95,8 @@ def rbbox_transform(ex_rois, gt_rois, scale_factors=None):
 
     targets_dx = (gt_rois[:, 0] - ex_rois[:, 0]) / ex_rois[:, 2]
     targets_dy = (gt_rois[:, 1] - ex_rois[:, 1]) / ex_rois[:, 3]
-    targets_dw = np.log(gt_rois[:, 2] / ex_rois[:, 2])
-    targets_dh = np.log(gt_rois[:, 3] / ex_rois[:, 3])
+    targets_dw = np.log(gt_rois[:, 2] / ex_rois[:, 2] + 1e-5)
+    targets_dh = np.log(gt_rois[:, 3] / ex_rois[:, 3] + 1e-5)
 
     targets_dtheta = (gt_rois[:, 4] - ex_rois[:, 4]) * np.pi / 180
 

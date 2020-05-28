@@ -6,7 +6,7 @@ from __future__ import print_function
 import tensorflow as tf
 
 from libs.box_utils import bbox_transform
-from libs.box_utils.iou_rotate import iou_rotate_calculate2
+from libs.box_utils.iou_rotate import iou_rotate_calculate2, diou_rotate_calculate
 from libs.configs import cfgs
 
 
@@ -280,6 +280,57 @@ def iou_smooth_l1_loss_(targets, preds, anchor_state, target_boxes, anchors, sig
     return tf.reduce_sum(regression_loss * iou_factor) / normalizer
 
 
+def diou_smooth_l1_loss(targets, preds, anchor_state, target_boxes, anchors, sigma=3.0, is_refine=False):
+    if cfgs.METHOD == 'H' and not is_refine:
+        x_c = (anchors[:, 2] + anchors[:, 0]) / 2
+        y_c = (anchors[:, 3] + anchors[:, 1]) / 2
+        h = anchors[:, 2] - anchors[:, 0] + 1
+        w = anchors[:, 3] - anchors[:, 1] + 1
+        theta = -90 * tf.ones_like(x_c)
+        anchors = tf.transpose(tf.stack([x_c, y_c, w, h, theta]))
+
+    sigma_squared = sigma ** 2
+    indices = tf.reshape(tf.where(tf.equal(anchor_state, 1)), [-1, ])
+
+    preds = tf.gather(preds, indices)
+    targets = tf.gather(targets, indices)
+    target_boxes = tf.gather(target_boxes, indices)
+    anchors = tf.gather(anchors, indices)
+
+    boxes_pred = bbox_transform.rbbox_transform_inv(boxes=anchors, deltas=preds,
+                                                    scale_factors=cfgs.ANCHOR_SCALE_FACTORS)
+
+    # compute smooth L1 loss
+    # f(x) = 0.5 * (sigma * x)^2          if |x| < 1 / sigma / sigma
+    #        |x| - 0.5 / sigma / sigma    otherwise
+    regression_diff = preds - targets
+    regression_diff = tf.abs(regression_diff)
+    regression_loss = tf.where(
+        tf.less(regression_diff, 1.0 / sigma_squared),
+        0.5 * sigma_squared * tf.pow(regression_diff, 2),
+        regression_diff - 0.5 / sigma_squared
+    )
+
+    overlaps = tf.py_func(diou_rotate_calculate,
+                          inp=[tf.reshape(boxes_pred, [-1, 5]), tf.reshape(target_boxes[:, :-1], [-1, 5])],
+                          Tout=[tf.float32])
+
+    overlaps = tf.reshape(overlaps, [-1, 1])
+    regression_loss = tf.reshape(tf.reduce_sum(regression_loss, axis=1), [-1, 1])
+    # 1-exp(1-x)
+    iou_factor = tf.stop_gradient(tf.exp(1-overlaps)-1) / (tf.stop_gradient(regression_loss) + cfgs.EPSILON)
+    # iou_factor = tf.Print(iou_factor, [iou_factor], 'iou_factor', summarize=50)
+
+    normalizer = tf.stop_gradient(tf.where(tf.equal(anchor_state, 1)))
+    normalizer = tf.cast(tf.shape(normalizer)[0], tf.float32)
+    normalizer = tf.maximum(1.0, normalizer)
+
+    # normalizer = tf.stop_gradient(tf.cast(tf.equal(anchor_state, 1), tf.float32))
+    # normalizer = tf.maximum(tf.reduce_sum(normalizer), 1)
+
+    return tf.reduce_sum(regression_loss * iou_factor) / normalizer
+
+
 def angle_focal_loss(labels, pred, anchor_state, alpha=0.25, gamma=2.0):
 
     # filter out "ignore" anchors
@@ -313,3 +364,103 @@ def angle_focal_loss(labels, pred, anchor_state, alpha=0.25, gamma=2.0):
     # normalizer = tf.maximum(tf.reduce_sum(normalizer), 1)
 
     return tf.reduce_sum(focal_cross_entropy_loss) / normalizer
+
+
+def scale_iou_smooth_l1_loss(targets, preds, anchor_state, target_boxes, anchors, sigma=3.0,
+                             is_refine=False, use_scale_factor=False):
+    if cfgs.METHOD == 'H' and not is_refine:
+        x_c = (anchors[:, 2] + anchors[:, 0]) / 2
+        y_c = (anchors[:, 3] + anchors[:, 1]) / 2
+        h = anchors[:, 2] - anchors[:, 0] + 1
+        w = anchors[:, 3] - anchors[:, 1] + 1
+        theta = -90 * tf.ones_like(x_c)
+        anchors = tf.transpose(tf.stack([x_c, y_c, w, h, theta]))
+
+    sigma_squared = sigma ** 2
+    indices = tf.reshape(tf.where(tf.equal(anchor_state, 1)), [-1, ])
+
+    preds = tf.gather(preds, indices)
+    targets = tf.gather(targets, indices)
+    target_boxes = tf.gather(target_boxes, indices)
+    anchors = tf.gather(anchors, indices)
+
+    boxes_pred = bbox_transform.rbbox_transform_inv(boxes=anchors, deltas=preds,
+                                                    scale_factors=cfgs.ANCHOR_SCALE_FACTORS)
+
+    # compute smooth L1 loss
+    # f(x) = 0.5 * (sigma * x)^2          if |x| < 1 / sigma / sigma
+    #        |x| - 0.5 / sigma / sigma    otherwise
+    regression_diff = preds - targets
+    regression_diff = tf.abs(regression_diff)
+    regression_loss = tf.where(
+        tf.less(regression_diff, 1.0 / sigma_squared),
+        0.5 * sigma_squared * tf.pow(regression_diff, 2),
+        regression_diff - 0.5 / sigma_squared
+    )
+
+    overlaps = tf.py_func(iou_rotate_calculate2,
+                          inp=[tf.reshape(boxes_pred, [-1, 5]), tf.reshape(target_boxes[:, :-1], [-1, 5])],
+                          Tout=[tf.float32])
+
+    overlaps = tf.reshape(overlaps, [-1, 1])
+    regression_loss = tf.reshape(tf.reduce_sum(regression_loss, axis=1), [-1, 1])
+    # 1-exp(1-x)
+    iou_factor = tf.stop_gradient(tf.exp(1-overlaps)-1) / (tf.stop_gradient(regression_loss) + cfgs.EPSILON)
+
+    if use_scale_factor:
+        area = target_boxes[:, 2] * target_boxes[:, 3]
+        area = tf.reshape(area, [-1, 1])
+        scale_factor = tf.stop_gradient(tf.exp(-1 * area) + 1)
+    else:
+        scale_factor = 1.0
+
+    normalizer = tf.stop_gradient(tf.where(tf.equal(anchor_state, 1)))
+    normalizer = tf.cast(tf.shape(normalizer)[0], tf.float32)
+    normalizer = tf.maximum(1.0, normalizer)
+
+    # normalizer = tf.stop_gradient(tf.cast(tf.equal(anchor_state, 1), tf.float32))
+    # normalizer = tf.maximum(tf.reduce_sum(normalizer), 1)
+
+    return tf.reduce_sum(regression_loss * iou_factor * scale_factor) / normalizer
+
+
+def scale_focal_loss(labels, pred, anchor_state, target_boxes, alpha=0.25, gamma=2.0, use_scale_factor=False):
+
+    # filter out "ignore" anchors
+    indices = tf.reshape(tf.where(tf.not_equal(anchor_state, -1)), [-1, ])
+    labels = tf.gather(labels, indices)
+    pred = tf.gather(pred, indices)
+    target_boxes = tf.gather(target_boxes, indices)
+
+    # compute the focal loss
+    per_entry_cross_ent = (tf.nn.sigmoid_cross_entropy_with_logits(
+        labels=labels, logits=pred))
+    prediction_probabilities = tf.sigmoid(pred)
+    p_t = ((labels * prediction_probabilities) +
+           ((1 - labels) * (1 - prediction_probabilities)))
+    modulating_factor = 1.0
+    if gamma:
+        modulating_factor = tf.pow(1.0 - p_t, gamma)
+    alpha_weight_factor = 1.0
+    if alpha is not None:
+        alpha_weight_factor = (labels * alpha +
+                               (1 - labels) * (1 - alpha))
+    focal_cross_entropy_loss = (modulating_factor * alpha_weight_factor *
+                                per_entry_cross_ent)
+
+    if use_scale_factor:
+        area = target_boxes[:, 2] * target_boxes[:, 3]
+        area = tf.reshape(area, [-1, 1])
+        scale_factor = tf.stop_gradient(tf.exp(-1 * area) + 1)
+    else:
+        scale_factor = 1.0
+
+    # compute the normalizer: the number of positive anchors
+    normalizer = tf.stop_gradient(tf.where(tf.equal(anchor_state, 1)))
+    normalizer = tf.cast(tf.shape(normalizer)[0], tf.float32)
+    normalizer = tf.maximum(1.0, normalizer)
+
+    # normalizer = tf.stop_gradient(tf.cast(tf.equal(anchor_state, 1), tf.float32))
+    # normalizer = tf.maximum(tf.reduce_sum(normalizer), 1)
+
+    return tf.reduce_sum(focal_cross_entropy_loss * scale_factor) / normalizer

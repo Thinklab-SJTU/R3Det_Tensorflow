@@ -154,6 +154,7 @@ __device__ inline bool inrect(float pt_x, float pt_y, float * pts) {
   adad = ad[0] * ad[0] + ad[1] * ad[1];
   adap = ad[0] * ap[0] + ad[1] * ap[1];
   bool result = (abab - abap >=  -1) and (abap >= -1) and (adad - adap >= -1) and (adap >= -1);
+  // bool result = (abab >= abap) and (abap >= 0) and (adad >= adap) and (adap >= 0);
   return result;
 }
 

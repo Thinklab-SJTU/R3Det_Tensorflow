@@ -93,14 +93,58 @@ def iou_rotate_calculate2(boxes1, boxes2):
     return np.array(ious, dtype=np.float32)
 
 
+def diou_rotate_calculate(boxes1, boxes2):
+
+    if boxes1.shape[0] != 0:
+        area1 = boxes1[:, 2] * boxes1[:, 3]
+        area2 = boxes2[:, 2] * boxes2[:, 3]
+        d = (boxes1[:, 0] - boxes2[:, 0]) ** 2 + (boxes1[:, 1] - boxes2[:, 1])
+
+        boxes1_ = forward_convert(boxes1, with_label=False)
+        boxes2_ = forward_convert(boxes2, with_label=False)
+
+        xmin = np.minimum(np.min(boxes1_[:, 0::2]), np.min(boxes2_[:, 0::2]))
+        xmax = np.maximum(np.max(boxes1_[:, 0::2]), np.max(boxes2_[:, 0::2]))
+        ymin = np.minimum(np.min(boxes1_[:, 1::2]), np.min(boxes2_[:, 1::2]))
+        ymax = np.maximum(np.max(boxes1_[:, 1::2]), np.max(boxes2_[:, 1::2]))
+
+        c = (xmax - xmin) ** 2 + (ymax - ymin) ** 2
+        ious = []
+        for i in range(boxes1.shape[0]):
+            r1 = ((boxes1[i][0], boxes1[i][1]), (boxes1[i][2], boxes1[i][3]), boxes1[i][4])
+            r2 = ((boxes2[i][0], boxes2[i][1]), (boxes2[i][2], boxes2[i][3]), boxes2[i][4])
+
+            int_pts = cv2.rotatedRectangleIntersection(r1, r2)[1]
+            if int_pts is not None:
+                order_pts = cv2.convexHull(int_pts, returnPoints=True)
+
+                int_area = cv2.contourArea(order_pts)
+
+                iou = int_area * 1.0 / (area1[i] + area2[i] - int_area)
+            else:
+                iou = 0.0
+
+            ious.append(iou)
+        ious = np.array(ious)
+
+        dious = ious - d / c
+    else:
+        dious = []
+
+    return np.reshape(np.array(dious, dtype=np.float32), [-1, 1])
+
+
 if __name__ == '__main__':
     import os
     # os.environ["CUDA_VISIBLE_DEVICES"] = '13'
-    boxes1 = np.array([[50, 50, 10, 70, -45]], np.float32)
+    boxes1 = np.array([[50, 50, 10, 70, -45],
+                       [150, 150, 10, 70, -50]], np.float32)
 
-    boxes2 = np.array([[50, 50, 10, 70, -50]], np.float32)
+    boxes2 = np.array([[150, 150, 10, 70, -50],
+                       [150, 150, 10, 70, -50]], np.float32)
 
     print(iou_rotate_calculate2(boxes1, boxes2))
+    print(diou_rotate_calculate(boxes1, boxes2))
 
     # start = time.time()
     # with tf.Session() as sess:
