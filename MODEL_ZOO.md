@@ -75,6 +75,11 @@
 | [AdvProp](https://arxiv.org/abs/1911.09665) + AA |  |   |  |  |  |  |  |  | || | |
 | [NoisyStudent](https://arxiv.org/abs/1911.04252) + RA | 62.02 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_noisy-student-efficientnet-b0_dota_r3det_v15.py)) |  |  |  | |  |  | 67.44 ([cfgs](./libs/configs/DOTA1.0/r3det/cfgs_noisy-student-efficientnet-b7_dota_r3det_v22.py)) |  | |  | 
 
+### CSL
+| Model |    Backbone    |    Training data    |    Val data    |    mAP   | Model Link | InLD | Anchor | Label Mode | Raduius/Sigma | Reg. Loss| Angle Range | lr schd | Data Augmentation | GPU | Image/GPU | Configs |      
+|:------------:|:------------:|:------------:|:---------:|:-----------:|:----------:|:-----------:|:-----------:|:-----------:|:-----------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:---------:|:---------:|    
+| [R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 64.88 | - | - | H + R | Gaussian | 6 | smooth L1 | 90 | 2x | No | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_csl_v2.py](./libs/configs/DOTA1.0/csl/cfgs_res50_dota_r3det_csl_v2.py) |
+
 
 [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612): R<sup>3</sup>Det with two refinement stages      
 **Some model results are slightly higher than in the paper due to retraining.**

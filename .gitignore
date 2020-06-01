@@ -121,9 +121,9 @@ __pycache__/
 *.tfrecord*
 *plusplus_.py*
 *flops_param*
-*_csl*
 *r3det_loss**
 *refine_feature_multi_stage*
+*mining_loss*
 
 tools/demos/*
 tools/test_dota/*
