@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import time
 import tensorflow as tf
+import math
 from libs.box_utils.coordinate_convert import *
 from libs.box_utils.rbbox_overlaps import rbbx_overlaps
 from libs.box_utils.iou_cpu import get_iou_matrix
@@ -134,17 +135,68 @@ def diou_rotate_calculate(boxes1, boxes2):
     return np.reshape(np.array(dious, dtype=np.float32), [-1, 1])
 
 
+def adiou_rotate_calculate(boxes1, boxes2):
+
+    if boxes1.shape[0] != 0:
+        area1 = boxes1[:, 2] * boxes1[:, 3]
+        area2 = boxes2[:, 2] * boxes2[:, 3]
+        d = (boxes1[:, 0] - boxes2[:, 0]) ** 2 + (boxes1[:, 1] - boxes2[:, 1])
+
+        boxes1_ = forward_convert(boxes1, with_label=False)
+        boxes2_ = forward_convert(boxes2, with_label=False)
+
+        xmin = np.minimum(np.min(boxes1_[:, 0::2]), np.min(boxes2_[:, 0::2]))
+        xmax = np.maximum(np.max(boxes1_[:, 0::2]), np.max(boxes2_[:, 0::2]))
+        ymin = np.minimum(np.min(boxes1_[:, 1::2]), np.min(boxes2_[:, 1::2]))
+        ymax = np.maximum(np.max(boxes1_[:, 1::2]), np.max(boxes2_[:, 1::2]))
+
+        c = (xmax - xmin) ** 2 + (ymax - ymin) ** 2
+
+        # v = (4 / (math.pi ** 2)) * (np.arctan(boxes1[:, 2]/boxes1[:, 3]) - np.arctan(boxes2[:, 2]/boxes2[:, 3])) ** 2
+
+        ious = []
+        for i in range(boxes1.shape[0]):
+            r1 = ((boxes1[i][0], boxes1[i][1]), (boxes1[i][2], boxes1[i][3]), boxes1[i][4])
+            r2 = ((boxes2[i][0], boxes2[i][1]), (boxes2[i][2], boxes2[i][3]), boxes2[i][4])
+
+            int_pts = cv2.rotatedRectangleIntersection(r1, r2)[1]
+            if int_pts is not None:
+                order_pts = cv2.convexHull(int_pts, returnPoints=True)
+
+                int_area = cv2.contourArea(order_pts)
+
+                iou = int_area * 1.0 / (area1[i] + area2[i] - int_area)
+            else:
+                iou = 0.0
+
+            ious.append(iou)
+        ious = np.array(ious)
+
+        # S = 1 - ious
+        # alpha = v / (S + v)
+        # w_temp = 2 * boxes1[:, 2]
+        # ar = (8 / (math.pi ** 2)) * (np.arctan(boxes1[:, 2]/boxes1[:, 3]) - np.arctan(boxes2[:, 2]/boxes2[:, 3])) \
+        #      * ((boxes1[:, 2] - w_temp) * boxes1[:, 3])
+        # cious = ious - d / c - alpha * ar
+        cious = (ious - d / c) * np.abs(np.cos(boxes1[:, 4] - boxes2[:, 4]))
+    else:
+        cious = []
+
+    return np.reshape(np.array(cious, dtype=np.float32), [-1, 1])
+
+
 if __name__ == '__main__':
     import os
     # os.environ["CUDA_VISIBLE_DEVICES"] = '13'
     boxes1 = np.array([[50, 50, 10, 70, -45],
-                       [150, 150, 10, 70, -50]], np.float32)
+                       [150, 150, 10, 50, -50]], np.float32)
 
     boxes2 = np.array([[150, 150, 10, 70, -50],
                        [150, 150, 10, 70, -50]], np.float32)
 
     print(iou_rotate_calculate2(boxes1, boxes2))
     print(diou_rotate_calculate(boxes1, boxes2))
+    print(adiou_rotate_calculate(boxes1, boxes2))
 
     # start = time.time()
     # with tf.Session() as sess:

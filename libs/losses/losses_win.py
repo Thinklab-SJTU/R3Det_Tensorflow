@@ -4,29 +4,37 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+import numpy as np
+import cv2
 
 from libs.box_utils import bbox_transform
-from libs.box_utils.iou_rotate import iou_rotate_calculate2, diou_rotate_calculate, adiou_rotate_calculate
 from libs.configs import cfgs
 
 
-def focal_loss_(labels, pred, anchor_state, alpha=0.25, gamma=2.0):
+def iou_rotate_calculate2(boxes1, boxes2):
+    ious = []
+    if boxes1.shape[0] != 0:
+        area1 = boxes1[:, 2] * boxes1[:, 3]
+        area2 = boxes2[:, 2] * boxes2[:, 3]
 
-    # filter out "ignore" anchors
-    indices = tf.reshape(tf.where(tf.not_equal(anchor_state, -1)), [-1, ])
-    labels = tf.gather(labels, indices)
-    pred = tf.gather(pred, indices)
+        for i in range(boxes1.shape[0]):
+            temp_ious = []
+            r1 = ((boxes1[i][0], boxes1[i][1]), (boxes1[i][2], boxes1[i][3]), boxes1[i][4])
+            r2 = ((boxes2[i][0], boxes2[i][1]), (boxes2[i][2], boxes2[i][3]), boxes2[i][4])
 
-    logits = tf.cast(pred, tf.float32)
-    onehot_labels = tf.cast(labels, tf.float32)
-    ce = tf.nn.sigmoid_cross_entropy_with_logits(labels=onehot_labels, logits=logits)
-    predictions = tf.sigmoid(logits)
-    predictions_pt = tf.where(tf.equal(onehot_labels, 1), predictions, 1.-predictions)
-    alpha_t = tf.scalar_mul(alpha, tf.ones_like(onehot_labels, dtype=tf.float32))
-    alpha_t = tf.where(tf.equal(onehot_labels, 1.0), alpha_t, 1-alpha_t)
-    loss = ce * tf.pow(1-predictions_pt, gamma) * alpha_t
-    positive_mask = tf.cast(tf.greater(labels, 0), tf.float32)
-    return tf.reduce_sum(loss) / tf.maximum(tf.reduce_sum(positive_mask), 1)
+            int_pts = cv2.rotatedRectangleIntersection(r1, r2)[1]
+            if int_pts is not None:
+                order_pts = cv2.convexHull(int_pts, returnPoints=True)
+
+                int_area = cv2.contourArea(order_pts)
+
+                inter = int_area * 1.0 / (area1[i] + area2[i] - int_area)
+                temp_ious.append(inter)
+            else:
+                temp_ious.append(0.0)
+            ious.append(temp_ious)
+
+    return np.array(ious, dtype=np.float32)
 
 
 def focal_loss(labels, pred, anchor_state, alpha=0.25, gamma=2.0):
@@ -268,108 +276,6 @@ def iou_smooth_l1_loss_(targets, preds, anchor_state, target_boxes, anchors, sig
     regression_loss = tf.reshape(tf.reduce_sum(regression_loss, axis=1), [-1, 1])
     # 1-exp(1-x)
     iou_factor = tf.stop_gradient(tf.exp(alpha*(1-overlaps)**beta)-1) / (tf.stop_gradient(regression_loss) + cfgs.EPSILON)
-    # iou_factor = tf.Print(iou_factor, [iou_factor], 'iou_factor', summarize=50)
-
-    normalizer = tf.stop_gradient(tf.where(tf.equal(anchor_state, 1)))
-    normalizer = tf.cast(tf.shape(normalizer)[0], tf.float32)
-    normalizer = tf.maximum(1.0, normalizer)
-
-    # normalizer = tf.stop_gradient(tf.cast(tf.equal(anchor_state, 1), tf.float32))
-    # normalizer = tf.maximum(tf.reduce_sum(normalizer), 1)
-
-    return tf.reduce_sum(regression_loss * iou_factor) / normalizer
-
-
-def diou_smooth_l1_loss(targets, preds, anchor_state, target_boxes, anchors, sigma=3.0, is_refine=False):
-    if cfgs.METHOD == 'H' and not is_refine:
-        x_c = (anchors[:, 2] + anchors[:, 0]) / 2
-        y_c = (anchors[:, 3] + anchors[:, 1]) / 2
-        h = anchors[:, 2] - anchors[:, 0] + 1
-        w = anchors[:, 3] - anchors[:, 1] + 1
-        theta = -90 * tf.ones_like(x_c)
-        anchors = tf.transpose(tf.stack([x_c, y_c, w, h, theta]))
-
-    sigma_squared = sigma ** 2
-    indices = tf.reshape(tf.where(tf.equal(anchor_state, 1)), [-1, ])
-
-    preds = tf.gather(preds, indices)
-    targets = tf.gather(targets, indices)
-    target_boxes = tf.gather(target_boxes, indices)
-    anchors = tf.gather(anchors, indices)
-
-    boxes_pred = bbox_transform.rbbox_transform_inv(boxes=anchors, deltas=preds,
-                                                    scale_factors=cfgs.ANCHOR_SCALE_FACTORS)
-
-    # compute smooth L1 loss
-    # f(x) = 0.5 * (sigma * x)^2          if |x| < 1 / sigma / sigma
-    #        |x| - 0.5 / sigma / sigma    otherwise
-    regression_diff = preds - targets
-    regression_diff = tf.abs(regression_diff)
-    regression_loss = tf.where(
-        tf.less(regression_diff, 1.0 / sigma_squared),
-        0.5 * sigma_squared * tf.pow(regression_diff, 2),
-        regression_diff - 0.5 / sigma_squared
-    )
-
-    overlaps = tf.py_func(diou_rotate_calculate,
-                          inp=[tf.reshape(boxes_pred, [-1, 5]), tf.reshape(target_boxes[:, :-1], [-1, 5])],
-                          Tout=[tf.float32])
-
-    overlaps = tf.reshape(overlaps, [-1, 1])
-    regression_loss = tf.reshape(tf.reduce_sum(regression_loss, axis=1), [-1, 1])
-    # 1-exp(1-x)
-    iou_factor = tf.stop_gradient(tf.exp(1-overlaps)-1) / (tf.stop_gradient(regression_loss) + cfgs.EPSILON)
-    # iou_factor = tf.Print(iou_factor, [iou_factor], 'iou_factor', summarize=50)
-
-    normalizer = tf.stop_gradient(tf.where(tf.equal(anchor_state, 1)))
-    normalizer = tf.cast(tf.shape(normalizer)[0], tf.float32)
-    normalizer = tf.maximum(1.0, normalizer)
-
-    # normalizer = tf.stop_gradient(tf.cast(tf.equal(anchor_state, 1), tf.float32))
-    # normalizer = tf.maximum(tf.reduce_sum(normalizer), 1)
-
-    return tf.reduce_sum(regression_loss * iou_factor) / normalizer
-
-
-def adiou_smooth_l1_loss(targets, preds, anchor_state, target_boxes, anchors, sigma=3.0, is_refine=False):
-    if cfgs.METHOD == 'H' and not is_refine:
-        x_c = (anchors[:, 2] + anchors[:, 0]) / 2
-        y_c = (anchors[:, 3] + anchors[:, 1]) / 2
-        h = anchors[:, 2] - anchors[:, 0] + 1
-        w = anchors[:, 3] - anchors[:, 1] + 1
-        theta = -90 * tf.ones_like(x_c)
-        anchors = tf.transpose(tf.stack([x_c, y_c, w, h, theta]))
-
-    sigma_squared = sigma ** 2
-    indices = tf.reshape(tf.where(tf.equal(anchor_state, 1)), [-1, ])
-
-    preds = tf.gather(preds, indices)
-    targets = tf.gather(targets, indices)
-    target_boxes = tf.gather(target_boxes, indices)
-    anchors = tf.gather(anchors, indices)
-
-    boxes_pred = bbox_transform.rbbox_transform_inv(boxes=anchors, deltas=preds,
-                                                    scale_factors=cfgs.ANCHOR_SCALE_FACTORS)
-
-    # compute smooth L1 loss
-    # f(x) = 0.5 * (sigma * x)^2          if |x| < 1 / sigma / sigma
-    #        |x| - 0.5 / sigma / sigma    otherwise
-    regression_diff = preds - targets
-    regression_diff = tf.abs(regression_diff)
-    regression_loss = tf.where(
-        tf.less(regression_diff, 1.0 / sigma_squared),
-        0.5 * sigma_squared * tf.pow(regression_diff, 2),
-        regression_diff - 0.5 / sigma_squared
-    )
-
-    overlaps = tf.py_func(adiou_rotate_calculate,
-                          inp=[tf.reshape(boxes_pred, [-1, 5]), tf.reshape(target_boxes[:, :-1], [-1, 5])],
-                          Tout=[tf.float32])
-
-    overlaps = tf.reshape(overlaps, [-1, 1])
-    regression_loss = tf.reshape(tf.reduce_sum(regression_loss, axis=1), [-1, 1])
-    # 1-exp(1-x)
-    iou_factor = tf.stop_gradient(tf.exp(1-overlaps)-1) / (tf.stop_gradient(regression_loss) + cfgs.EPSILON)
     # iou_factor = tf.Print(iou_factor, [iou_factor], 'iou_factor', summarize=50)
 
     normalizer = tf.stop_gradient(tf.where(tf.equal(anchor_state, 1)))

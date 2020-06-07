@@ -124,6 +124,8 @@ __pycache__/
 *r3det_loss**
 *refine_feature_multi_stage*
 *mining_loss*
+*ablation_study*
+*tmp.py*
 
 tools/demos/*
 tools/test_dota/*
