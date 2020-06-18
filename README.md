@@ -10,6 +10,7 @@ Techniques:
 - [x] [IoU-Smooth L1 Loss](https://arxiv.org/abs/1811.07126)
 - [x] [Circular Smooth Label (CSL)](https://arxiv.org/abs/2003.05597)
 - [x] Anchor Free (one anchor per feature point)
+- [x] [mmdetection version](https://github.com/SJTU-Thinklab-Det/r3det-on-mmdetection) is released
 
 ## Pipeline
 ![5](pipeline.png)
