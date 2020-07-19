@@ -5,39 +5,40 @@ import tensorflow as tf
 import math
 
 """
-v2 + less anchor
+RetinaNet-H + improved iou smooth l1 loss (beta=1)
+
 This is your result for task 1:
 
-    mAP: 0.6710988053029553
+    mAP: 0.6533970916133431
     ap of each class:
-    plane:0.8794665560865303,
-    baseball-diamond:0.732530568626708,
-    bridge:0.4516388309809375,
-    ground-track-field:0.6663921484733175,
-    small-vehicle:0.653023100259904,
-    large-vehicle:0.7147901635635758,
-    ship:0.6971152392617997,
-    tennis-court:0.9068598197326132,
-    basketball-court:0.7897695625020531,
-    storage-tank:0.8223151646132263,
-    soccer-ball-field:0.549850031158259,
-    roundabout:0.6134846359014985,
-    harbor:0.557324432201045,
-    swimming-pool:0.5969762209759844,
-    helicopter:0.43494560520687725
+    plane:0.8851403450372617,
+    baseball-diamond:0.742104868499588,
+    bridge:0.4207057736284913,
+    ground-track-field:0.6399931822029218,
+    small-vehicle:0.621373246663994,
+    large-vehicle:0.5385385213009214,
+    ship:0.6649625122309968,
+    tennis-court:0.9073705332688816,
+    basketball-court:0.7975447803222874,
+    storage-tank:0.7674864141838417,
+    soccer-ball-field:0.5220271824080125,
+    roundabout:0.6230327401739996,
+    harbor:0.5438595993014377,
+    swimming-pool:0.6602992485628831,
+    helicopter:0.46651742641462857
 
 The submitted information is :
 
-Description: RetinaNet_DOTA_R3Det_2x_20200307_108ww
-Username: yangxue
-Institute: DetectionTeamUCAS
-Emailadress: yangxue16@mails.ucas.ac.cn
-TeamMembers: yangxue, yangjirui
+Description: RetinaNet_DOTA_2x_20200618_70.2w
+Username: SJTU-Det
+Institute: SJTU
+Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
+TeamMembers: yangxue
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_2x_20200307'
+VERSION = 'RetinaNet_DOTA_2x_20200618'
 NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -75,8 +76,10 @@ MUTILPY_BIAS_GRADIENT = 2.0  # if None, will not multipy
 GRADIENT_CLIPPING_BY_NORM = 10.0  # if None, will not clip
 
 CLS_WEIGHT = 1.0
-REG_WEIGHT = 1.0
-USE_IOU_FACTOR = False
+REG_WEIGHT = 1.0 / 5.0
+REG_LOSS_MODE = 2
+ALPHA = 1.0
+BETA = 1.0
 
 BATCH_SIZE = 1
 EPSILON = 1e-5
@@ -108,9 +111,6 @@ PROBABILITY = 0.01
 FINAL_CONV_BIAS_INITIALIZER = tf.constant_initializer(value=-math.log((1.0 - PROBABILITY) / PROBABILITY))
 WEIGHT_DECAY = 1e-4
 USE_GN = False
-NUM_SUBNET_CONV = 4
-NUM_REFINE_STAGE = 2
-USE_RELU = False
 FPN_CHANNEL = 256
 
 # ---------------------------------------------Anchor config
@@ -118,21 +118,19 @@ LEVEL = ['P3', 'P4', 'P5', 'P6', 'P7']
 BASE_ANCHOR_SIZE_LIST = [32, 64, 128, 256, 512]
 ANCHOR_STRIDE = [8, 16, 32, 64, 128]
 ANCHOR_SCALES = [2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)]
-ANCHOR_RATIOS = [1.]
+ANCHOR_RATIOS = [1, 1 / 2, 2., 1 / 3., 3., 5., 1 / 5.]
 ANCHOR_ANGLES = [-90, -75, -60, -45, -30, -15]
 ANCHOR_SCALE_FACTORS = None
 USE_CENTER_OFFSET = True
 METHOD = 'H'
 USE_ANGLE_COND = False
-ANGLE_RANGE = 90
+ANGLE_RANGE = 90  # or 180
 
 # --------------------------------------------RPN config
 SHARE_NET = True
 USE_P5 = True
-IOU_POSITIVE_THRESHOLD = 0.35
-IOU_NEGATIVE_THRESHOLD = 0.25
-REFINE_IOU_POSITIVE_THRESHOLD = [0.5, 0.6]
-REFINE_IOU_NEGATIVE_THRESHOLD = [0.4, 0.5]
+IOU_POSITIVE_THRESHOLD = 0.5
+IOU_NEGATIVE_THRESHOLD = 0.4
 
 NMS = True
 NMS_IOU_THRESHOLD = 0.1
@@ -140,13 +138,4 @@ MAXIMUM_DETECTIONS = 100
 FILTERED_SCORE = 0.05
 VIS_SCORE = 0.4
 
-# --------------------------------------------MASK config
-USE_SUPERVISED_MASK = False
-MASK_TYPE = 'r'  # r or h
-BINARY_MASK = False
-SIGMOID_ON_DOT = False
-MASK_ACT_FET = True  # weather use mask generate 256 channels to dot feat.
-GENERATE_MASK_LIST = ["P3", "P4", "P5", "P6", "P7"]
-ADDITION_LAYERS = [4, 4, 3, 2, 2]  # add 4 layer to generate P2_mask, 2 layer to generate P3_mask
-ENLAEGE_RF_LIST = ["P3", "P4", "P5", "P6", "P7"]
-SUPERVISED_MASK_LOSS_WEIGHT = 1.0
+

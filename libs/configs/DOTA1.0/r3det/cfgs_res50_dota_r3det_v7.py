@@ -5,7 +5,7 @@ import tensorflow as tf
 import math
 
 """
-v4 + anchor free
+v2 + anchor free
 
 This is your result for task 1:
 

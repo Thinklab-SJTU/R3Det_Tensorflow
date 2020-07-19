@@ -77,10 +77,10 @@ if __name__ == '__main__':
     # smooth_label = angle_smooth_label(angle_label)
 
     # y_sig = triangle_label(30, 180, raduius=8)
-    y_sig = gaussian_label(30, 180, sig=0.1)
+    # y_sig = gaussian_label(30, 180, sig=0.1)
     # y_sig = pulse_label(30, 180)
-    # y_sig = triangle_label(0, 90)
-    x = np.array(range(0, 180, 1))
+    y_sig = triangle_label(0, 90)
+    x = np.array(range(0, 90, 1))
     plt.plot(x, y_sig, "r-", linewidth=2)
     plt.grid(True)
     plt.show()

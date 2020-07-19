@@ -16,6 +16,7 @@ from libs.detection_oprations.refine_proposal_opr import postprocess_detctions
 from libs.detection_oprations.anchor_target_layer_without_boxweight import anchor_target_layer
 from libs.detection_oprations.refinebox_target_layer_without_boxweight import refinebox_target_layer
 from libs.box_utils import bbox_transform
+from libs.box_utils.coordinate_convert import coordinate5_2_8_tf
 
 
 class DetectionNetwork(object):
@@ -319,7 +320,6 @@ class DetectionNetwork(object):
                 cls_loss = losses.focal_loss(labels, rpn_cls_score, anchor_states)
                 if cfgs.USE_IOU_FACTOR:
                     reg_loss = losses.iou_smooth_l1_loss_(target_delta, rpn_box_pred, anchor_states, target_boxes, anchors)
-                    # reg_loss = losses.adiou_smooth_l1_loss(target_delta, rpn_box_pred, anchor_states, target_boxes, anchors)
                 else:
                     reg_loss = losses.smooth_l1_loss(target_delta, rpn_box_pred, anchor_states)
 
@@ -536,6 +536,74 @@ class DetectionNetwork(object):
 
         return refine_feature + feature
 
+    def refine_feature_five_op(self, points, feature_map, name):
+
+        h, w = tf.cast(tf.shape(feature_map)[1], tf.int32), tf.cast(tf.shape(feature_map)[2], tf.int32)
+
+        feature_1x5 = slim.conv2d(inputs=feature_map,
+                                  num_outputs=cfgs.FPN_CHANNEL,
+                                  kernel_size=[1, 5],
+                                  weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
+                                  biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
+                                  stride=1,
+                                  activation_fn=None,
+                                  scope='refine_1x5_{}'.format(name))
+
+        feature5x1 = slim.conv2d(inputs=feature_1x5,
+                                 num_outputs=cfgs.FPN_CHANNEL,
+                                 kernel_size=[5, 1],
+                                 weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
+                                 biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
+                                 stride=1,
+                                 activation_fn=None,
+                                 scope='refine_5x1_{}'.format(name))
+
+        feature_1x1 = slim.conv2d(inputs=feature_map,
+                                  num_outputs=cfgs.FPN_CHANNEL,
+                                  kernel_size=[1, 1],
+                                  weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
+                                  biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
+                                  stride=1,
+                                  activation_fn=None,
+                                  scope='refine_1x1_{}'.format(name))
+
+        feature = feature5x1 + feature_1x1
+
+        for i in range(5):
+            xmin = tf.maximum(0.0, tf.floor(points[:, 0+2*(i-1)]))
+            ymin = tf.maximum(0.0, tf.floor(points[:, 1+2*(i-1)]))
+            xmax = tf.minimum(tf.cast(w - 1, tf.float32), tf.ceil(points[:, 0+2*(i-1)]))
+            ymax = tf.minimum(tf.cast(h - 1, tf.float32), tf.ceil(points[:, 1+2*(i-1)]))
+
+            left_top = tf.cast(tf.transpose(tf.stack([xmin, ymin], axis=0)), tf.int32)
+            right_bottom = tf.cast(tf.transpose(tf.stack([xmax, ymax], axis=0)), tf.int32)
+            left_bottom = tf.cast(tf.transpose(tf.stack([xmin, ymax], axis=0)), tf.int32)
+            right_top = tf.cast(tf.transpose(tf.stack([xmax, ymin], axis=0)), tf.int32)
+
+            left_top_feature = tf.gather_nd(tf.squeeze(feature), left_top)
+            right_bottom_feature = tf.gather_nd(tf.squeeze(feature), right_bottom)
+            left_bottom_feature = tf.gather_nd(tf.squeeze(feature), left_bottom)
+            right_top_feature = tf.gather_nd(tf.squeeze(feature), right_top)
+
+            refine_feature = right_bottom_feature * tf.tile(
+                tf.reshape((tf.abs((points[:, 0+2*(i-1)] - xmin) * (points[:, 1+2*(i-1)] - ymin))), [-1, 1]),
+                [1, cfgs.FPN_CHANNEL]) \
+                             + left_top_feature * tf.tile(
+                tf.reshape((tf.abs((xmax - points[:, 0+2*(i-1)]) * (ymax - points[:, 1+2*(i-1)]))), [-1, 1]),
+                [1, cfgs.FPN_CHANNEL]) \
+                             + right_top_feature * tf.tile(
+                tf.reshape((tf.abs((points[:, 0+2*(i-1)] - xmin) * (ymax - points[:, 1+2*(i-1)]))), [-1, 1]),
+                [1, cfgs.FPN_CHANNEL]) \
+                             + left_bottom_feature * tf.tile(
+                tf.reshape((tf.abs((xmax - points[:, 0+2*(i-1)]) * (points[:, 1+2*(i-1)] - ymin))), [-1, 1]),
+                [1, cfgs.FPN_CHANNEL])
+
+            refine_feature = tf.reshape(refine_feature, [1, tf.cast(h, tf.int32), tf.cast(w, tf.int32), cfgs.FPN_CHANNEL])
+
+            feature += refine_feature
+
+        return feature
+
     def refine_stage(self, input_img_batch, gtboxes_batch_r, box_pred_list, cls_prob_list, proposal_list,
                      feature_pyramid, gpu_id, pos_threshold, neg_threshold,
                      stage, proposal_filter=False):
@@ -573,11 +641,15 @@ class DetectionNetwork(object):
 
                 bboxes = bbox_transform.rbbox_transform_inv(boxes=proposal, deltas=box_pred)
                 refine_boxes_list.append(bboxes)
-                center_point = bboxes[:, :2] / stride
 
+                center_point = bboxes[:, :2] / stride
                 refine_feature_pyramid[level] = self.refine_feature_op(points=center_point,
                                                                        feature_map=feature_pyramid[level],
                                                                        name=level)
+                # points = coordinate5_2_8_tf(bboxes) / stride
+                # refine_feature_pyramid[level] = self.refine_feature_five_op(points=points,
+                #                                                             feature_map=feature_pyramid[level],
+                #                                                             name=level)
 
             refine_box_pred_list, refine_cls_score_list, refine_cls_prob_list = self.refine_net(refine_feature_pyramid,
                                                                                                 'refine_net{}'.format(stage))
@@ -602,9 +674,6 @@ class DetectionNetwork(object):
                     refine_reg_loss = losses.iou_smooth_l1_loss_(refine_target_delta, refine_box_pred,
                                                                  refine_box_states, refine_target_boxes,
                                                                  refine_boxes, is_refine=True)
-                    # refine_reg_loss = losses.adiou_smooth_l1_loss(refine_target_delta, refine_box_pred,
-                    #                                               refine_box_states, refine_target_boxes,
-                    #                                               refine_boxes, is_refine=True)
                 else:
                     refine_reg_loss = losses.smooth_l1_loss(refine_target_delta, refine_box_pred, refine_box_states)
 

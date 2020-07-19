@@ -7,6 +7,7 @@ from __future__ import print_function
 import time
 import tensorflow as tf
 import math
+from help_utils.gaussian_wasserstein_distance import get_element1, get_element4
 from libs.box_utils.coordinate_convert import *
 from libs.box_utils.rbbox_overlaps import rbbx_overlaps
 from libs.box_utils.iou_cpu import get_iou_matrix
@@ -71,6 +72,11 @@ def iou_rotate_calculate1(boxes1, boxes2, use_gpu=True, gpu_id=0):
 def iou_rotate_calculate2(boxes1, boxes2):
     ious = []
     if boxes1.shape[0] != 0:
+        boxes1[:, 2] += 1.0
+        boxes1[:, 3] += 1.0
+        boxes2[:, 2] += 1.0
+        boxes2[:, 3] += 1.0
+
         area1 = boxes1[:, 2] * boxes1[:, 3]
         area2 = boxes2[:, 2] * boxes2[:, 3]
 
@@ -85,7 +91,8 @@ def iou_rotate_calculate2(boxes1, boxes2):
 
                 int_area = cv2.contourArea(order_pts)
 
-                inter = int_area * 1.0 / (area1[i] + area2[i] - int_area)
+                inter = int_area * 1.0 / (area1[i] + area2[i] - int_area + 1.0)
+
                 temp_ious.append(inter)
             else:
                 temp_ious.append(0.0)
@@ -185,32 +192,68 @@ def adiou_rotate_calculate(boxes1, boxes2):
     return np.reshape(np.array(cious, dtype=np.float32), [-1, 1])
 
 
+def gaussian_wasserstein_distance_(boxes1, boxes2):
+    boxes1 = coordinate_present_convert(boxes1, -1)
+    boxes1[:, 4] += 90
+    boxes1[:, 4] *= (-np.pi / 180)
+
+    boxes2 = coordinate_present_convert(boxes2, -1)
+    boxes2[:, 4] += 90
+    boxes2[:, 4] *= (-np.pi / 180)
+
+    dis = (boxes1[:, 0] - boxes2[:, 0])**2 + (boxes1[:, 1] - boxes2[:, 1])**2 + \
+          ((boxes1[:, 2] / 2 * np.cos(boxes1[:, 4])**2 + boxes1[:, 3] / 2 * np.sin(boxes1[:, 4])**2) - (boxes2[:, 2] / 2 * np.cos(boxes2[:, 4])**2 + boxes2[:, 3] / 2 * np.sin(boxes2[:, 4])**2))**2 + \
+          2*((boxes1[:, 2] / 2 * np.cos(boxes1[:, 4])* np.sin(boxes1[:, 4] - boxes1[:, 3] / 2 * np.cos(boxes1[:, 4]) * np.sin(boxes1[:, 4]))) - (boxes2[:, 2] / 2 * np.cos(boxes2[:, 4]) * np.sin(boxes2[:, 4] - boxes2[:, 3] / 2 * np.cos(boxes2[:, 4]) * np.sin(boxes2[:, 4]))))**2 + \
+          ((boxes1[:, 2] / 2 * np.sin(boxes1[:, 4]) ** 2 + boxes1[:, 3] / 2 * np.cos(boxes1[:, 4]) ** 2) - (
+          boxes2[:, 2] / 2 * np.sin(boxes2[:, 4]) ** 2 + boxes2[:, 3] / 2 * np.cos(boxes2[:, 4]) ** 2)) ** 2
+    return dis
+
+
+def gaussian_wasserstein_distance(boxes1, boxes2):
+    boxes1 = coordinate_present_convert(boxes1, -1)
+    boxes1[:, 4] += 90
+    boxes1[:, 4] *= (-np.pi / 180)
+
+    boxes2 = coordinate_present_convert(boxes2, -1)
+    boxes2[:, 4] += 90
+    boxes2[:, 4] *= (-np.pi / 180)
+
+    element1 = get_element1(boxes1[:, 2], boxes1[:, 3], boxes1[:, 4], boxes2[:, 2], boxes2[:, 3], boxes2[:, 4])
+    element4 = get_element4(boxes1[:, 2], boxes1[:, 3], boxes1[:, 4], boxes2[:, 2], boxes2[:, 3], boxes2[:, 4])
+    dis = (boxes1[:, 0] - boxes2[:, 0])**2 + (boxes1[:, 1] - boxes2[:, 1])**2 + (element1 + element4)
+    return dis
+
 if __name__ == '__main__':
-    import os
-    # os.environ["CUDA_VISIBLE_DEVICES"] = '13'
-    boxes1 = np.array([[50, 50, 10, 70, -45],
-                       [150, 150, 10, 50, -50]], np.float32)
+    boxes1 = np.array([
+                       [50, 50, 10, 70, -45],
+                       [50, 50, 10, 70, -45],
+                       [50, 50, 10, 70, -45],
+                       [50, 50, 10, 70, -45],
+                       [50, 50, 10, 70, -45],
+                       [50, 50, 10, 70, -45],
+                       [50, 50, 10, 70, -45]
+                       ], np.float32)
 
-    boxes2 = np.array([[150, 150, 10, 70, -50],
-                       [150, 150, 10, 70, -50]], np.float32)
+    boxes2 = np.array([
+                       [350, 350, 10, 70, -65],
+                       [250, 250, 10, 70, -45],
+                       [50, 40, 20, 65, -40],
+                       [50, 40, 20, 65, -41],
+                       [50, 50, 10, 70, -25],
+                       [50, 50, 10, 70, -15],
+                       [50, 50, 10, 70, -5]], np.float32)
 
-    print(iou_rotate_calculate2(boxes1, boxes2))
-    print(diou_rotate_calculate(boxes1, boxes2))
-    print(adiou_rotate_calculate(boxes1, boxes2))
+    print(iou_rotate_calculate2(boxes1, boxes2).reshape(-1,))
+    print(iou_rotate_calculate2(coordinate_present_convert(boxes1, mode=-1), coordinate_present_convert(boxes2, mode=-1)).reshape(-1,))
+    print(diou_rotate_calculate(boxes1, boxes2).reshape(-1,))
+    print(gaussian_wasserstein_distance(boxes1, boxes2))
+    print(gaussian_wasserstein_distance_(boxes1, boxes2))
 
-    # start = time.time()
-    # with tf.Session() as sess:
-    #     ious = iou_rotate_calculate1(boxes1, boxes2, use_gpu=False)
-    #     print(sess.run(ious))
-    #     print('{}s'.format(time.time() - start))
+    print(np.argsort(iou_rotate_calculate2(boxes1, boxes2).reshape(-1, )*-1))
+    print(np.argsort(diou_rotate_calculate(boxes1, boxes2).reshape(-1, )*-1))
+    print(np.argsort(np.array(gaussian_wasserstein_distance(boxes1, boxes2))))
+    print(np.argsort(np.array(gaussian_wasserstein_distance_(boxes1, boxes2))))
 
-    # start = time.time()
-    # for _ in range(10):
-    #     ious = rbbox_overlaps.rbbx_overlaps(boxes1, boxes2)
-    # print('{}s'.format(time.time() - start))
-    # print(ious)
-
-    # print(ovr)
 
 
 

@@ -5,41 +5,14 @@ import tensorflow as tf
 import math
 
 """
-v7 + iou-smooth l1 loss
+v12 + resnet152 + data aug. + MS
 
-This is your result for task 1:
-
-    mAP: 0.6949672314782958
-    ap of each class:
-    plane:0.885386792983877,
-    baseball-diamond:0.7331968839644771,
-    bridge:0.4898628104022108,
-    ground-track-field:0.6400479115497535,
-    small-vehicle:0.6804863040286401,
-    large-vehicle:0.7272874790497282,
-    ship:0.7602937054410586,
-    tennis-court:0.9083344898088754,
-    basketball-court:0.784327582019443,
-    storage-tank:0.8013993994143976,
-    soccer-ball-field:0.5483354704539025,
-    roundabout:0.6171343622691822,
-    harbor:0.5801559667600483,
-    swimming-pool:0.6858516206184136,
-    helicopter:0.582407693410429
-
-The submitted information is :
-
-Description: RetinaNet_DOTA_R3Det_2x_20200501_91.8w
-Username: SJTU-Det
-Institute: SJTU
-Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
-TeamMembers: yangxue
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_2x_20200501'
-NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
+VERSION = 'RetinaNet_DOTA_R3Det_2x_20200719'
+NET_NAME = 'resnet152_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config
@@ -50,7 +23,7 @@ GPU_GROUP = "0,1,2,3"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200
-SAVE_WEIGHTS_INTE = 27000 * 2
+SAVE_WEIGHTS_INTE = 27000 * 4
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -94,15 +67,15 @@ DATASET_NAME = 'DOTA'  # 'pascal', 'coco'
 PIXEL_MEAN = [123.68, 116.779, 103.939]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
 PIXEL_MEAN_ = [0.485, 0.456, 0.406]
 PIXEL_STD = [0.229, 0.224, 0.225]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
-IMG_SHORT_SIDE_LEN = 800
-IMG_MAX_LENGTH = 800
+IMG_SHORT_SIDE_LEN = [768, 512, 640, 896, 1024, 1152, 1280]
+IMG_MAX_LENGTH = 1408
 CLASS_NUM = 15
 
-IMG_ROTATE = False
-RGB2GRAY = False
-VERTICAL_FLIP = False
+IMG_ROTATE = True
+RGB2GRAY = True
+VERTICAL_FLIP = True
 HORIZONTAL_FLIP = True
-IMAGE_PYRAMID = False
+IMAGE_PYRAMID = True
 
 # --------------------------------------------- Network_config
 SUBNETS_WEIGHTS_INITIALIZER = tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=None)
@@ -120,8 +93,8 @@ FPN_CHANNEL = 256
 LEVEL = ['P3', 'P4', 'P5', 'P6', 'P7']
 BASE_ANCHOR_SIZE_LIST = [32, 64, 128, 256, 512]
 ANCHOR_STRIDE = [8, 16, 32, 64, 128]
-ANCHOR_SCALES = [1.]
-ANCHOR_RATIOS = [1.]
+ANCHOR_SCALES = [2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)]
+ANCHOR_RATIOS = [1, 1 / 2, 2., 1 / 3., 3., 5., 1 / 5.]
 ANCHOR_ANGLES = [-90, -75, -60, -45, -30, -15]
 ANCHOR_SCALE_FACTORS = None
 USE_CENTER_OFFSET = True
@@ -132,10 +105,10 @@ ANGLE_RANGE = 90
 # --------------------------------------------RPN config
 SHARE_NET = True
 USE_P5 = True
-IOU_POSITIVE_THRESHOLD = 0.35
-IOU_NEGATIVE_THRESHOLD = 0.25
-REFINE_IOU_POSITIVE_THRESHOLD = [0.5, 0.6]
-REFINE_IOU_NEGATIVE_THRESHOLD = [0.4, 0.5]
+IOU_POSITIVE_THRESHOLD = 0.5
+IOU_NEGATIVE_THRESHOLD = 0.4
+REFINE_IOU_POSITIVE_THRESHOLD = [0.6, 0.7]
+REFINE_IOU_NEGATIVE_THRESHOLD = [0.5, 0.6]
 
 NMS = True
 NMS_IOU_THRESHOLD = 0.1

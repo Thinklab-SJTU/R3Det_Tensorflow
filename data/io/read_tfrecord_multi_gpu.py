@@ -5,12 +5,27 @@ from __future__ import print_function
 from __future__ import division
 
 import tensorflow as tf
+import numpy as np
 import os
 import sys
 sys.path.append('../../')
 
 from data.io import image_preprocess_multi_gpu as image_preprocess
 from libs.configs import cfgs
+from libs.box_utils.coordinate_convert import forward_convert, backward_convert
+
+
+def filter_small_gt(gtboxes):
+    gtboxes_5 = backward_convert(gtboxes)
+    gtboxes_5_ = gtboxes_5[gtboxes_5[:, 2] >= 5, :]
+    if gtboxes_5_.shape[0] != 0:
+        gtboxes_5_ = gtboxes_5_[gtboxes_5_[:, 3] >= 5, :]
+    if gtboxes_5_.shape[0] == 0:
+        gtboxes_5_ = np.reshape(gtboxes_5[0, :], [-1, 6])
+        gtboxes_5_[:, 2] = 5.
+        gtboxes_5_[:, 3] = 5.
+    gtboxes_8 = forward_convert(gtboxes_5_)
+    return gtboxes_8
 
 
 def read_single_example_and_decode(filename_queue):
@@ -77,6 +92,7 @@ def read_and_prepocess_single_img(filename_queue, shortside_len, is_training):
         img, gtboxes_and_label, img_h, img_w = image_preprocess.short_side_resize(img_tensor=img, gtboxes_and_label=gtboxes_and_label,
                                                                                   target_shortside_len=shortside_len,
                                                                                   length_limitation=cfgs.IMG_MAX_LENGTH)
+    # gtboxes_and_label = tf.reshape(tf.py_func(filter_small_gt, inp=[gtboxes_and_label], Tout=[tf.float32]), [-1, 9])
     if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d']:
         img = img / 255 - tf.constant([[cfgs.PIXEL_MEAN_]])
     else:
@@ -108,10 +124,8 @@ def next_batch(dataset_name, batch_size, shortside_len, is_training):
 
     filename_queue = tf.train.string_input_producer(filename_tensorlist)
 
-    img_name, img, gtboxes_and_label, num_obs, img_h, img_w = read_and_prepocess_single_img(filename_queue,
-                                                                                            shortside_len,
+    img_name, img, gtboxes_and_label, num_obs, img_h, img_w = read_and_prepocess_single_img(filename_queue, shortside_len,
                                                                                             is_training=is_training)
-
     img_name_batch, img_batch, gtboxes_and_label_batch, num_obs_batch, img_h_batch, img_w_batch = \
         tf.train.batch(
                        [img_name, img, gtboxes_and_label, num_obs, img_h, img_w],
@@ -124,38 +138,43 @@ def next_batch(dataset_name, batch_size, shortside_len, is_training):
 
 
 if __name__ == '__main__':
-    os.environ["CUDA_VISIBLE_DEVICES"] = '0,1'
-    num_gpu = len(cfgs.GPU_GROUP.strip().split(','))
-    img_name_batch, img_batch, gtboxes_and_label_batch, num_objects_batch, img_h_batch, img_w_batch = \
-        next_batch(dataset_name=cfgs.DATASET_NAME,  # 'pascal', 'coco'
-                   batch_size=cfgs.BATCH_SIZE * 8,
-                   shortside_len=cfgs.IMG_SHORT_SIDE_LEN,
-                   is_training=True)
-    gtboxes_and_label = tf.reshape(gtboxes_and_label_batch, [-1, 9])
-
-    init_op = tf.group(
-        tf.global_variables_initializer(),
-        tf.local_variables_initializer()
-    )
-
-    config = tf.ConfigProto()
-    config.gpu_options.allow_growth = True
-
-    with tf.Session(config=config) as sess:
-        sess.run(init_op)
-
-        coord = tf.train.Coordinator()
-        threads = tf.train.start_queue_runners(sess, coord)
-
-        img_name_batch_, img_batch_, gtboxes_and_label_batch_, num_objects_batch_, img_h_batch_, img_w_batch_ \
-            = sess.run([img_name_batch, img_batch, gtboxes_and_label_batch, num_objects_batch, img_h_batch, img_w_batch])
-
-        print(img_name_batch_.shape)
-        print(img_batch_.shape)
-        print(gtboxes_and_label_batch_.shape)
-        print(num_objects_batch_.shape)
-        print(img_h_batch_.shape)
-        print('debug')
-
-        coord.request_stop()
-        coord.join(threads)
+    # os.environ["CUDA_VISIBLE_DEVICES"] = '0,1'
+    # num_gpu = len(cfgs.GPU_GROUP.strip().split(','))
+    # img_name_batch, img_batch, gtboxes_and_label_batch, num_objects_batch, img_h_batch, img_w_batch = \
+    #     next_batch(dataset_name=cfgs.DATASET_NAME,  # 'pascal', 'coco'
+    #                batch_size=cfgs.BATCH_SIZE * 8,
+    #                shortside_len=cfgs.IMG_SHORT_SIDE_LEN,
+    #                is_training=True)
+    # gtboxes_and_label = tf.reshape(gtboxes_and_label_batch, [-1, 9])
+    #
+    # init_op = tf.group(
+    #     tf.global_variables_initializer(),
+    #     tf.local_variables_initializer()
+    # )
+    #
+    # config = tf.ConfigProto()
+    # config.gpu_options.allow_growth = True
+    #
+    # with tf.Session(config=config) as sess:
+    #     sess.run(init_op)
+    #
+    #     coord = tf.train.Coordinator()
+    #     threads = tf.train.start_queue_runners(sess, coord)
+    #
+    #     img_name_batch_, img_batch_, gtboxes_and_label_batch_, num_objects_batch_, img_h_batch_, img_w_batch_ \
+    #         = sess.run([img_name_batch, img_batch, gtboxes_and_label_batch, num_objects_batch, img_h_batch, img_w_batch])
+    #
+    #     print(img_name_batch_.shape)
+    #     print(img_batch_.shape)
+    #     print(gtboxes_and_label_batch_.shape)
+    #     print(num_objects_batch_.shape)
+    #     print(img_h_batch_.shape)
+    #     print('debug')
+    #
+    #     coord.request_stop()
+    #     coord.join(threads)
+    tmp = np.array([[50, 50, 40, 50, -30, 1],
+                    [50, 50, 4, 5, -30, 1]])
+    tmp = forward_convert(tmp)
+    print(filter_small_gt(tmp))
+    print(backward_convert(filter_small_gt(tmp)))
