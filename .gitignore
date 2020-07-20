@@ -126,7 +126,7 @@ __pycache__/
 *mining_loss*
 *ablation_study*
 *tmp.py*
-*wasserstein_distance*
+*gaussian_wasserstein*
 
 tools/demos/*
 tools/test_dota/*

@@ -8,7 +8,6 @@ import tensorflow as tf
 from libs.box_utils import bbox_transform
 from libs.box_utils.iou_rotate import iou_rotate_calculate2, diou_rotate_calculate, adiou_rotate_calculate
 from libs.configs import cfgs
-from help_utils.gaussian_wasserstein_distance import get_element1_tf, get_element4_tf
 from libs.box_utils.coordinate_convert import coordinate90_2_180_tf
 
 

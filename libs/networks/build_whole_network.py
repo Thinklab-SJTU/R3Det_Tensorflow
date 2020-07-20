@@ -245,9 +245,6 @@ class DetectionNetwork(object):
                 elif cfgs.REG_LOSS_MODE == 2:
                     reg_loss = losses.iou_smooth_l1_loss_(target_delta, rpn_box_pred, anchor_states, target_boxes,
                                                           anchors, alpha=cfgs.ALPHA, beta=cfgs.BETA)
-                elif cfgs.REG_LOSS_MODE == 3:
-                    reg_loss = losses.wasserstein_iou_loss(target_delta, rpn_box_pred, anchor_states, target_boxes,
-                                                           anchors, beta=cfgs.BETA)
                 else:
                     reg_loss = losses.smooth_l1_loss(target_delta, rpn_box_pred, anchor_states)
 
