@@ -7,7 +7,7 @@ from __future__ import print_function
 import time
 import tensorflow as tf
 import math
-from help_utils.gaussian_wasserstein_distance import get_element1, get_element4
+# from help_utils.gaussian_wasserstein_distance import get_element1, get_element4
 from libs.box_utils.coordinate_convert import *
 from libs.box_utils.rbbox_overlaps import rbbx_overlaps
 from libs.box_utils.iou_cpu import get_iou_matrix
@@ -210,6 +210,8 @@ def gaussian_wasserstein_distance_(boxes1, boxes2):
 
 
 def gaussian_wasserstein_distance(boxes1, boxes2):
+    from help_utils.gaussian_wasserstein_distance import get_element1, get_element4
+
     boxes1 = coordinate_present_convert(boxes1, -1)
     boxes1[:, 4] += 90
     boxes1[:, 4] *= (-np.pi / 180)
