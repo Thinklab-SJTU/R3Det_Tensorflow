@@ -56,14 +56,20 @@ def get_all_smooth_label(num_label, label_type=0, raduius=4):
     return np.array(all_smooth_label)
 
 
-def angle_smooth_label(angle_label, angle_range=90, label_type=0, raduius=4):
+def angle_smooth_label(angle_label, angle_range=90, label_type=0, raduius=4, omega=1):
     """
-    :param angle_label: [-angle_range,0)
+    :param angle_label: [-90,0) or [-90, 0)
     :param angle_range: 90 or 180
     :return:
     """
+
+    assert angle_range % omega == 0, 'wrong omega'
+
+    angle_range /= omega
+    angle_label /= omega
+
     angle_label = np.array(-np.round(angle_label), np.int32)
-    all_smooth_label = get_all_smooth_label(angle_range, label_type, raduius)
+    all_smooth_label = get_all_smooth_label(int(angle_range), label_type, raduius)
     inx = angle_label == angle_range
     angle_label[inx] = angle_range - 1
     smooth_label = all_smooth_label[angle_label]

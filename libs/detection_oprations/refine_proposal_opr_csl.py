@@ -43,7 +43,7 @@ def postprocess_detctions(refine_bbox_pred, refine_cls_prob, refine_angle_prob, 
     boxes_pred = bbox_transform.rbbox_transform_inv(boxes=anchors, deltas=refine_bbox_pred,
                                                     scale_factors=cfgs.ANCHOR_SCALE_FACTORS)
     angle_cls = tf.cast(tf.argmax(refine_angle_prob, axis=1), tf.float32)
-    angle_cls = tf.reshape(angle_cls, [-1, ]) * -1 - 0.5
+    angle_cls = (tf.reshape(angle_cls, [-1, ]) * -1 - 0.5) * cfgs.OMEGA
     x, y, w, h, theta = tf.unstack(boxes_pred, axis=1)
     boxes_pred_angle = tf.transpose(tf.stack([x, y, w, h, angle_cls]))
 
