@@ -118,6 +118,7 @@ def smooth_l1_loss(targets, preds, anchor_state, sigma=3.0, weight=None):
     # f(x) = 0.5 * (sigma * x)^2          if |x| < 1 / sigma / sigma
     #        |x| - 0.5 / sigma / sigma    otherwise
     regression_diff = preds - targets
+    regression_diff = tf.abs(regression_diff)
 
     regression_loss = tf.where(
         tf.less(regression_diff, 1.0 / sigma_squared),
