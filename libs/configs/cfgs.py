@@ -5,14 +5,70 @@ import tensorflow as tf
 import math
 
 """
-v12 + resnet152 + data aug. + MS
+This is your result for task 1:
+
+    mAP: 0.663127560922365
+    ap of each class:
+    plane:0.8806183496692495,
+    baseball-diamond:0.7389137978157448,
+    bridge:0.42724634527039734,
+    ground-track-field:0.6727269206785866,
+    small-vehicle:0.6580587240161413,
+    large-vehicle:0.7276171243174071,
+    ship:0.7014447630845434,
+    tennis-court:0.8903381923579665,
+    basketball-court:0.7523897218732802,
+    storage-tank:0.6762073662790057,
+    soccer-ball-field:0.5463206107631667,
+    roundabout:0.589204294452238,
+    harbor:0.5607007040750659,
+    swimming-pool:0.6607208327231129,
+    helicopter:0.46440566645956777
+
+The submitted information is :
+
+Description: RetinaNet_DOTA_R3Det_2x_20191108_108w
+Username: SJTU-Det
+Institute: SJTU
+Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
+TeamMembers: yangxue
+
+
+fix reg. loss bug
+This is your result for task 1:
+
+    mAP: 0.7026631993550164
+    ap of each class:
+    plane:0.8866133571041938,
+    baseball-diamond:0.7661509333665146,
+    bridge:0.4725793738087695,
+    ground-track-field:0.6747839904225508,
+    small-vehicle:0.6911298766002514,
+    large-vehicle:0.7510951799278639,
+    ship:0.7713223613957406,
+    tennis-court:0.9084022969827755,
+    basketball-court:0.8233104200518367,
+    storage-tank:0.8300325328735665,
+    soccer-ball-field:0.5811113677992319,
+    roundabout:0.6154221404813383,
+    harbor:0.5978245340093459,
+    swimming-pool:0.6775540041450172,
+    helicopter:0.4926156213562474
+
+The submitted information is :
+
+Description: RetinaNet_DOTA_R3Det_2x_20191108_91.8w
+Username: yangxue
+Institute: DetectionTeamUCAS
+Emailadress: yangxue16@mails.ucas.ac.cn
+TeamMembers: yangxue, yangjirui
 
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_2x_20200719'
-NET_NAME = 'resnet152_v1d'  # 'MobilenetV2'
+VERSION = 'RetinaNet_DOTA_R3Det_2x_20191108'
+NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config
@@ -23,7 +79,7 @@ GPU_GROUP = "0,1,2,3"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200
-SAVE_WEIGHTS_INTE = 27000 * 4
+SAVE_WEIGHTS_INTE = 27000 * 2
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -50,9 +106,7 @@ GRADIENT_CLIPPING_BY_NORM = 10.0  # if None, will not clip
 
 CLS_WEIGHT = 1.0
 REG_WEIGHT = 1.0
-USE_IOU_FACTOR = True
-ALPHA = 1.0
-BETA = 1.0
+USE_IOU_FACTOR = False
 
 BATCH_SIZE = 1
 EPSILON = 1e-5
@@ -67,15 +121,15 @@ DATASET_NAME = 'DOTA'  # 'pascal', 'coco'
 PIXEL_MEAN = [123.68, 116.779, 103.939]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
 PIXEL_MEAN_ = [0.485, 0.456, 0.406]
 PIXEL_STD = [0.229, 0.224, 0.225]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
-IMG_SHORT_SIDE_LEN = [768, 512, 640, 896, 1024, 1152, 1280]
-IMG_MAX_LENGTH = 1408
+IMG_SHORT_SIDE_LEN = 800
+IMG_MAX_LENGTH = 800
 CLASS_NUM = 15
 
-IMG_ROTATE = True
-RGB2GRAY = True
-VERTICAL_FLIP = True
+IMG_ROTATE = False
+RGB2GRAY = False
+VERTICAL_FLIP = False
 HORIZONTAL_FLIP = True
-IMAGE_PYRAMID = True
+IMAGE_PYRAMID = False
 
 # --------------------------------------------- Network_config
 SUBNETS_WEIGHTS_INITIALIZER = tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=None)
@@ -85,7 +139,7 @@ FINAL_CONV_BIAS_INITIALIZER = tf.constant_initializer(value=-math.log((1.0 - PRO
 WEIGHT_DECAY = 1e-4
 USE_GN = False
 NUM_SUBNET_CONV = 4
-NUM_REFINE_STAGE = 2
+NUM_REFINE_STAGE = 1
 USE_RELU = False
 FPN_CHANNEL = 256
 

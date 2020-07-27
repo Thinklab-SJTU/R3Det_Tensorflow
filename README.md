@@ -15,22 +15,15 @@ Techniques:
 ## Pipeline
 ![5](pipeline.png)
 
-## Performance
+## Latest Performance
 More results and trained models are available in the [MODEL_ZOO.md](MODEL_ZOO.md).
 ### DOTA1.0
 ### R<sup>3</sup>Det
 | Model |    Backbone    |    Training data    |    Val data    |    mAP   | Model Link | Anchor | Reg. Loss| Angle Range | lr schd | Data Augmentation | GPU | Image/GPU | Configs |      
 |:------------:|:------------:|:------------:|:---------:|:-----------:|:----------:|:-----------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:---------:|:---------:|    
-| [R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 66.31 | [model](https://drive.google.com/file/d/1cBKxcePQFIv3yKQTOVw598nb-IwUXJV_/view?usp=sharing)  | H + R | smooth L1 | 90 | 2x | No | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_v1.py](./libs/configs/DOTA1.0/r3det/cfgs_res50_dota_r3det_v1.py) |
-| [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 67.29 (67.66) | [model](https://drive.google.com/file/d/1RfnLyNgy5pwVuCvOmGao0ytC5jfSRQjx/view?usp=sharing) | H + R | smooth L1 | 90 | 2x | No | 2X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_v2.py](./libs/configs/DOTA1.0/r3det/cfgs_res50_dota_r3det_v2.py) |
-| [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 69.50 | - | H + R | [**iou-smooth L1 [1-exp(1-x)]**](https://arxiv.org/abs/1811.07126) | 90 | 2x | No | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_v12.py](./libs/configs/DOTA1.0/r3det/cfgs_res50_dota_r3det_v12.py) |
-
-### R<sup>3</sup>Det++
-| Model |    Backbone    |    Training data    |    Val data    |    mAP   | Model Link | InLD | Anchor | Reg. Loss| Angle Range | lr schd | Data Augmentation | GPU | Image/GPU | Configs |      
-|:------------:|:------------:|:------------:|:---------:|:-----------:|:----------:|:-----------:|:-----------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:---------:|:---------:|    
-| **[R<sup>3</sup>Det++](https://yangxue0827.github.io/SCRDet++.html)** | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 69.07 | - | {4,4,3,2,2} | H + R | smooth L1 | 90 | 2x | No | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_plusplus_v2.py](./libs/configs/DOTA1.0/r3det_plusplus/cfgs_res50_dota_r3det_plusplus_v2.py) |
-| [R<sup>3</sup>Det++](https://yangxue0827.github.io/SCRDet++.html) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 69.81 | [model](https://drive.google.com/file/d/12_7-7ihl5Nozvja6aQjLEzxY8RUy0px5/view?usp=sharing) | **{1,1,1,1,1}** | H + R | smooth L1 | 90 | 2x | No | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_plusplus_v3.py](./libs/configs/DOTA1.0/r3det_plusplus/cfgs_res50_dota_r3det_plusplus_v3.py) |
-| [R<sup>3</sup>Det++](https://yangxue0827.github.io/SCRDet++.html) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 70.08 | - | {1,1,1,1,1} | H + R | [**iou-smooth L1 [1-exp(1-x)]**](https://arxiv.org/abs/1811.07126) | 90 | 2x | No | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_plusplus_v9.py](./libs/configs/DOTA1.0/r3det_plusplus/cfgs_res50_dota_r3det_plusplus_v9.py) |
+| [R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 70.27 | - | H + R | smooth L1 | 90 | 2x | No | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_v1.py](./libs/configs/DOTA1.0/r3det/cfgs_res50_dota_r3det_v1.py) |
+| [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test |  | - | H + R | smooth L1 | 90 | 2x | No | 2X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_v2.py](./libs/configs/DOTA1.0/r3det/cfgs_res50_dota_r3det_v2.py) |
+| [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test |  | - | H + R | [**iou-smooth L1 [1-exp(1-x)]**](https://arxiv.org/abs/1811.07126) | 90 | 2x | No | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_v12.py](./libs/configs/DOTA1.0/r3det/cfgs_res50_dota_r3det_v12.py) |
 
 ### Visualization
 ![1](demo1.png)
