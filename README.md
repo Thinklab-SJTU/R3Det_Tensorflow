@@ -11,6 +11,7 @@ Techniques:
 - [x] [Circular Smooth Label (CSL)](https://arxiv.org/abs/2003.05597)
 - [x] Anchor Free (one anchor per feature point)
 - [x] [mmdetection version](https://github.com/SJTU-Thinklab-Det/r3det-on-mmdetection) is released
+- [ ] Orientation Detection (predict the head of the object)
 
 ## Pipeline
 ![5](pipeline.png)
@@ -22,8 +23,6 @@ More results and trained models are available in the [MODEL_ZOO.md](MODEL_ZOO.md
 | Model |    Backbone    |    Training data    |    Val data    |    mAP   | Model Link | Anchor | Reg. Loss| Angle Range | lr schd | Data Augmentation | GPU | Image/GPU | Configs |      
 |:------------:|:------------:|:------------:|:---------:|:-----------:|:----------:|:-----------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:---------:|:---------:|    
 | [R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 70.27 | - | H + R | smooth L1 | 90 | 2x | No | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_v1.py](./libs/configs/DOTA1.0/r3det/cfgs_res50_dota_r3det_v1.py) |
-| [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test |  | - | H + R | smooth L1 | 90 | 2x | No | 2X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_v2.py](./libs/configs/DOTA1.0/r3det/cfgs_res50_dota_r3det_v2.py) |
-| [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test |  | - | H + R | [**iou-smooth L1 [1-exp(1-x)]**](https://arxiv.org/abs/1811.07126) | 90 | 2x | No | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_v12.py](./libs/configs/DOTA1.0/r3det/cfgs_res50_dota_r3det_v12.py) |
 
 ### Visualization
 ![1](demo1.png)
@@ -109,8 +108,9 @@ If this is useful for your research, please consider cite.
 @article{yang2020arbitrary,
     title={Arbitrary-Oriented Object Detection with Circular Smooth Label},
     author={Yang, Xue and Yan, Junchi},
-    journal={arXiv preprint arXiv:2003.05597},
+    journal={European Conference on Computer Vision (ECCV)},
     year={2020}
+    organization={Springer}
 }
 
 @article{yang2019r3det,
