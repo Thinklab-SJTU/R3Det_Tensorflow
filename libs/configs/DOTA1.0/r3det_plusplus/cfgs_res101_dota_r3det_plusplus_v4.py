@@ -34,6 +34,19 @@ Emailadress: liuqingqing@csu.edu.cn
 TeamMembers: liuqingqing
 
 
+fix reg. loss bug
+This is your result for task 1:
+
+mAP: 0.712652363250537
+ap of each class: plane:0.8906342916654677, baseball-diamond:0.8093171042151274, bridge:0.4794137127919834, ground-track-field:0.6940326819568005, small-vehicle:0.7059064786970678, large-vehicle:0.7530241602391933, ship:0.7896325950924247, tennis-court:0.9070473834443995, basketball-court:0.7921616233605886, storage-tank:0.8221198463246584, soccer-ball-field:0.5999872731432583, roundabout:0.6217204585732381, harbor:0.58446735015814, swimming-pool:0.7100200446710236, helicopter:0.5303004444246848
+The submitted information is :
+
+Description: RetinaNet_DOTA_R3Det_plusplus_2x_20200317_97.2w_
+Username: yangxue
+Institute: DetectionTeamUCAS
+Emailadress: yangxue16@mails.ucas.ac.cn
+TeamMembers: yangxue, yangjirui
+
 """
 
 # ------------------------------------------------

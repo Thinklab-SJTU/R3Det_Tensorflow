@@ -15,7 +15,7 @@ def mkdir(path):
 
 divide_rate = 0.7
 
-root_path = '/data/yangxue/dataset/RS-SJTU'
+root_path = '/data/yangxue/dataset/OHD-SJTU'
 
 image_path = root_path + '/all_data/images'
 rotation_txt_path = root_path + '/all_data/rotation_txt'

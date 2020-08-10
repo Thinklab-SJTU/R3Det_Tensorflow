@@ -131,7 +131,7 @@ def worker(gpu_id, images, det_net, args, result_queue):
             box_res_rotate_ = []
             label_res_rotate_ = []
             score_res_rotate_ = []
-            threshold = {'ship': 0.2, 'airplane': 0.3}
+            threshold = {'ship': 0.2, 'plane': 0.3}
 
             for sub_class in range(1, cfgs.CLASS_NUM + 1):
                 index = np.where(label_res_rotate == sub_class)[0]
@@ -167,9 +167,9 @@ def worker(gpu_id, images, det_net, args, result_queue):
             result_queue.put_nowait(result_dict)
 
 
-def test_rs_sjtu(det_net, real_test_img_list, args, txt_name):
+def test_ohd_sjtu(det_net, real_test_img_list, args, txt_name):
 
-    save_path = os.path.join('./test_rs_sjtu', cfgs.VERSION)
+    save_path = os.path.join('./test_ohd_sjtu', cfgs.VERSION)
 
     nr_records = len(real_test_img_list)
     pbar = tqdm(total=nr_records)
@@ -194,8 +194,8 @@ def test_rs_sjtu(det_net, real_test_img_list, args, txt_name):
         if args.show_box:
 
             nake_name = res['image_id'].split('/')[-1]
-            tools.mkdir(os.path.join(save_path, 'rs_sjtu_img_vis'))
-            draw_path = os.path.join(save_path, 'rs_sjtu_img_vis', nake_name)
+            tools.mkdir(os.path.join(save_path, 'ohd_sjtu_img_vis'))
+            draw_path = os.path.join(save_path, 'ohd_sjtu_img_vis', nake_name)
 
             draw_img = np.array(cv2.imread(res['image_id']), np.float32)
 
@@ -213,14 +213,14 @@ def test_rs_sjtu(det_net, real_test_img_list, args, txt_name):
             cv2.imwrite(draw_path, final_detections)
 
         else:
-            CLASS_RS_SJTU = NAME_LABEL_MAP.keys()
+            CLASS_OHD_SJTU = NAME_LABEL_MAP.keys()
             write_handle = {}
 
-            tools.mkdir(os.path.join(save_path, 'rs_sjtu_res'))
-            for sub_class in CLASS_RS_SJTU:
+            tools.mkdir(os.path.join(save_path, 'ohd_sjtu_res'))
+            for sub_class in CLASS_OHD_SJTU:
                 if sub_class == 'back_ground':
                     continue
-                write_handle[sub_class] = open(os.path.join(save_path, 'rs_sjtu_res', 'Task1_%s.txt' % sub_class), 'a+')
+                write_handle[sub_class] = open(os.path.join(save_path, 'ohd_sjtu_res', 'Task1_%s.txt' % sub_class), 'a+')
 
             rboxes = forward_convert(res['boxes'], with_label=False)
 
@@ -231,7 +231,7 @@ def test_rs_sjtu(det_net, real_test_img_list, args, txt_name):
                                                                                  rbox[4], rbox[5], rbox[6], rbox[7],)
                 write_handle[LABEL_NAME_MAP[res['labels'][i]]].write(command)
 
-            for sub_class in CLASS_RS_SJTU:
+            for sub_class in CLASS_OHD_SJTU:
                 if sub_class == 'back_ground':
                     continue
                 write_handle[sub_class].close()
@@ -280,7 +280,7 @@ def eval(num_imgs, args):
 
     retinanet = build_whole_network_r3det_csl.DetectionNetwork(base_network_name=cfgs.NET_NAME,
                                                                is_training=False)
-    test_rs_sjtu(det_net=retinanet, real_test_img_list=real_test_img_list, args=args, txt_name=txt_name)
+    test_ohd_sjtu(det_net=retinanet, real_test_img_list=real_test_img_list, args=args, txt_name=txt_name)
 
     if not args.show_box:
         os.remove(txt_name)
@@ -292,7 +292,7 @@ def parse_args():
 
     parser.add_argument('--test_dir', dest='test_dir',
                         help='evaluate imgs dir ',
-                        default='/data/yangxue/dataset/RS-SJTU/test/images', type=str)
+                        default='/data/yangxue/dataset/OHD-SJTU/test/images', type=str)
     parser.add_argument('--gpus', dest='gpus',
                         help='gpu id',
                         default='0,1,2,3,4,5,6,7', type=str)

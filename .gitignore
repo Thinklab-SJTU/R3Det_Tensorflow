@@ -127,6 +127,12 @@ __pycache__/
 *ablation_study*
 *tmp.py*
 *gaussian_wasserstein*
+*OHD-SJTU*
+*eval_devkit*
+*ohdet*
+*head*
+*ohd-sjtu*
+*test_ohd_sjtu*
 
 tools/demos/*
 tools/test_dota/*

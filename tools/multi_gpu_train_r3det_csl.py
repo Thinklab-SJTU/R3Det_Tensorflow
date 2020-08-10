@@ -198,10 +198,10 @@ def train():
             'reg_loss': tf.constant(0., tf.float32),
             'refine_cls_loss': tf.constant(0., tf.float32),
             'refine_reg_loss': tf.constant(0., tf.float32),
+            'angle_cls_loss': tf.constant(0., tf.float32),
             'refine_cls_loss_stage3': tf.constant(0., tf.float32),
             'refine_reg_loss_stage3': tf.constant(0., tf.float32),
             'angle_cls_loss_stage3': tf.constant(0., tf.float32),
-            'angle_cls_loss': tf.constant(0., tf.float32),
             'total_losses': tf.constant(0., tf.float32),
         }
 
@@ -226,12 +226,23 @@ def train():
                                 gtboxes_and_label_h = tf.reshape(gtboxes_and_label_h, [-1, 5])
                                 gtboxes_and_label_r = tf.reshape(gtboxes_and_label_r, [-1, 6])
 
-                                gt_smooth_label = tf.py_func(angle_smooth_label,
-                                                             inp=[gtboxes_and_label_r[:, -2], cfgs.ANGLE_RANGE,
-                                                                  cfgs.LABEL_TYPE, cfgs.RADUIUS, cfgs.OMEGA],
-                                                             Tout=tf.float32)
+                                if cfgs.ANGLE_RANGE == 180:
+                                    gtboxes_and_label_r_ = tf.py_func(coordinate_present_convert,
+                                                                      inp=[gtboxes_and_label_r, -1],
+                                                                      Tout=tf.float32)
+                                    gtboxes_and_label_r_ = tf.reshape(gtboxes_and_label_r_, [-1, 6])
 
-                                gt_smooth_label = tf.reshape(gt_smooth_label, [-1, cfgs.ANGLE_RANGE])
+                                    gt_smooth_label = tf.py_func(angle_smooth_label,
+                                                                 inp=[gtboxes_and_label_r_[:, -2], cfgs.ANGLE_RANGE,
+                                                                      cfgs.LABEL_TYPE, cfgs.RADUIUS, cfgs.OMEGA],
+                                                                 Tout=tf.float32)
+                                else:
+                                    gt_smooth_label = tf.py_func(angle_smooth_label,
+                                                                 inp=[gtboxes_and_label_r[:, -2], cfgs.ANGLE_RANGE,
+                                                                      cfgs.LABEL_TYPE, cfgs.RADUIUS, cfgs.OMEGA],
+                                                                 Tout=tf.float32)
+
+                                gt_smooth_label = tf.reshape(gt_smooth_label, [-1, cfgs.ANGLE_RANGE // cfgs.OMEGA])
 
                                 img = inputs_list[i][0]
                                 img_shape = inputs_list[i][-2:]

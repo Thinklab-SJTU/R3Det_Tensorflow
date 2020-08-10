@@ -4,6 +4,8 @@ from libs.box_utils import bbox_transform
 from libs.box_utils import nms_rotate
 import tensorflow as tf
 
+from libs.box_utils.coordinate_convert import coordinate_present_convert
+
 
 def filter_detections(boxes, scores, is_training):
     """
@@ -20,6 +22,17 @@ def filter_detections(boxes, scores, is_training):
     if cfgs.NMS:
         filtered_boxes = tf.gather(boxes, indices)
         filtered_scores = tf.gather(scores, indices)
+
+        if cfgs.ANGLE_RANGE == 180:
+            # _, _, _, _, theta = tf.unstack(boxes_pred, axis=1)
+            # indx = tf.reshape(tf.where(tf.logical_and(tf.less(theta, 0), tf.greater_equal(theta, -180))), [-1, ])
+            # boxes_pred = tf.gather(boxes_pred, indx)
+            # scores = tf.gather(scores, indx)
+
+            filtered_boxes = tf.py_func(coordinate_present_convert,
+                                        inp=[filtered_boxes, 1],
+                                        Tout=[tf.float32])
+            filtered_boxes = tf.reshape(filtered_boxes, [-1, 5])
 
         # perform NMS
 
@@ -57,6 +70,22 @@ def postprocess_detctions(refine_bbox_pred, refine_cls_prob, refine_angle_prob, 
         tmp_boxes_pred = tf.reshape(tf.gather(boxes_pred, indices), [-1, 5])
         tmp_scores = tf.reshape(tf.gather(refine_cls_prob[:, j], indices), [-1, ])
 
+        if cfgs.ANGLE_RANGE == 180:
+            # _, _, _, _, theta = tf.unstack(boxes_pred, axis=1)
+            # indx = tf.reshape(tf.where(tf.logical_and(tf.less(theta, 0), tf.greater_equal(theta, -180))), [-1, ])
+            # boxes_pred = tf.gather(boxes_pred, indx)
+            # scores = tf.gather(scores, indx)
+
+            tmp_boxes_pred_angle = tf.py_func(coordinate_present_convert,
+                                              inp=[tmp_boxes_pred_angle, 1],
+                                              Tout=[tf.float32])
+            tmp_boxes_pred_angle = tf.reshape(tmp_boxes_pred_angle, [-1, 5])
+
+            tmp_boxes_pred = tf.py_func(coordinate_present_convert,
+                                        inp=[tmp_boxes_pred, 1],
+                                        Tout=[tf.float32])
+            tmp_boxes_pred = tf.reshape(tmp_boxes_pred, [-1, 5])
+
         return_boxes_pred.append(tmp_boxes_pred)
         return_boxes_pred_angle.append(tmp_boxes_pred_angle)
         return_scores.append(tmp_scores)
@@ -66,5 +95,7 @@ def postprocess_detctions(refine_bbox_pred, refine_cls_prob, refine_angle_prob, 
     return_boxes_pred_angle = tf.concat(return_boxes_pred_angle, axis=0)
     return_scores = tf.concat(return_scores, axis=0)
     return_labels = tf.concat(return_labels, axis=0)
+
+    # return_boxes_pred_angle = tf.Print(return_boxes_pred_angle, [return_boxes_pred_angle], 'return_boxes_pred_angle', summarize=50)
 
     return return_boxes_pred, return_scores, return_labels, return_boxes_pred_angle

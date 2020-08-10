@@ -11,13 +11,12 @@ Techniques:
 - [x] [Circular Smooth Label (CSL)](https://arxiv.org/abs/2003.05597)
 - [x] Anchor Free (one anchor per feature point)
 - [x] [mmdetection version](https://github.com/SJTU-Thinklab-Det/r3det-on-mmdetection) is released
-- [ ] Orientation Detection (predict the head of the object)
+- [ ] OHDet (Object Heading Detection)
 
 ## Pipeline
 ![5](pipeline.png)
 
 ## Latest Performance
-More results and trained models are available in the [MODEL_ZOO.md](MODEL_ZOO.md).
 ### DOTA1.0
 ### R<sup>3</sup>Det
 | Model |    Backbone    |    Training data    |    Val data    |    mAP   | Model Link | Anchor | Reg. Loss| Angle Range | lr schd | Data Augmentation | GPU | Image/GPU | Configs |      

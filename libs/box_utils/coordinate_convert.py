@@ -225,7 +225,7 @@ def coordinate90_2_180(coords):
     return coords_new
 
 
-def coordinate90_2_180_tf(coords, is_radian=True):
+def coordinate90_2_180_tf(coords, is_radian=True, change_range=False):
 
     # angle range from [-90, 0) to [-180, 0)
     x, y, w, h, theta = tf.unstack(coords, axis=1)
@@ -246,6 +246,9 @@ def coordinate90_2_180_tf(coords, is_radian=True):
 
     coords_new = remain_coords + convert_coords
     x_new, y_new, w_new, h_new, theta_new = tf.unstack(coords_new, axis=1)
+
+    if change_range:
+        theta_new -= 90
 
     if is_radian:
         theta_new *= (-np.pi / 180)
@@ -294,6 +297,8 @@ if __name__ == '__main__':
     coord4 = np.array([[0, 0, 0, 180, 20, 180, 20, 0],
                        [10, 0, 0, 20, 180, 20, 180, 0]], dtype=np.float32)
     print(backward_convert(coord4, False))
+    coord5 = np.array([[-3.0636845, 1.479856, 51.584435, 33.250473, -17.427048]])
+    print(coordinate_present_convert(coord5, 1))
 
     # coord4 = coordinate5_2_8_tf(tf.convert_to_tensor(coord3))
     # coord5 = coordinate_present_convert(coordinate_present_convert(coord3, mode=-1), mode=1)

@@ -67,6 +67,12 @@ elif cfgs.DATASET_NAME == 'HRSC2016':
         'back_ground': 0,
         'ship': 1
     }
+elif cfgs.DATASET_NAME.startswith('OHD-SJTU'):
+    NAME_LABEL_MAP = {
+        'back_ground': 0,
+        'ship': 1,
+        'plane': 2
+    }
 elif cfgs.DATASET_NAME.startswith('DOTA'):
     NAME_LABEL_MAP = {
         'back_ground': 0,

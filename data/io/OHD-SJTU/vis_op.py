@@ -3,9 +3,9 @@ import cv2
 import numpy as np
 
 
-img_path = '/data/yangxue/dataset/RS-SJTU/all_data/images'
-images_vis_path = '/data/yangxue/dataset/RS-SJTU/all_data/images_vis'
-txt_path = '/data/yangxue/dataset/RS-SJTU/all_data/polygon_txt'
+img_path = '/data/yangxue/dataset/OHD-SJTU/all_data/images'
+images_vis_path = '/data/yangxue/dataset/OHD-SJTU/all_data/images_vis'
+txt_path = '/data/yangxue/dataset/OHD-SJTU/all_data/polygon_txt'
 
 
 all_txt = os.listdir(txt_path)

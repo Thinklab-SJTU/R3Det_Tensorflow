@@ -79,7 +79,7 @@ def save_to_xml(save_path, name, im_height, im_width, objects_axis, label_name):
         objects = doc.createElement('object')
         annotation.appendChild(objects)
         object_name = doc.createElement('name')
-        object_name.appendChild(doc.createTextNode(label_name[int(objects_axis[i][-1])]))
+        object_name.appendChild(doc.createTextNode(label_name[int(objects_axis[i][-2])]))
         objects.appendChild(object_name)
         pose = doc.createElement('pose')
         pose.appendChild(doc.createTextNode('Unspecified'))
@@ -88,7 +88,7 @@ def save_to_xml(save_path, name, im_height, im_width, objects_axis, label_name):
         truncated.appendChild(doc.createTextNode('1'))
         objects.appendChild(truncated)
         difficult = doc.createElement('difficult')
-        difficult.appendChild(doc.createTextNode('0'))
+        difficult.appendChild(doc.createTextNode(str(int((objects_axis[i][-1])))))
         objects.appendChild(difficult)
         bndbox = doc.createElement('bndbox')
         objects.appendChild(bndbox)
@@ -134,7 +134,7 @@ def save_to_xml(save_path, name, im_height, im_width, objects_axis, label_name):
     f.close()
 
 
-class_list = ['airplane', 'ship']
+class_list = ['plane', 'ship']
 
 
 def format_label(txt_list):
@@ -147,19 +147,19 @@ def format_label(txt_list):
         if len(i.split(' ')) < 8:
             continue
         format_data.append(
-            [float(xy) for xy in i.split(' ')[:point_num*2]] + [class_list.index(i.split(' ')[-1].split('\n')[0])]
+            [float(xy) for xy in i.split(' ')[:point_num*2]] + [class_list.index(i.split(' ')[-2])] + [int(i.split(' ')[-1].split('\n')[0])]
         )
 
-        if i.split(' ')[-1].split('\n')[0] not in class_list:
-            print('warning found a new label :', i.split(' ')[point_num*2].split('\n')[0])
+        if i.split(' ')[-2].split('\n')[0] not in class_list:
+            print('warning found a new label :', i.split(' ')[point_num*2])
             exit()
     return np.array(format_data)
 
 
 def clip_image(file_idx, image, boxes_all, width, height, stride_w, stride_h):
 
-    boxes_all_5 = backward_convert(boxes_all)
-    # print(boxes_all[np.logical_or(boxes_all_5[:, 2] <= 5, boxes_all_5[:, 3] <= 5), :])
+    boxes_all_5 = backward_convert(boxes_all[:, :8], False)
+    print(boxes_all[np.logical_or(boxes_all_5[:, 2] <= 5, boxes_all_5[:, 3] <= 5), :])
     boxes_all = boxes_all[np.logical_and(boxes_all_5[:, 2] > 5, boxes_all_5[:, 3] > 5), :]
 
     if boxes_all.shape[0] > 0:
@@ -167,7 +167,10 @@ def clip_image(file_idx, image, boxes_all, width, height, stride_w, stride_h):
         for start_h in range(0, shape[0], stride_h):
             for start_w in range(0, shape[1], stride_w):
                 boxes = copy.deepcopy(boxes_all)
-                box = np.zeros_like(boxes_all)
+                if USE_HEAD:
+                    box = np.zeros_like(boxes_all)
+                else:
+                    box = np.zeros_like(boxes_all[:, :10])
                 start_h_new = start_h
                 start_w_new = start_w
                 if start_h + height > shape[0]:
@@ -181,22 +184,15 @@ def clip_image(file_idx, image, boxes_all, width, height, stride_w, stride_h):
 
                 subImage = image[top_left_row:bottom_right_row, top_left_col: bottom_right_col]
 
-                box[:, 0] = boxes[:, 0] - top_left_col
-                box[:, 2] = boxes[:, 2] - top_left_col
-                box[:, 4] = boxes[:, 4] - top_left_col
-                box[:, 6] = boxes[:, 6] - top_left_col
+                box[:, 0:7:2] = boxes[:, 0:7:2] - top_left_col
+                box[:, 1:8:2] = boxes[:, 1:8:2] - top_left_row
+
                 if USE_HEAD:
                     box[:, 8] = boxes[:, 8] - top_left_col
-
-                box[:, 1] = boxes[:, 1] - top_left_row
-                box[:, 3] = boxes[:, 3] - top_left_row
-                box[:, 5] = boxes[:, 5] - top_left_row
-                box[:, 7] = boxes[:, 7] - top_left_row
-                if USE_HEAD:
                     box[:, 9] = boxes[:, 9] - top_left_row
-                    box[:, 10] = boxes[:, 10]
-                else:
-                    box[:, 8] = boxes[:, 8]
+
+                box[:, -2:] = boxes[:, -2:]
+
                 center_y = 0.25 * (box[:, 1] + box[:, 3] + box[:, 5] + box[:, 7])
                 center_x = 0.25 * (box[:, 0] + box[:, 2] + box[:, 4] + box[:, 6])
 
@@ -218,11 +214,11 @@ def clip_image(file_idx, image, boxes_all, width, height, stride_w, stride_h):
 
 
 print('class_list', len(class_list))
-raw_data = '/data/yangxue/dataset/RS-SJTU/trainval/'
+raw_data = '/data/yangxue/dataset/OHD-SJTU/trainval/'
 raw_images_dir = os.path.join(raw_data, 'images')
 raw_label_dir = os.path.join(raw_data, 'rotation_txt')
 
-save_dir = '/data/yangxue/dataset/RS-SJTU/crop/trainval/'
+save_dir = '/data/yangxue/dataset/OHD-SJTU/crop/trainval/'
 
 images = [i for i in os.listdir(raw_images_dir) if 'jpg' in i]
 labels = [i for i in os.listdir(raw_label_dir) if 'txt' in i]

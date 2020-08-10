@@ -10,6 +10,9 @@ import cv2
 from libs.configs import cfgs
 from libs.label_name_dict.label_dict import LABEL_NAME_MAP
 from help_utils.tools import get_dota_short_names
+from libs.box_utils.coordinate_convert import forward_convert
+
+
 NOT_DRAW_BOXES = 0
 ONLY_DRAW_BOXES = -1
 ONLY_DRAW_BOXES_WITH_SCORES = -2
@@ -40,6 +43,49 @@ STANDARD_COLORS = [
     'WhiteSmoke', 'Yellow', 'YellowGreen', 'LightBlue', 'LightGreen'
 ]
 FONT = ImageFont.load_default()
+
+
+def find_head_edge(box, head):
+    head_dict = {0: '11', 1: '10', 2: '00', 3: '01'}
+    flag = head_dict[int(head)]
+    box_eight = forward_convert(np.array([box]), False)[0]
+    box_eight = np.reshape(box_eight, [4, 2])
+    four_edges = [[box_eight[0], box_eight[1]], [box_eight[1], box_eight[2]],
+                  [box_eight[2], box_eight[3]], [box_eight[3], box_eight[0]]]
+    for i in range(4):
+        center_x = (four_edges[i][0][0] + four_edges[i][1][0]) / 2.
+        center_y = (four_edges[i][0][1] + four_edges[i][1][1]) / 2.
+        if (center_x - box[0]) >= 0 and (center_y - box[1]) >= 0:
+            res = '11'
+            if res == flag:
+                return four_edges[i]
+        elif (center_x - box[0]) >= 0 and (center_y - box[1]) <= 0:
+            res = '10'
+            if res == flag:
+                return four_edges[i]
+        elif (center_x - box[0]) <= 0 and (center_y - box[1]) <= 0:
+            res = '00'
+            if res == flag:
+                return four_edges[i]
+        else:
+            res = '01'
+            if res == flag:
+                return four_edges[i]
+
+
+def draw_head(draw_obj, box, head, color, width=3):
+    head_edge = find_head_edge(box, head)
+    if head_edge is None:
+        pass
+    else:
+        draw_obj.line(xy=[(head_edge[0][0], head_edge[0][1]), (head_edge[1][0], head_edge[1][1])],
+                      fill='Red',
+                      width=width+1)
+        center_x = (head_edge[0][0] + head_edge[1][0]) / 2.
+        center_y = (head_edge[0][1] + head_edge[1][1]) / 2.
+        draw_obj.line(xy=[(center_x, center_y), (box[0], box[1])],
+                      fill=color,
+                      width=width)
 
 
 def draw_a_rectangel_in_img(draw_obj, box, color, width, method):
@@ -109,12 +155,12 @@ def draw_label_with_scores(draw_obj, box, label, score, color):
                   font=FONT)
 
 
-def draw_label_with_scores_csl(draw_obj, box, label, score, color):
+def draw_label_with_scores_csl(draw_obj, box, label, score, method, head, color='White'):
     x, y = box[0], box[1]
-    draw_obj.rectangle(xy=[x, y, x + 60, y + 20],
-                       fill=color)
+    draw_obj.rectangle(xy=[x, y, x + 60, y + 10],
+                       fill='White')
 
-    if cfgs.DATASET_NAME == 'DOTA':
+    if cfgs.DATASET_NAME.startswith('DOTA'):
         label_name = get_dota_short_names(LABEL_NAME_MAP[label])
     else:
         label_name = LABEL_NAME_MAP[label]
@@ -124,22 +170,34 @@ def draw_label_with_scores_csl(draw_obj, box, label, score, color):
                   text=txt,
                   fill='black',
                   font=FONT)
-    if cfgs.ANGLE_RANGE == 180:
-        if box[2] < box[3]:
-            angle = box[-1] + 90
+    if method == 1:
+        draw_obj.rectangle(xy=[x, y + 10, x + 60, y + 20],
+                           fill='White')
+        if cfgs.ANGLE_RANGE == 180:
+            if box[2] < box[3]:
+                angle = box[-1] + 90
+            else:
+                angle = box[-1]
         else:
             angle = box[-1]
-    else:
-        angle = box[-1]
-    txt_angle = 'angle:%.1f' % angle
-    # txt_angle = ' %.1f' % angle
-    draw_obj.text(xy=(x, y+10),
-                  text=txt_angle,
-                  fill='black',
-                  font=FONT)
+        txt_angle = 'angle:%.1f' % angle
+        # txt_angle = ' %.1f' % angle
+        draw_obj.text(xy=(x, y + 10),
+                      text=txt_angle,
+                      fill='black',
+                      font=FONT)
+        if head != -1:
+            draw_obj.rectangle(xy=[x, y + 20, x + 60, y + 30],
+                               fill='White')
+            txt_head = 'head:%d' % head
+            draw_obj.text(xy=(x, y + 20),
+                          text=txt_head,
+                          fill='black',
+                          font=FONT)
+            draw_head(draw_obj, box, head, color)
 
 
-def draw_boxes_with_label_and_scores(img_array, boxes, labels, scores, method, is_csl=False, in_graph=True):
+def draw_boxes_with_label_and_scores(img_array, boxes, labels, scores, method, head=None, is_csl=False, in_graph=True):
     if in_graph:
         if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d']:
             img_array = (img_array * np.array(cfgs.PIXEL_STD) + np.array(cfgs.PIXEL_MEAN_)) * 255
@@ -156,7 +214,10 @@ def draw_boxes_with_label_and_scores(img_array, boxes, labels, scores, method, i
     draw_obj = ImageDraw.Draw(img_obj)
     num_of_objs = 0
 
-    for box, a_label, a_score in zip(boxes, labels, scores):
+    if head is None:
+        head = np.ones_like(labels) * -1
+
+    for box, a_label, a_score, a_head in zip(boxes, labels, scores, head):
 
         if a_label != NOT_DRAW_BOXES:
             num_of_objs += 1
@@ -167,51 +228,13 @@ def draw_boxes_with_label_and_scores(img_array, boxes, labels, scores, method, i
                  only_draw_scores(draw_obj, box, a_score, color='White')
             else:
                 if is_csl:
-                    draw_label_with_scores_csl(draw_obj, box, a_label, a_score, color='White')
+                    draw_label_with_scores_csl(draw_obj, box, a_label, a_score, method, a_head, color='White')
                 else:
                     draw_label_with_scores(draw_obj, box, a_label, a_score, color='White')
 
     out_img_obj = Image.blend(raw_img_obj, img_obj, alpha=0.7)
 
     return np.array(out_img_obj)
-
-
-def draw_boxes(img_array, boxes, labels, scores, color, method, is_csl=False, in_graph=True):
-    if in_graph:
-        if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d']:
-            img_array = (img_array * np.array(cfgs.PIXEL_STD) + np.array(cfgs.PIXEL_MEAN_)) * 255
-        else:
-            img_array = img_array + np.array(cfgs.PIXEL_MEAN)
-    img_array.astype(np.float32)
-    boxes = boxes.astype(np.int64)
-    labels = labels.astype(np.int32)
-    img_array = np.array(img_array * 255 / np.max(img_array), dtype=np.uint8)
-
-    img_obj = Image.fromarray(img_array)
-    raw_img_obj = img_obj.copy()
-
-    draw_obj = ImageDraw.Draw(img_obj)
-    num_of_objs = 0
-    for box, a_label, a_score in zip(boxes, labels, scores):
-
-        if a_label != NOT_DRAW_BOXES:
-            num_of_objs += 1
-            draw_a_rectangel_in_img(draw_obj, box, color=color, width=3, method=method)
-            # draw_a_rectangel_in_img(draw_obj, box, color=STANDARD_COLORS[1], width=3, method=method)
-            if a_label == ONLY_DRAW_BOXES:  # -1
-                continue
-            elif a_label == ONLY_DRAW_BOXES_WITH_SCORES:  # -2
-                 only_draw_scores(draw_obj, box, a_score, color='White')
-            else:
-                if is_csl:
-                    draw_label_with_scores_csl(draw_obj, box, a_label, a_score, color='White')
-                else:
-                    draw_label_with_scores(draw_obj, box, a_label, a_score, color='White')
-
-    out_img_obj = Image.blend(raw_img_obj, img_obj, alpha=0.7)
-
-    return np.array(out_img_obj)
-
 
 if __name__ == '__main__':
     img_array = cv2.imread("/home/yjr/PycharmProjects/FPN_TF/tools/inference_image/2.jpg")

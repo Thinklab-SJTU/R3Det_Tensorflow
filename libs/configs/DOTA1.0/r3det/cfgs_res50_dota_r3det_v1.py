@@ -7,36 +7,6 @@ import math
 """
 This is your result for task 1:
 
-    mAP: 0.663127560922365
-    ap of each class:
-    plane:0.8806183496692495,
-    baseball-diamond:0.7389137978157448,
-    bridge:0.42724634527039734,
-    ground-track-field:0.6727269206785866,
-    small-vehicle:0.6580587240161413,
-    large-vehicle:0.7276171243174071,
-    ship:0.7014447630845434,
-    tennis-court:0.8903381923579665,
-    basketball-court:0.7523897218732802,
-    storage-tank:0.6762073662790057,
-    soccer-ball-field:0.5463206107631667,
-    roundabout:0.589204294452238,
-    harbor:0.5607007040750659,
-    swimming-pool:0.6607208327231129,
-    helicopter:0.46440566645956777
-
-The submitted information is :
-
-Description: RetinaNet_DOTA_R3Det_2x_20191108_108w
-Username: SJTU-Det
-Institute: SJTU
-Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
-TeamMembers: yangxue
-
-
-fix reg. loss bug
-This is your result for task 1:
-
     mAP: 0.7026631993550164
     ap of each class:
     plane:0.8866133571041938,

@@ -8,6 +8,18 @@ import math
 v1 + iou-smooth l1
 
 
+This is your result for task 1:
+
+mAP: 0.7028934476676355
+ap of each class: plane:0.8801946201713119, baseball-diamond:0.7764842050617797, bridge:0.4643570412112182, ground-track-field:0.6624822426633358, small-vehicle:0.6904307539944189, large-vehicle:0.7558123585244143, ship:0.7813761581011679, tennis-court:0.9083275367624628, basketball-court:0.7963554875721496, storage-tank:0.8197638602032603, soccer-ball-field:0.561807957156849, roundabout:0.6076092108155148, harbor:0.6332614567691424, swimming-pool:0.6937568188719159, helicopter:0.511382007135589
+The submitted information is :
+
+Description: RetinaNet_DOTA_R3Det_2x_20191128_70.2w
+Username: yangxue
+Institute: DetectionTeamUCAS
+Emailadress: yangxue16@mails.ucas.ac.cn
+TeamMembers: yangxue, yangjirui
+
 """
 
 # ------------------------------------------------

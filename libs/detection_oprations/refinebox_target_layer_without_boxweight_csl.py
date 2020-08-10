@@ -13,6 +13,8 @@ import numpy as np
 from libs.box_utils.rbbox_overlaps import rbbx_overlaps
 from libs.box_utils import bbox_transform
 
+from libs.box_utils.coordinate_convert import coordinate_present_convert
+
 
 def refinebox_target_layer(gt_boxes_r, gt_smooth_label, anchors, pos_threshold, neg_threshold, gpu_id=0):
 
@@ -21,8 +23,14 @@ def refinebox_target_layer(gt_boxes_r, gt_smooth_label, anchors, pos_threshold, 
     if gt_boxes_r.shape[0]:
         # [N, M]
 
-        overlaps = rbbx_overlaps(np.ascontiguousarray(anchors, dtype=np.float32),
-                                 np.ascontiguousarray(gt_boxes_r[:, :-1], dtype=np.float32), gpu_id)
+        if cfgs.ANGLE_RANGE == 180:
+            anchors_ = coordinate_present_convert(anchors, 1)
+
+            overlaps = rbbx_overlaps(np.ascontiguousarray(anchors_, dtype=np.float32),
+                                     np.ascontiguousarray(gt_boxes_r[:, :-1], dtype=np.float32), gpu_id)
+        else:
+            overlaps = rbbx_overlaps(np.ascontiguousarray(anchors, dtype=np.float32),
+                                     np.ascontiguousarray(gt_boxes_r[:, :-1], dtype=np.float32), gpu_id)
 
         # overlaps = np.clip(overlaps, 0.0, 1.0)
 
@@ -51,6 +59,9 @@ def refinebox_target_layer(gt_boxes_r, gt_smooth_label, anchors, pos_threshold, 
         # no annotations? then everything is background
         target_boxes = np.zeros((anchors.shape[0], gt_boxes_r.shape[1]))
         target_smooth_label = np.zeros((anchors.shape[0], 90))
+
+    if cfgs.ANGLE_RANGE == 180:
+        target_boxes = coordinate_present_convert(target_boxes, mode=-1)
 
     target_delta = bbox_transform.rbbox_transform(ex_rois=anchors, gt_rois=target_boxes,
                                                   scale_factors=cfgs.ANCHOR_SCALE_FACTORS)
