@@ -488,10 +488,10 @@ class DetectionNetwork(object):
         xmax = tf.minimum(tf.cast(w - 1, tf.float32), tf.ceil(points[:, 0]))
         ymax = tf.minimum(tf.cast(h - 1, tf.float32), tf.ceil(points[:, 1]))
 
-        left_top = tf.cast(tf.transpose(tf.stack([xmin, ymin], axis=0)), tf.int32)
-        right_bottom = tf.cast(tf.transpose(tf.stack([xmax, ymax], axis=0)), tf.int32)
-        left_bottom = tf.cast(tf.transpose(tf.stack([xmin, ymax], axis=0)), tf.int32)
-        right_top = tf.cast(tf.transpose(tf.stack([xmax, ymin], axis=0)), tf.int32)
+        left_top = tf.cast(tf.transpose(tf.stack([ymin, xmin], axis=0)), tf.int32)
+        right_bottom = tf.cast(tf.transpose(tf.stack([ymax, xmax], axis=0)), tf.int32)
+        left_bottom = tf.cast(tf.transpose(tf.stack([ymax, xmin], axis=0)), tf.int32)
+        right_top = tf.cast(tf.transpose(tf.stack([ymin, xmax], axis=0)), tf.int32)
 
         feature_1x5 = slim.conv2d(inputs=feature_map,
                                   num_outputs=cfgs.efficientdet_model_param_dict[cfgs.NET_NAME]['fpn_num_filters'],

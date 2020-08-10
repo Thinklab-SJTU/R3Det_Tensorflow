@@ -19,7 +19,7 @@ root_path = '/data/yangxue/dataset/RS-SJTU'
 
 image_path = root_path + '/all_data/images'
 rotation_txt_path = root_path + '/all_data/rotation_txt'
-quad_txt_path = root_path + '/all_data/quad_txt'
+polygon_txt_path = root_path + '/all_data/polygon_txt'
 
 image_list = os.listdir(image_path)
 
@@ -35,10 +35,10 @@ mkdir(image_output_train)
 image_output_test = os.path.join(root_path, 'test/images')
 mkdir(image_output_test)
 
-quad_txt_output_train = os.path.join(root_path, 'trainval/quad_txt')
-mkdir(quad_txt_output_train)
-quad_txt_output_test = os.path.join(root_path, 'test/quad_txt')
-mkdir(quad_txt_output_test)
+polygon_txt_output_train = os.path.join(root_path, 'trainval/polygon_txt')
+mkdir(polygon_txt_output_train)
+polygon_txt_output_test = os.path.join(root_path, 'test/polygon_txt')
+mkdir(polygon_txt_output_test)
 
 rotation_txt_output_train = os.path.join(root_path, 'trainval/rotation_txt')
 mkdir(rotation_txt_output_train)
@@ -49,7 +49,7 @@ mkdir(rotation_txt_output_test)
 count = 0
 for i in train_image:
     shutil.copy(os.path.join(image_path, i + '.jpg'), os.path.join(image_output_train, 'P{}.jpg'.format(count)))
-    shutil.copy(os.path.join(quad_txt_path, i + '.txt'), os.path.join(quad_txt_output_train, 'P{}.txt'.format(count)))
+    shutil.copy(os.path.join(polygon_txt_path, i + '.txt'), os.path.join(polygon_txt_output_train, 'P{}.txt'.format(count)))
     shutil.copy(os.path.join(rotation_txt_path, i + '.txt'), os.path.join(rotation_txt_output_train, 'P{}.txt'.format(count)))
     if count % 10 == 0:
         print("process step {}".format(count))
@@ -57,7 +57,7 @@ for i in train_image:
 
 for i in test_image:
     shutil.copy(os.path.join(image_path, i + '.jpg'), os.path.join(image_output_test, 'P{}.jpg'.format(count)))
-    shutil.copy(os.path.join(quad_txt_path, i + '.txt'), os.path.join(quad_txt_output_test, 'P{}.txt'.format(count)))
+    shutil.copy(os.path.join(polygon_txt_path, i + '.txt'), os.path.join(polygon_txt_output_test, 'P{}.txt'.format(count)))
     shutil.copy(os.path.join(rotation_txt_path, i + '.txt'), os.path.join(rotation_txt_output_test, 'P{}.txt'.format(count)))
     if count % 10 == 0:
         print("process step {}".format(count))

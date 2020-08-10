@@ -7,6 +7,7 @@ import sys
 sys.path.append('../../..')
 
 from help_utils.tools import mkdir
+from libs.box_utils.coordinate_convert import backward_convert
 
 
 USE_HEAD = False
@@ -156,7 +157,12 @@ def format_label(txt_list):
 
 
 def clip_image(file_idx, image, boxes_all, width, height, stride_w, stride_h):
-    if len(boxes_all) > 0:
+
+    boxes_all_5 = backward_convert(boxes_all)
+    # print(boxes_all[np.logical_or(boxes_all_5[:, 2] <= 5, boxes_all_5[:, 3] <= 5), :])
+    boxes_all = boxes_all[np.logical_and(boxes_all_5[:, 2] > 5, boxes_all_5[:, 3] > 5), :]
+
+    if boxes_all.shape[0] > 0:
         shape = image.shape
         for start_h in range(0, shape[0], stride_h):
             for start_w in range(0, shape[1], stride_w):
@@ -204,8 +210,8 @@ def clip_image(file_idx, image, boxes_all, width, height, stride_w, stride_h):
                                        "%s_%04d_%04d.jpg" % (file_idx, top_left_row, top_left_col))
                     cv2.imwrite(img, subImage)
 
-                    mkdir(os.path.join(save_dir, 'labeltxt'))
-                    xml = os.path.join(save_dir, 'labeltxt',
+                    mkdir(os.path.join(save_dir, 'labelxml'))
+                    xml = os.path.join(save_dir, 'labelxml',
                                        "%s_%04d_%04d.xml" % (file_idx, top_left_row, top_left_col))
                     save_to_xml(xml, "%s_%04d_%04d" % (file_idx, top_left_row, top_left_col),
                                 subImage.shape[0], subImage.shape[1], box[idx, :], class_list)
@@ -227,7 +233,7 @@ print('find label', len(labels))
 min_length = 1e10
 max_length = 1
 
-img_h, img_w, stride_h, stride_w = 1024, 1024, 624, 624
+img_h, img_w, stride_h, stride_w = 600, 600, 450, 450
 
 for idx, img in enumerate(images):
     print(idx, 'read image', img)

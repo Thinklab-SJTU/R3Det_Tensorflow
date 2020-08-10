@@ -16,7 +16,7 @@ from libs.detection_oprations.refine_proposal_opr_csl import postprocess_detctio
 from libs.detection_oprations.anchor_target_layer_without_boxweight import anchor_target_layer
 from libs.detection_oprations.refinebox_target_layer_without_boxweight_csl import refinebox_target_layer
 from libs.box_utils import bbox_transform
-
+from libs.box_utils.coordinate_convert import coordinate90_2_180_tf, coordinate_present_convert
 
 class DetectionNetwork(object):
 
@@ -30,6 +30,7 @@ class DetectionNetwork(object):
             self.num_anchors_per_location = len(cfgs.ANCHOR_SCALES) * len(cfgs.ANCHOR_RATIOS) * len(cfgs.ANCHOR_ANGLES)
         self.method = cfgs.METHOD
         self.losses_dict = {}
+        self.angle_range = cfgs.ANGLE_RANGE // cfgs.OMEGA
 
     def build_base_network(self, input_img_batch):
 
@@ -149,7 +150,7 @@ class DetectionNetwork(object):
                                          reuse=reuse_flag)
 
         rpn_angle_cls = slim.conv2d(rpn_conv2d_3x3,
-                                    num_outputs=cfgs.ANGLE_RANGE,
+                                    num_outputs=self.angle_range,
                                     kernel_size=[3, 3],
                                     stride=1,
                                     weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
@@ -158,7 +159,7 @@ class DetectionNetwork(object):
                                     activation_fn=None,
                                     reuse=reuse_flag)
 
-        rpn_angle_cls = tf.reshape(rpn_angle_cls, [-1, cfgs.ANGLE_RANGE],
+        rpn_angle_cls = tf.reshape(rpn_angle_cls, [-1, self.angle_range],
                                    name='rpn_{}_angle_cls_reshape'.format(level))
         return rpn_angle_cls
 
@@ -186,7 +187,7 @@ class DetectionNetwork(object):
                                       reuse=reuse_flag)
 
         rpn_angle_cls = slim.conv2d(rpn_conv2d_3x3,
-                                    num_outputs=cfgs.ANGLE_RANGE,
+                                    num_outputs=self.angle_range,
                                     kernel_size=[3, 3],
                                     stride=1,
                                     weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
@@ -197,7 +198,7 @@ class DetectionNetwork(object):
 
         rpn_delta_boxes = tf.reshape(rpn_delta_boxes, [-1, 5],
                                      name='refine_{}_regression_reshape'.format(level))
-        rpn_angle_cls = tf.reshape(rpn_angle_cls, [-1, cfgs.ANGLE_RANGE],
+        rpn_angle_cls = tf.reshape(rpn_angle_cls, [-1, self.angle_range],
                                    name='rpn_{}_angle_cls_reshape'.format(level))
         return rpn_delta_boxes, rpn_angle_cls
 
@@ -337,7 +338,7 @@ class DetectionNetwork(object):
             gtboxes_batch_r = tf.reshape(gtboxes_batch_r, [-1, 6])
             gtboxes_batch_r = tf.cast(gtboxes_batch_r, tf.float32)
 
-            gt_smooth_label = tf.reshape(gt_smooth_label, [-1, cfgs.ANGLE_RANGE])
+            gt_smooth_label = tf.reshape(gt_smooth_label, [-1, self.angle_range])
             gt_smooth_label = tf.cast(gt_smooth_label, tf.float32)
 
         img_shape = tf.shape(input_img_batch)
@@ -360,7 +361,7 @@ class DetectionNetwork(object):
             with tf.variable_scope('build_loss'):
                 labels, target_delta, anchor_states, target_boxes = tf.py_func(func=anchor_target_layer,
                                                                                inp=[gtboxes_batch_h, gtboxes_batch_r,
-                                                                                    anchors],
+                                                                                    anchors, gpu_id],
                                                                                Tout=[tf.float32, tf.float32,
                                                                                      tf.float32, tf.float32])
 
@@ -371,7 +372,9 @@ class DetectionNetwork(object):
 
                 cls_loss = losses.focal_loss(labels, rpn_cls_score, anchor_states)
                 if cfgs.USE_IOU_FACTOR:
-                    reg_loss = losses.iou_smooth_l1_loss(target_delta, rpn_box_pred, anchor_states, target_boxes, anchors)
+                    # reg_loss = losses.iou_smooth_l1_loss_(target_delta, rpn_box_pred, anchor_states, target_boxes, anchors)
+                    reg_loss = losses.iou_smooth_l1_loss_1(rpn_box_pred, anchor_states, target_boxes,
+                                                           anchors)
                 else:
                     reg_loss = losses.smooth_l1_loss(target_delta, rpn_box_pred, anchor_states)
 
@@ -534,39 +537,40 @@ class DetectionNetwork(object):
         xmax = tf.minimum(tf.cast(w - 1, tf.float32), tf.ceil(points[:, 0]))
         ymax = tf.minimum(tf.cast(h - 1, tf.float32), tf.ceil(points[:, 1]))
 
-        left_top = tf.cast(tf.transpose(tf.stack([xmin, ymin], axis=0)), tf.int32)
-        right_bottom = tf.cast(tf.transpose(tf.stack([xmax, ymax], axis=0)), tf.int32)
-        left_bottom = tf.cast(tf.transpose(tf.stack([xmin, ymax], axis=0)), tf.int32)
-        right_top = tf.cast(tf.transpose(tf.stack([xmax, ymin], axis=0)), tf.int32)
+        left_top = tf.cast(tf.transpose(tf.stack([ymin, xmin], axis=0)), tf.int32)
+        right_bottom = tf.cast(tf.transpose(tf.stack([ymax, xmax], axis=0)), tf.int32)
+        left_bottom = tf.cast(tf.transpose(tf.stack([ymax, xmin], axis=0)), tf.int32)
+        right_top = tf.cast(tf.transpose(tf.stack([ymin, xmax], axis=0)), tf.int32)
 
-        feature_1x5 = slim.conv2d(inputs=feature_map,
-                                  num_outputs=cfgs.FPN_CHANNEL,
-                                  kernel_size=[1, 5],
-                                  weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
-                                  biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
-                                  stride=1,
-                                  activation_fn=None,
-                                  scope='refine_1x5_{}'.format(name))
-
-        feature5x1 = slim.conv2d(inputs=feature_1x5,
-                                 num_outputs=cfgs.FPN_CHANNEL,
-                                 kernel_size=[5, 1],
-                                 weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
-                                 biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
-                                 stride=1,
-                                 activation_fn=None,
-                                 scope='refine_5x1_{}'.format(name))
-
-        feature_1x1 = slim.conv2d(inputs=feature_map,
-                                  num_outputs=cfgs.FPN_CHANNEL,
-                                  kernel_size=[1, 1],
-                                  weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
-                                  biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
-                                  stride=1,
-                                  activation_fn=None,
-                                  scope='refine_1x1_{}'.format(name))
-
-        feature = feature5x1 + feature_1x1
+        # feature_1x5 = slim.conv2d(inputs=feature_map,
+        #                           num_outputs=cfgs.FPN_CHANNEL,
+        #                           kernel_size=[1, 5],
+        #                           weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
+        #                           biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
+        #                           stride=1,
+        #                           activation_fn=None,
+        #                           scope='refine_1x5_{}'.format(name))
+        #
+        # feature5x1 = slim.conv2d(inputs=feature_1x5,
+        #                          num_outputs=cfgs.FPN_CHANNEL,
+        #                          kernel_size=[5, 1],
+        #                          weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
+        #                          biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
+        #                          stride=1,
+        #                          activation_fn=None,
+        #                          scope='refine_5x1_{}'.format(name))
+        #
+        # feature_1x1 = slim.conv2d(inputs=feature_map,
+        #                           num_outputs=cfgs.FPN_CHANNEL,
+        #                           kernel_size=[1, 1],
+        #                           weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
+        #                           biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
+        #                           stride=1,
+        #                           activation_fn=None,
+        #                           scope='refine_1x1_{}'.format(name))
+        #
+        # feature = feature5x1 + feature_1x1
+        feature = feature_map
 
         left_top_feature = tf.gather_nd(tf.squeeze(feature), left_top)
         right_bottom_feature = tf.gather_nd(tf.squeeze(feature), right_bottom)
@@ -625,15 +629,22 @@ class DetectionNetwork(object):
                         w = proposal[:, 3] - proposal[:, 1] + 1
                         theta = -90 * tf.ones_like(x_c)
                         proposal = tf.transpose(tf.stack([x_c, y_c, w, h, theta]))
+                    if cfgs.ANGLE_RANGE == 180:
+                        proposal = coordinate90_2_180_tf(proposal, is_radian=False, change_range=True)
+                    # bboxes = bbox_transform.rbbox_transform_inv(boxes=proposal, deltas=box_pred)
+                    # if cfgs.ANGLE_RANGE == 180:
+                    #     bboxes = coordinate90_2_180_tf(bboxes, is_radian=False, change_range=True)
                 else:
                     box_pred = tf.reshape(box_pred, [-1, 5])
                     proposal = tf.reshape(proposal, [-1, 5])
 
                 bboxes = bbox_transform.rbbox_transform_inv(boxes=proposal, deltas=box_pred)
 
+                # bboxes = tf.Print(bboxes, [bboxes], 'bboxes', summarize=50)
+
                 if angle_prob is not None:
                     angle_cls = tf.cast(tf.argmax(tf.sigmoid(angle_prob), axis=1), tf.float32)
-                    angle_cls = tf.reshape(angle_cls, [-1, ]) * -1 - 0.5
+                    angle_cls = (tf.reshape(angle_cls, [-1, ]) * -1 - 0.5) * cfgs.OMEGA
                     x, y, w, h, theta = tf.unstack(bboxes, axis=1)
                     bboxes_angle = tf.transpose(tf.stack([x, y, w, h, angle_cls]))
                     refine_boxes_angle_list.append(bboxes_angle)
@@ -664,13 +675,24 @@ class DetectionNetwork(object):
                     Tout=[tf.float32, tf.float32, tf.float32,
                           tf.float32, tf.float32])
 
-                self.add_anchor_img_smry(input_img_batch, refine_boxes, refine_box_states, 1)
+                if cfgs.ANGLE_RANGE == 180:
+                    refine_boxes_ = tf.py_func(coordinate_present_convert,
+                                               inp=[refine_boxes, 1],
+                                               Tout=[tf.float32])
+                    refine_boxes_ = tf.reshape(refine_boxes_, [-1, 5])
+
+                    self.add_anchor_img_smry(input_img_batch, refine_boxes_, refine_box_states, 1)
+                else:
+                    self.add_anchor_img_smry(input_img_batch, refine_boxes, refine_box_states, 1)
 
                 refine_cls_loss = losses.focal_loss(refine_labels, refine_cls_score, refine_box_states)
-                if False:  # cfgs.USE_IOU_FACTOR:
-                    refine_reg_loss = losses.iou_smooth_l1_loss(refine_target_delta, refine_box_pred,
-                                                                refine_box_states, refine_target_boxes,
-                                                                refine_boxes, is_refine=True)
+                if cfgs.USE_IOU_FACTOR:
+                    # refine_reg_loss = losses.iou_smooth_l1_loss_(refine_target_delta, refine_box_pred,
+                    #                                              refine_box_states, refine_target_boxes,
+                    #                                              refine_boxes, is_refine=True)
+                    refine_reg_loss = losses.iou_smooth_l1_loss_1(refine_box_pred,
+                                                                  refine_box_states, refine_target_boxes,
+                                                                  refine_boxes, is_refine=True)
                 else:
                     refine_reg_loss = losses.smooth_l1_loss(refine_target_delta, refine_box_pred, refine_box_states)
 
