@@ -5,13 +5,15 @@
 
 Techniques:     
 - [x] [ResNet](https://arxiv.org/abs/1512.03385), [MobileNetV2](https://arxiv.org/abs/1801.04381), [EfficientNet](https://arxiv.org/abs/1905.11946)
-- [x] [Feature Refinement Module (FRM)](https://arxiv.org/abs/1908.05612)
-- [x] [Instance Level Denoising (InLD)](https://arxiv.org/abs/2004.13316)
+- [x] [RetinaNet-H, RetinaNet-R](https://arxiv.org/abs/1908.05612)
+- [x] [R<sup>3</sup>Det: Feature Refinement Module (FRM)](https://arxiv.org/abs/1908.05612)
+- [x] [R<sup>3</sup>Det++: Instance Level Denoising (InLD)](https://arxiv.org/abs/2004.13316)
 - [x] [IoU-Smooth L1 Loss](https://arxiv.org/abs/1811.07126)
 - [x] [Circular Smooth Label (CSL)](https://arxiv.org/abs/2003.05597)
 - [x] Anchor Free (one anchor per feature point)
 - [x] [mmdetection version](https://github.com/SJTU-Thinklab-Det/r3det-on-mmdetection) is released
-- [ ] OHDet (Object Heading Detection)
+- [x] Dataset support: DOTA, HRSC2016, ICDAR2015, ICDAR2017 MLT, UCAS-AOD, FDDB, OHD-SJTU
+- [ ] [OHDet: Object Heading Detection]()
 
 ## Pipeline
 ![5](pipeline.png)
