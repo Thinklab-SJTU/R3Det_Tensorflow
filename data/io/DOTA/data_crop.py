@@ -1,5 +1,4 @@
 import os
-import scipy.misc as misc
 from xml.dom.minidom import Document
 import numpy as np
 import copy
@@ -8,6 +7,7 @@ import sys
 sys.path.append('../../..')
 
 from help_utils.tools import mkdir
+from libs.box_utils.coordinate_convert import backward_convert
 
 
 def save_to_xml(save_path, im_height, im_width, objects_axis, label_name):
@@ -147,7 +147,13 @@ def format_label(txt_list):
 
 
 def clip_image(file_idx, image, boxes_all, width, height, stride_w, stride_h):
-    if len(boxes_all) > 0:
+    min_pixel = 5
+    print(file_idx)
+    boxes_all_5 = backward_convert(boxes_all[:, :8], False)
+    print(boxes_all[np.logical_or(boxes_all_5[:, 2] <= min_pixel, boxes_all_5[:, 3] <= min_pixel), :])
+    boxes_all = boxes_all[np.logical_and(boxes_all_5[:, 2] > min_pixel, boxes_all_5[:, 3] > min_pixel), :]
+
+    if boxes_all.shape[0] > 0:
         shape = image.shape
         for start_h in range(0, shape[0], stride_h):
             for start_w in range(0, shape[1], stride_w):
@@ -196,11 +202,11 @@ def clip_image(file_idx, image, boxes_all, width, height, stride_w, stride_h):
 
 
 print('class_list', len(class_list))
-raw_data = '/data/dataset/DOTA/train/'
+raw_data = '/data/yangxue/dataset/DOTA/val/'
 raw_images_dir = os.path.join(raw_data, 'images', 'images')
 raw_label_dir = os.path.join(raw_data, 'labelTxt', 'labelTxt')
 
-save_dir = '/data/dataset/DOTA/DOTA1.0/trainval/'
+save_dir = '/data/yangxue/dataset/DOTA/DOTA1.0/trainval/'
 
 images = [i for i in os.listdir(raw_images_dir) if 'png' in i]
 labels = [i for i in os.listdir(raw_label_dir) if 'txt' in i]
@@ -219,4 +225,6 @@ for idx, img in enumerate(images):
 
     txt_data = open(os.path.join(raw_label_dir, img.replace('png', 'txt')), 'r').readlines()
     box = format_label(txt_data)
-    clip_image(img.strip('.png'), img_data, box, img_w, img_h, stride_w, stride_h)
+
+    if box.shape[0] > 0:
+        clip_image(img.strip('.png'), img_data, box, img_w, img_h, stride_w, stride_h)
