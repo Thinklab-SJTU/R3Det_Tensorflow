@@ -181,8 +181,6 @@ def train():
             'refine_reg_loss': tf.constant(0., tf.float32),
             'refine_cls_loss_stage3': tf.constant(0., tf.float32),
             'refine_reg_loss_stage3': tf.constant(0., tf.float32),
-            'refine_cls_loss_stage4': tf.constant(0., tf.float32),
-            'refine_reg_loss_stage4': tf.constant(0., tf.float32),
             'total_losses': tf.constant(0., tf.float32),
         }
 
@@ -345,6 +343,9 @@ def train():
                         for k in total_loss_dict_.keys():
                             loss_str += '%s:%.3f\n' % (k, total_loss_dict_[k])
                         print(loss_str)
+
+                        if np.isnan(total_loss_dict_['total_losses']):
+                            sys.exit(0)
 
                     else:
                         if step % cfgs.SMRY_ITER == 0:

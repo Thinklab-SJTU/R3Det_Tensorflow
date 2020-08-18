@@ -344,6 +344,9 @@ def train():
                             loss_str += '%s:%.3f\n' % (k, total_loss_dict_[k])
                         print(loss_str)
 
+                        if np.isnan(total_loss_dict_['total_losses']):
+                            sys.exit(0)
+
                     else:
                         if step % cfgs.SMRY_ITER == 0:
                             _, global_stepnp, summary_str = sess.run([train_op, global_step, summary_op])
