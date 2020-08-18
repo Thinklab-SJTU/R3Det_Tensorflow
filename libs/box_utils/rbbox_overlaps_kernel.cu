@@ -255,7 +255,11 @@ __device__ inline float devRotateIoU(float const * const region1, float const * 
   float area2 = region2[2] * region2[3];
   float area_inter = inter(region1, region2);
   
-  float result = area_inter / (area1 + area2 - area_inter);
+  if (region1[2] < 0.1 | region1[3] < 0.1 | region2[2] < 0.1 | region2[3] < 0.1){
+    area_inter = 0;
+  }
+
+  float result = area_inter / (area1 + area2 - area_inter + 1e-6);
 
   if(result < 0) {
     result = 0.0;
