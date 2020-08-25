@@ -142,7 +142,7 @@ def train():
                            is_training=True)
 
         optimizer = tf.train.MomentumOptimizer(lr, momentum=cfgs.MOMENTUM)
-        retinanet = build_whole_network_r3det_plusplus.DetectionNetwork(
+        r3det_plusplus = build_whole_network_r3det_plusplus.DetectionNetwork(
             base_network_name=cfgs.NET_NAME,
             is_training=True)
 
@@ -216,10 +216,10 @@ def train():
                                                                     target_height=tf.cast(img_shape[0], tf.int32),
                                                                     target_width=tf.cast(img_shape[1], tf.int32))
 
-                                outputs = retinanet.build_whole_detection_network(input_img_batch=img,
-                                                                                  gtboxes_batch_h=gtboxes_and_label_h,
-                                                                                  gtboxes_batch_r=gtboxes_and_label_r,
-                                                                                  gpu_id=i)
+                                outputs = r3det_plusplus.build_whole_detection_network(input_img_batch=img,
+                                                                                       gtboxes_batch_h=gtboxes_and_label_h,
+                                                                                       gtboxes_batch_r=gtboxes_and_label_r,
+                                                                                       gpu_id=i)
                                 gtboxes_in_img_h = draw_boxes_with_categories(img_batch=img,
                                                                               boxes=gtboxes_and_label_h[:, :-1],
                                                                               labels=gtboxes_and_label_h[:, -1],
@@ -294,7 +294,7 @@ def train():
         # train_op = optimizer.apply_gradients(final_gvs, global_step=global_step)
         summary_op = tf.summary.merge_all()
 
-        restorer, restore_ckpt = retinanet.get_restorer()
+        restorer, restore_ckpt = r3det_plusplus.get_restorer()
         saver = tf.train.Saver(max_to_keep=5)
 
         init_op = tf.group(

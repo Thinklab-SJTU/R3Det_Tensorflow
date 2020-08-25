@@ -148,7 +148,7 @@ def train():
         tf.summary.scalar('lr', lr)
 
         optimizer = tf.train.MomentumOptimizer(lr, momentum=cfgs.MOMENTUM)
-        retinanet = build_whole_network_r3det_csl.DetectionNetwork(base_network_name=cfgs.NET_NAME,
+        r3det_csl = build_whole_network_r3det_csl.DetectionNetwork(base_network_name=cfgs.NET_NAME,
                                                                    is_training=True)
 
         with tf.name_scope('get_batch'):
@@ -249,7 +249,7 @@ def train():
                                                                     target_height=tf.cast(img_shape[0], tf.int32),
                                                                     target_width=tf.cast(img_shape[1], tf.int32))
 
-                                outputs = retinanet.build_whole_detection_network(input_img_batch=img,
+                                outputs = r3det_csl.build_whole_detection_network(input_img_batch=img,
                                                                                   gtboxes_batch_h=gtboxes_and_label_h,
                                                                                   gtboxes_batch_r=gtboxes_and_label_r,
                                                                                   gt_smooth_label=gt_smooth_label,
@@ -341,7 +341,7 @@ def train():
         # train_op = optimizer.apply_gradients(final_gvs, global_step=global_step)
         summary_op = tf.summary.merge_all()
 
-        restorer, restore_ckpt = retinanet.get_restorer()
+        restorer, restore_ckpt = r3det_csl.get_restorer()
         saver = tf.train.Saver(max_to_keep=5)
 
         init_op = tf.group(
