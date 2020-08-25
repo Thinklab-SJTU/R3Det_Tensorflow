@@ -113,12 +113,12 @@ def worker(gpu_id, images, det_net, args, result_queue):
                         det_boxes_r_ = forward_convert(det_boxes_r_, False)
                         det_boxes_r_[:, 0::2] *= (src_w / resized_w)
                         det_boxes_r_[:, 1::2] *= (src_h / resized_h)
-                        det_boxes_r_ = backward_convert(det_boxes_r_, False)
+                        # det_boxes_r_ = backward_convert(det_boxes_r_, False)
 
                         for ii in range(len(det_boxes_r_)):
                             box_rotate = det_boxes_r_[ii]
-                            box_rotate[0] = box_rotate[0] + ww_
-                            box_rotate[1] = box_rotate[1] + hh_
+                            box_rotate[0::2] = box_rotate[0::2] + ww_
+                            box_rotate[1::2] = box_rotate[1::2] + hh_
                             box_res_rotate.append(box_rotate)
                             label_res_rotate.append(det_category_r_[ii])
                             score_res_rotate.append(det_scores_r_[ii])
@@ -130,7 +130,8 @@ def worker(gpu_id, images, det_net, args, result_queue):
             box_res_rotate_ = []
             label_res_rotate_ = []
             score_res_rotate_ = []
-            threshold = {'ship': 0.05, 'plane': 0.3}
+            threshold = {'small-vehicle': 0.2, 'ship': 0.2, 'plane': 0.3,
+                         'large-vehicle': 0.1, 'helicopter': 0.2, 'harbor': 0.0001}
 
             for sub_class in range(1, cfgs.CLASS_NUM + 1):
                 index = np.where(label_res_rotate == sub_class)[0]
@@ -140,20 +141,21 @@ def worker(gpu_id, images, det_net, args, result_queue):
                 tmp_label_r = label_res_rotate[index]
                 tmp_score_r = score_res_rotate[index]
 
-                tmp_boxes_r = np.array(tmp_boxes_r)
-                tmp = np.zeros([tmp_boxes_r.shape[0], tmp_boxes_r.shape[1] + 1])
-                tmp[:, 0:-1] = tmp_boxes_r
-                tmp[:, -1] = np.array(tmp_score_r)
+                tmp_boxes_r_ = backward_convert(tmp_boxes_r, False)
 
                 try:
-                    inx = nms_rotate.nms_rotate_cpu(boxes=np.array(tmp_boxes_r),
+                    inx = nms_rotate.nms_rotate_cpu(boxes=np.array(tmp_boxes_r_),
                                                     scores=np.array(tmp_score_r),
                                                     iou_threshold=threshold[LABEL_NAME_MAP[sub_class]],
                                                     max_output_size=500)
                 except:
+                    tmp_boxes_r_ = np.array(tmp_boxes_r_)
+                    tmp = np.zeros([tmp_boxes_r_.shape[0], tmp_boxes_r_.shape[1] + 1])
+                    tmp[:, 0:-1] = tmp_boxes_r_
+                    tmp[:, -1] = np.array(tmp_score_r)
                     # Note: the IoU of two same rectangles is 0, which is calculated by rotate_gpu_nms
-                    jitter = np.zeros([tmp_boxes_r.shape[0], tmp_boxes_r.shape[1] + 1])
-                    jitter[:, 0] += np.random.rand(tmp_boxes_r.shape[0], ) / 1000
+                    jitter = np.zeros([tmp_boxes_r_.shape[0], tmp_boxes_r_.shape[1] + 1])
+                    jitter[:, 0] += np.random.rand(tmp_boxes_r_.shape[0], ) / 1000
                     inx = rotate_gpu_nms(np.array(tmp, np.float32) + np.array(jitter, np.float32),
                                          float(threshold[LABEL_NAME_MAP[sub_class]]), 0)
 
@@ -197,10 +199,11 @@ def test_ohd_sjtu(det_net, real_test_img_list, args, txt_name):
             draw_path = os.path.join(save_path, 'ohd_sjtu_img_vis', nake_name)
 
             draw_img = np.array(cv2.imread(res['image_id']), np.float32)
+            detected_boxes = backward_convert(res['boxes'], with_label=False)
 
             detected_indices = res['scores'] >= cfgs.VIS_SCORE
             detected_scores = res['scores'][detected_indices]
-            detected_boxes = res['boxes'][detected_indices]
+            detected_boxes = detected_boxes[detected_indices]
             detected_categories = res['labels'][detected_indices]
 
             final_detections = draw_box_in_img.draw_boxes_with_label_and_scores(draw_img,
@@ -221,9 +224,9 @@ def test_ohd_sjtu(det_net, real_test_img_list, args, txt_name):
                     continue
                 write_handle[sub_class] = open(os.path.join(save_path, 'ohd_sjtu_res', 'Task1_%s.txt' % sub_class), 'a+')
 
-            rboxes = forward_convert(res['boxes'], with_label=False)
+            # rboxes = forward_convert(res['boxes'], with_label=False)
 
-            for i, rbox in enumerate(rboxes):
+            for i, rbox in enumerate(res['boxes']):
                 command = '%s %.3f %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f\n' % (res['image_id'].split('/')[-1].split('.')[0],
                                                                                  res['scores'][i],
                                                                                  rbox[0], rbox[1], rbox[2], rbox[3],
@@ -277,9 +280,9 @@ def eval(num_imgs, args):
     else:
         real_test_img_list = test_imgname_list[: num_imgs]
 
-    retinanet = build_whole_network_r3det.DetectionNetwork(base_network_name=cfgs.NET_NAME,
-                                                           is_training=False)
-    test_ohd_sjtu(det_net=retinanet, real_test_img_list=real_test_img_list, args=args, txt_name=txt_name)
+    r3det = build_whole_network_r3det.DetectionNetwork(base_network_name=cfgs.NET_NAME,
+                                                       is_training=False)
+    test_ohd_sjtu(det_net=r3det, real_test_img_list=real_test_img_list, args=args, txt_name=txt_name)
 
     if not args.show_box:
         os.remove(txt_name)
@@ -302,16 +305,16 @@ def parse_args():
                         action='store_true')
     parser.add_argument('--h_len', dest='h_len',
                         help='image height',
-                        default=1024, type=int)
+                        default=600, type=int)
     parser.add_argument('--w_len', dest='w_len',
                         help='image width',
-                        default=1024, type=int)
+                        default=600, type=int)
     parser.add_argument('--h_overlap', dest='h_overlap',
                         help='height overlap',
-                        default=400, type=int)
+                        default=150, type=int)
     parser.add_argument('--w_overlap', dest='w_overlap',
                         help='width overlap',
-                        default=400, type=int)
+                        default=150, type=int)
     args = parser.parse_args()
     return args
 

@@ -113,12 +113,12 @@ def worker(gpu_id, images, det_net, args, result_queue):
                         det_boxes_r_ = forward_convert(det_boxes_r_, False)
                         det_boxes_r_[:, 0::2] *= (src_w / resized_w)
                         det_boxes_r_[:, 1::2] *= (src_h / resized_h)
-                        det_boxes_r_ = backward_convert(det_boxes_r_, False)
+                        # det_boxes_r_ = backward_convert(det_boxes_r_, False)
 
                         for ii in range(len(det_boxes_r_)):
                             box_rotate = det_boxes_r_[ii]
-                            box_rotate[0] = box_rotate[0] + ww_
-                            box_rotate[1] = box_rotate[1] + hh_
+                            box_rotate[0::2] = box_rotate[0::2] + ww_
+                            box_rotate[1::2] = box_rotate[1::2] + hh_
                             box_res_rotate.append(box_rotate)
                             label_res_rotate.append(det_category_r_[ii])
                             score_res_rotate.append(det_scores_r_[ii])

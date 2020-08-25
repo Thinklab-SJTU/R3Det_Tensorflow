@@ -121,10 +121,10 @@ def eval_with_plac(img_dir, det_net, num_imgs, image_ext, draw_imgs=False):
 
 def eval(num_imgs, img_dir, image_ext, test_annotation_path, draw_imgs):
 
-    retinanet = build_whole_network_r3det.DetectionNetwork(base_network_name=cfgs.NET_NAME,
-                                                           is_training=False)
+    r3det = build_whole_network_r3det.DetectionNetwork(base_network_name=cfgs.NET_NAME,
+                                                       is_training=False)
 
-    all_boxes_r = eval_with_plac(img_dir=img_dir, det_net=retinanet,
+    all_boxes_r = eval_with_plac(img_dir=img_dir, det_net=r3det,
                                  num_imgs=num_imgs, image_ext=image_ext, draw_imgs=draw_imgs)
 
     # with open(cfgs.VERSION + '_detections_r.pkl', 'rb') as f2:
