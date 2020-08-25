@@ -102,8 +102,8 @@ def rbbox_transform(ex_rois, gt_rois, scale_factors=None):
     targets_dx = (gt_rois[:, 0] - ex_rois[:, 0]) / (ex_rois[:, 2] + 1)
     targets_dy = (gt_rois[:, 1] - ex_rois[:, 1]) / (ex_rois[:, 3] + 1)
 
-    targets_dw = np.log(gt_rois[:, 2] / (ex_rois[:, 2] + 1))
-    targets_dh = np.log(gt_rois[:, 3] / (ex_rois[:, 3] + 1))
+    targets_dw = np.log(gt_rois[:, 2] / (ex_rois[:, 2] + 1) + 1e-5)
+    targets_dh = np.log(gt_rois[:, 3] / (ex_rois[:, 3] + 1) + 1e-5)
 
     targets_dtheta = (gt_rois[:, 4] - ex_rois[:, 4]) * np.pi / 180
 

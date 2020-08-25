@@ -305,9 +305,9 @@ def iou_smooth_l1_loss_1(preds, anchor_state, target_boxes, anchors, sigma=3.0, 
                                                     scale_factors=cfgs.ANCHOR_SCALE_FACTORS)
 
     boxes_pred = tf.reshape(boxes_pred, [-1, 5])
-    target_boxes = tf.reshape(target_boxes, [-1, 5])
+    target_boxes = tf.reshape(target_boxes, [-1, 6])
     boxes_pred_x, boxes_pred_y, boxes_pred_w, boxes_pred_h, boxes_pred_theta = tf.unstack(boxes_pred, axis=-1)
-    target_boxes_x, target_boxes_y, target_boxes_w, target_boxes_h, target_boxes_theta = tf.unstack(target_boxes, axis=-1)
+    target_boxes_x, target_boxes_y, target_boxes_w, target_boxes_h, target_boxes_theta, _ = tf.unstack(target_boxes, axis=-1)
 
     # compute smooth L1 loss
     # f(x) = 0.5 * (sigma * x)^2          if |x| < 1 / sigma / sigma
@@ -331,7 +331,7 @@ def iou_smooth_l1_loss_1(preds, anchor_state, target_boxes, anchors, sigma=3.0, 
                           Tout=[tf.float32])
 
     overlaps = tf.reshape(overlaps, [-1, 1])
-    iou_loss_appro = tf.reshape(tf.reduce_sum(iou_loss_appro, axis=1), [-1, 1])
+    iou_loss_appro = tf.reshape(iou_loss_appro, [-1, 1])
     # 1-exp(1-x)
     iou_factor = tf.stop_gradient(tf.exp(alpha*(1-overlaps)**beta)-1) / (tf.stop_gradient(iou_loss_appro) + cfgs.EPSILON)
     # iou_factor = tf.stop_gradient(1-overlaps) / (tf.stop_gradient(regression_loss) + cfgs.EPSILON)

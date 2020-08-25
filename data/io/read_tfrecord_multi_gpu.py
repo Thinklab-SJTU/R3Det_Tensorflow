@@ -12,20 +12,6 @@ sys.path.append('../../')
 
 from data.io import image_preprocess_multi_gpu as image_preprocess
 from libs.configs import cfgs
-from libs.box_utils.coordinate_convert import forward_convert, backward_convert
-
-
-def filter_small_gt(gtboxes):
-    gtboxes_5 = backward_convert(gtboxes)
-    gtboxes_5_ = gtboxes_5[gtboxes_5[:, 2] >= 5, :]
-    if gtboxes_5_.shape[0] != 0:
-        gtboxes_5_ = gtboxes_5_[gtboxes_5_[:, 3] >= 5, :]
-    if gtboxes_5_.shape[0] == 0:
-        gtboxes_5_ = np.reshape(gtboxes_5[0, :], [-1, 6])
-        gtboxes_5_[:, 2] = 5.
-        gtboxes_5_[:, 3] = 5.
-    gtboxes_8 = forward_convert(gtboxes_5_)
-    return gtboxes_8
 
 
 def read_single_example_and_decode(filename_queue):
@@ -78,9 +64,11 @@ def read_and_prepocess_single_img(filename_queue, shortside_len, is_training):
             img, gtboxes_and_label = image_preprocess.random_rotate_img(img_tensor=img,
                                                                         gtboxes_and_label=gtboxes_and_label)
 
-        img, gtboxes_and_label, img_h, img_w = image_preprocess.short_side_resize(img_tensor=img, gtboxes_and_label=gtboxes_and_label,
+        img, gtboxes_and_label, img_h, img_w = image_preprocess.short_side_resize(img_tensor=img,
+                                                                                  gtboxes_and_label=gtboxes_and_label,
                                                                                   target_shortside_len=shortside_len,
                                                                                   length_limitation=cfgs.IMG_MAX_LENGTH)
+
         if cfgs.HORIZONTAL_FLIP:
             img, gtboxes_and_label = image_preprocess.random_flip_left_right(img_tensor=img,
                                                                              gtboxes_and_label=gtboxes_and_label)
@@ -110,7 +98,7 @@ def next_batch(dataset_name, batch_size, shortside_len, is_training):
     # assert batch_size == 1, "we only support batch_size is 1.We may support large batch_size in the future"
 
     valid_dataset= ['DOTA1.5', 'ICDAR2015', 'pascal', 'coco', 'bdd100k', 'DOTA', 'DOTA800', 'DOTA600',
-                    'HRSC2016', 'UCAS-AOD', 'OHD-SJTU', 'RS-SJTU_HEAD', 'OHD-SJTU-600']
+                    'HRSC2016', 'UCAS-AOD', 'OHD-SJTU', 'OHD-SJTU-600', 'OHD-SJTU-ALL-600']
     if dataset_name not in valid_dataset:
         raise ValueError('dataSet name must be in {}'.format(valid_dataset))
 

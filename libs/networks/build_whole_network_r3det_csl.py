@@ -372,9 +372,9 @@ class DetectionNetwork(object):
 
                 cls_loss = losses.focal_loss(labels, rpn_cls_score, anchor_states)
                 if cfgs.USE_IOU_FACTOR:
-                    # reg_loss = losses.iou_smooth_l1_loss_(target_delta, rpn_box_pred, anchor_states, target_boxes, anchors)
-                    reg_loss = losses.iou_smooth_l1_loss_1(rpn_box_pred, anchor_states, target_boxes,
-                                                           anchors)
+                    reg_loss = losses.iou_smooth_l1_loss_(target_delta, rpn_box_pred, anchor_states, target_boxes, anchors)
+                    # reg_loss = losses.iou_smooth_l1_loss_1(rpn_box_pred, anchor_states, target_boxes,
+                    #                                        anchors)
                 else:
                     reg_loss = losses.smooth_l1_loss(target_delta, rpn_box_pred, anchor_states)
 
@@ -687,12 +687,12 @@ class DetectionNetwork(object):
 
                 refine_cls_loss = losses.focal_loss(refine_labels, refine_cls_score, refine_box_states)
                 if cfgs.USE_IOU_FACTOR:
-                    # refine_reg_loss = losses.iou_smooth_l1_loss_(refine_target_delta, refine_box_pred,
-                    #                                              refine_box_states, refine_target_boxes,
-                    #                                              refine_boxes, is_refine=True)
-                    refine_reg_loss = losses.iou_smooth_l1_loss_1(refine_box_pred,
-                                                                  refine_box_states, refine_target_boxes,
-                                                                  refine_boxes, is_refine=True)
+                    refine_reg_loss = losses.iou_smooth_l1_loss_(refine_target_delta, refine_box_pred,
+                                                                 refine_box_states, refine_target_boxes,
+                                                                 refine_boxes, is_refine=True)
+                    # refine_reg_loss = losses.iou_smooth_l1_loss_1(refine_box_pred,
+                    #                                               refine_box_states, refine_target_boxes,
+                    #                                               refine_boxes, is_refine=True)
                 else:
                     refine_reg_loss = losses.smooth_l1_loss(refine_target_delta, refine_box_pred, refine_box_states)
 

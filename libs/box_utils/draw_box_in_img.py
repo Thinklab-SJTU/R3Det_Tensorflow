@@ -6,6 +6,7 @@ import numpy as np
 
 from PIL import Image, ImageDraw, ImageFont
 import cv2
+import random
 
 from libs.configs import cfgs
 from libs.label_name_dict.label_dict import LABEL_NAME_MAP
@@ -48,6 +49,7 @@ FONT = ImageFont.load_default()
 def find_head_edge(box, head):
     head_dict = {0: '11', 1: '10', 2: '00', 3: '01'}
     flag = head_dict[int(head)]
+    box[4] += random.random() * 0.1
     box_eight = forward_convert(np.array([box]), False)[0]
     box_eight = np.reshape(box_eight, [4, 2])
     four_edges = [[box_eight[0], box_eight[1]], [box_eight[1], box_eight[2]],

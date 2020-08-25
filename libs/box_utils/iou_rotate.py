@@ -4,9 +4,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import time
-import tensorflow as tf
-import math
+import sys
+
+sys.path.append('../..')
 # from help_utils.gaussian_wasserstein_distance import get_element1, get_element4
 from libs.box_utils.coordinate_convert import *
 from libs.box_utils.rbbox_overlaps import rbbx_overlaps
@@ -91,7 +91,12 @@ def iou_rotate_calculate2(boxes1, boxes2):
 
                 int_area = cv2.contourArea(order_pts)
 
-                inter = int_area * 1.0 / (area1[i] + area2[i] - int_area + 1.0)
+                inter = int_area * 1.0 / (area1[i] + area2[i] - int_area + 1e-4)
+
+                # if boxes1[i][2] < 0.1 or boxes1[i][3] < 0.1 or boxes2[i][2] < 0.1 or boxes2[i][3] < 0.1:
+                #     inter = 0
+
+                inter = max(0.0, min(1.0, inter))
 
                 temp_ious.append(inter)
             else:
@@ -226,6 +231,8 @@ def gaussian_wasserstein_distance(boxes1, boxes2):
     return dis
 
 if __name__ == '__main__':
+    from help_utils.gaussian_wasserstein_distance import get_element1, get_element4
+
     boxes1 = np.array([
                        [50, 50, 10, 70, -45],
                        [50, 50, 10, 70, -45],
@@ -255,6 +262,22 @@ if __name__ == '__main__':
     print(np.argsort(diou_rotate_calculate(boxes1, boxes2).reshape(-1, )*-1))
     print(np.argsort(np.array(gaussian_wasserstein_distance(boxes1, boxes2))))
     print(np.argsort(np.array(gaussian_wasserstein_distance_(boxes1, boxes2))))
+
+    # boxes1 = np.array([
+    #     [150, 150, 1e-15, 5, -45],
+    # ], np.float32)
+    #
+    # boxes2 = np.array([
+    #     [50, 50, 5, 1e-15, -45]], np.float32)
+    #
+    # from libs.box_utils.overlaps_cython.overlaps_cython import rbox_overlaps
+    #
+    # overlaps = rbox_overlaps(np.array(boxes1, dtype=np.float32),
+    #                          np.array(boxes2, dtype=np.float32))
+    #
+    # print(overlaps)
+    #
+    # print(rbbx_overlaps(boxes1, boxes2, 3))
 
 
 

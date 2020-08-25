@@ -13,7 +13,7 @@ Techniques:
 - [x] Anchor Free (one anchor per feature point)
 - [x] [mmdetection version](https://github.com/SJTU-Thinklab-Det/r3det-on-mmdetection) is released
 - [x] Dataset support: DOTA, HRSC2016, ICDAR2015, ICDAR2017 MLT, UCAS-AOD, FDDB, OHD-SJTU
-- [ ] [OHDet: Object Heading Detection]()
+- [x] [OHDet: Object Heading Detection](https://github.com/SJTU-Thinklab-Det/OHDet_Tensorflow)
 
 ## Pipeline
 ![5](pipeline.png)
@@ -52,19 +52,19 @@ cd $PATH_ROOT/libs/box_utils/
 python setup.py build_ext --inplace
 ```
 
-## Train
+## Train 
 
 1、If you want to train your own data, please note:  
 ```     
 (1) Modify parameters (such as CLASS_NUM, DATASET_NAME, VERSION, etc.) in $PATH_ROOT/libs/configs/cfgs.py
-(2) Add category information in $PATH_ROOT/libs/label_name_dict/lable_dict.py     
+(2) Add category information in $PATH_ROOT/libs/label_name_dict/label_dict.py     
 (3) Add data_name to $PATH_ROOT/data/io/read_tfrecord_multi_gpu.py  
 ```     
 
 2、Make tfrecord     
 For DOTA dataset:      
 ```  
-cd $PATH_ROOT\data\io\DOTA
+cd $PATH_ROOT/data/io/DOTA
 python data_crop.py
 ```  
 

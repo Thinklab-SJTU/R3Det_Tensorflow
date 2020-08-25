@@ -47,9 +47,9 @@ def backward_convert(coordinate, with_label=True):
 
             x, y, w, h, theta = rect1[0][0], rect1[0][1], rect1[1][0], rect1[1][1], rect1[2]
 
-            # if theta == 0:
-            #     w, h = h, w
-            #     theta -= 90
+            if theta == 0:
+                w, h = h, w
+                theta -= 90
 
             boxes.append([x, y, w, h, theta, rect[-1]])
 
@@ -61,9 +61,9 @@ def backward_convert(coordinate, with_label=True):
 
             x, y, w, h, theta = rect1[0][0], rect1[0][1], rect1[1][0], rect1[1][1], rect1[2]
 
-            # if theta == 0:
-            #     w, h = h, w
-            #     theta -= 90
+            if theta == 0:
+                w, h = h, w
+                theta -= 90
 
             boxes.append([x, y, w, h, theta])
 
@@ -289,16 +289,15 @@ if __name__ == '__main__':
     # print(coord2)
     # print(coordinate_present_convert(coord, mode=-1))
 
-    # coord3 = np.array([[150, 150, 50, 100, -90],
-    #                   [150, 150, 100, 50, -90],
-    #                   [150, 150, 50, 100, -45],
-    #                   [150, 150, 100, 50, -45]], dtype=np.float32)
+    coord3 = np.array([[150, 150, 150, 20, -95],
+                      [150, 150, 20, 150, -5]], dtype=np.float32)
+    print(forward_convert(coord3, False))
 
-    coord4 = np.array([[0, 0, 0, 180, 20, 180, 20, 0],
-                       [10, 0, 0, 20, 180, 20, 180, 0]], dtype=np.float32)
-    print(backward_convert(coord4, False))
-    coord5 = np.array([[-3.0636845, 1.479856, 51.584435, 33.250473, -17.427048]])
-    print(coordinate_present_convert(coord5, 1))
+    # coord4 = np.array([[0, 0, 0, 180, 20, 180, 20, 0],
+    #                    [10, 0, 0, 20, 180, 20, 180, 0]], dtype=np.float32)
+    # print(backward_convert(coord4, False))
+    # coord5 = np.array([[-3.0636845, 1.479856, 51.584435, 33.250473, -17.427048]])
+    # print(coordinate_present_convert(coord5, 1))
 
     # coord4 = coordinate5_2_8_tf(tf.convert_to_tensor(coord3))
     # coord5 = coordinate_present_convert(coordinate_present_convert(coord3, mode=-1), mode=1)

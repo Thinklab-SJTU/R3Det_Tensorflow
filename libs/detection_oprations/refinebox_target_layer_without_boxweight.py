@@ -12,6 +12,7 @@ from libs.configs import cfgs
 import numpy as np
 from libs.box_utils.rbbox_overlaps import rbbx_overlaps
 from libs.box_utils import bbox_transform
+from libs.box_utils.iou_cpu import get_iou_matrix
 
 
 def refinebox_target_layer(gt_boxes_r, anchors, pos_threshold, neg_threshold, gpu_id=0):
@@ -21,6 +22,9 @@ def refinebox_target_layer(gt_boxes_r, anchors, pos_threshold, neg_threshold, gp
     if gt_boxes_r.shape[0]:
         # [N, M]
 
+        # overlaps = get_iou_matrix(np.ascontiguousarray(anchors, dtype=np.float32),
+        #                           np.ascontiguousarray(gt_boxes_r[:, :-1], dtype=np.float32))
+        #
         overlaps = rbbx_overlaps(np.ascontiguousarray(anchors, dtype=np.float32),
                                  np.ascontiguousarray(gt_boxes_r[:, :-1], dtype=np.float32), gpu_id)
 

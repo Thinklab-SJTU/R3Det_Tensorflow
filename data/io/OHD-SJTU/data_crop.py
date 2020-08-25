@@ -10,7 +10,7 @@ from help_utils.tools import mkdir
 from libs.box_utils.coordinate_convert import backward_convert
 
 
-USE_HEAD = False
+USE_HEAD = True
 
 
 def save_to_xml(save_path, name, im_height, im_width, objects_axis, label_name):
@@ -134,7 +134,7 @@ def save_to_xml(save_path, name, im_height, im_width, objects_axis, label_name):
     f.close()
 
 
-class_list = ['plane', 'ship']
+class_list = ['plane', 'small-vehicle', 'large-vehicle', 'ship', 'harbor', 'helicopter']
 
 
 def format_label(txt_list):
@@ -214,11 +214,11 @@ def clip_image(file_idx, image, boxes_all, width, height, stride_w, stride_h):
 
 
 print('class_list', len(class_list))
-raw_data = '/data/yangxue/dataset/OHD-SJTU/trainval/'
+raw_data = '/data/yangxue/dataset/OHD-SJTU-ALL/trainval/'
 raw_images_dir = os.path.join(raw_data, 'images')
 raw_label_dir = os.path.join(raw_data, 'rotation_txt')
 
-save_dir = '/data/yangxue/dataset/OHD-SJTU/crop/trainval/'
+save_dir = '/data/yangxue/dataset/OHD-SJTU-ALL/crop_head/trainval/'
 
 images = [i for i in os.listdir(raw_images_dir) if 'jpg' in i]
 labels = [i for i in os.listdir(raw_label_dir) if 'txt' in i]

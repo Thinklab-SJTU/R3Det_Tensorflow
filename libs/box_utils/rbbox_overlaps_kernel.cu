@@ -261,8 +261,8 @@ __device__ inline float devRotateIoU(float const * const region1, float const * 
 
   float result = area_inter / (area1 + area2 - area_inter + 1e-6);
 
-  if(result < 0) {
-    result = 0.0;
+  if(result < 0 | result > 1) {
+    result = 0;
   }
   return result;
   
