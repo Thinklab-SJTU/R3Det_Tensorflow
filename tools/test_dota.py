@@ -149,7 +149,7 @@ def worker(gpu_id, images, det_net, args, result_queue):
                     inx = nms_rotate.nms_rotate_cpu(boxes=np.array(tmp_boxes_r_),
                                                     scores=np.array(tmp_score_r),
                                                     iou_threshold=threshold[LABEL_NAME_MAP[sub_class]],
-                                                    max_output_size=500)
+                                                    max_output_size=5000)
                 except:
                     tmp_boxes_r_ = np.array(tmp_boxes_r_)
                     tmp = np.zeros([tmp_boxes_r_.shape[0], tmp_boxes_r_.shape[1] + 1])

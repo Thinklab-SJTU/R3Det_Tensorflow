@@ -113,7 +113,7 @@ def postprocess_detctions(rpn_bbox_pred, rpn_cls_prob, anchors, is_training):
         nms_indices = nms_rotate(decode_boxes=boxes_pred,
                                  scores=scores,
                                  iou_threshold=cfgs.NMS_IOU_THRESHOLD,
-                                 max_output_size=100)
+                                 max_output_size=100 if is_training else 1000)
 
         tmp_boxes_pred = tf.reshape(tf.gather(boxes_pred, nms_indices), [-1, 5])
         tmp_scores = tf.reshape(tf.gather(scores, nms_indices), [-1, ])

@@ -33,8 +33,8 @@ def postprocess_detctions(rpn_bbox_pred, rpn_cls_prob, anchors, is_training):
 
         if cfgs.ANGLE_RANGE == 180:
             anchors_ = tf.py_func(coordinate_present_convert,
-                                 inp=[anchors_, -1],
-                                 Tout=[tf.float32])
+                                  inp=[anchors_, -1],
+                                  Tout=[tf.float32])
             anchors_ = tf.reshape(anchors_, [-1, 5])
 
         boxes_pred = bbox_transform.rbbox_transform_inv(boxes=anchors_, deltas=rpn_bbox_pred_)
@@ -54,7 +54,7 @@ def postprocess_detctions(rpn_bbox_pred, rpn_cls_prob, anchors, is_training):
         nms_indices = nms_rotate.nms_rotate(decode_boxes=boxes_pred,
                                             scores=scores,
                                             iou_threshold=cfgs.NMS_IOU_THRESHOLD,
-                                            max_output_size=100,
+                                            max_output_size=100 if is_training else 1000,
                                             use_angle_condition=False,
                                             angle_threshold=15,
                                             use_gpu=False)

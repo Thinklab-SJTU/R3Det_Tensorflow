@@ -152,7 +152,7 @@ def worker(gpu_id, images, det_net, args, result_queue):
                     inx = nms_rotate.nms_rotate_cpu(boxes=np.array(tmp_boxes_r),
                                                     scores=np.array(tmp_score_r),
                                                     iou_threshold=threshold[LABEL_NAME_MAP[sub_class]],
-                                                    max_output_size=500)
+                                                    max_output_size=5000)
                 except:
                     # Note: the IoU of two same rectangles is 0, which is calculated by rotate_gpu_nms
                     jitter = np.zeros([tmp_boxes_r.shape[0], tmp_boxes_r.shape[1] + 1])

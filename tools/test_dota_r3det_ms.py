@@ -130,6 +130,43 @@ def worker(gpu_id, images, det_net, args, result_queue):
                                 label_res_rotate.append(det_category_r_[ii])
                                 score_res_rotate.append(det_scores_r_[ii])
 
+                        if args.flip_img:
+                            det_boxes_r_flip, det_scores_r_flip, det_category_r_flip = \
+                                sess.run(
+                                    [detection_boxes, detection_scores, detection_category],
+                                    feed_dict={img_plac: cv2.flip(img_resize, flipCode=1)[:, :, ::-1]}
+                                )
+                            if len(det_boxes_r_flip) > 0:
+                                det_boxes_r_flip = forward_convert(det_boxes_r_flip, False)
+                                det_boxes_r_flip[:, 0::2] *= (src_w / resized_w)
+                                det_boxes_r_flip[:, 1::2] *= (src_h / resized_h)
+
+                                for ii in range(len(det_boxes_r_flip)):
+                                    box_rotate = det_boxes_r_flip[ii]
+                                    box_rotate[0::2] = (src_w - box_rotate[0::2]) + ww_
+                                    box_rotate[1::2] = box_rotate[1::2] + hh_
+                                    box_res_rotate.append(box_rotate)
+                                    label_res_rotate.append(det_category_r_flip[ii])
+                                    score_res_rotate.append(det_scores_r_flip[ii])
+
+                            det_boxes_r_flip, det_scores_r_flip, det_category_r_flip = \
+                                sess.run(
+                                    [detection_boxes, detection_scores, detection_category],
+                                    feed_dict={img_plac: cv2.flip(img_resize, flipCode=0)[:, :, ::-1]}
+                                )
+                            if len(det_boxes_r_flip) > 0:
+                                det_boxes_r_flip = forward_convert(det_boxes_r_flip, False)
+                                det_boxes_r_flip[:, 0::2] *= (src_w / resized_w)
+                                det_boxes_r_flip[:, 1::2] *= (src_h / resized_h)
+
+                                for ii in range(len(det_boxes_r_flip)):
+                                    box_rotate = det_boxes_r_flip[ii]
+                                    box_rotate[0::2] = box_rotate[0::2] + ww_
+                                    box_rotate[1::2] = (src_h - box_rotate[1::2]) + hh_
+                                    box_res_rotate.append(box_rotate)
+                                    label_res_rotate.append(det_category_r_flip[ii])
+                                    score_res_rotate.append(det_scores_r_flip[ii])
+
             box_res_rotate = np.array(box_res_rotate)
             label_res_rotate = np.array(label_res_rotate)
             score_res_rotate = np.array(score_res_rotate)
@@ -156,7 +193,7 @@ def worker(gpu_id, images, det_net, args, result_queue):
                     inx = nms_rotate.nms_rotate_cpu(boxes=np.array(tmp_boxes_r_),
                                                     scores=np.array(tmp_score_r),
                                                     iou_threshold=threshold[LABEL_NAME_MAP[sub_class]],
-                                                    max_output_size=500)
+                                                    max_output_size=5000)
                 except:
                     tmp_boxes_r_ = np.array(tmp_boxes_r_)
                     tmp = np.zeros([tmp_boxes_r_.shape[0], tmp_boxes_r_.shape[1] + 1])
@@ -312,6 +349,8 @@ def parse_args():
                         help='the num of eval imgs',
                         default=np.inf, type=int)
     parser.add_argument('--show_box', '-s', default=False,
+                        action='store_true')
+    parser.add_argument('--flip_img', '-f', default=False,
                         action='store_true')
     parser.add_argument('--h_len', dest='h_len',
                         help='image height',

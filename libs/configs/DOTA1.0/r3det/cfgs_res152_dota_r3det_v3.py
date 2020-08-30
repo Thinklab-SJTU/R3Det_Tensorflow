@@ -5,7 +5,38 @@ import tensorflow as tf
 import math
 
 """
-v12 + resnet152 + data aug. + MS
+v12 + one refine stage + resnet152 + data aug. + MS
+
+Multi-scale test
+
+This is your result for task 1:
+
+    mAP: 0.7623486563428695
+    ap of each class: plane:0.8970069480324703,
+    baseball-diamond:0.8333891707216258,
+    bridge:0.5043711291835025,
+    ground-track-field:0.6731295782071659,
+    small-vehicle:0.7897854187273754,
+    large-vehicle:0.8278325775035011,
+    ship:0.8785872624980835,
+    tennis-court:0.9081993104399961,
+    basketball-court:0.8556313751021464,
+    storage-tank:0.8532797469563389,
+    soccer-ball-field:0.6556255595096467,
+    roundabout:0.6152145549536566,
+    harbor:0.6729826099593654,
+    swimming-pool:0.7811243230807063,
+    helicopter:0.6890702802674632
+    The submitted information is :
+
+Description: RetinaNet_DOTA_R3Det_4x_20200819_183.6w_ms
+Username: SJTU-Det
+Institute: SJTU
+Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
+TeamMembers: yangxue
+
+Single scale test (800)
+
 
 
 """

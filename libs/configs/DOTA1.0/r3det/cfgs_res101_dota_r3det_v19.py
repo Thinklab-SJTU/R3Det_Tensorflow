@@ -9,22 +9,23 @@ v12 + resnet101 + data aug.
 
 This is your result for task 1:
 
-    mAP: 0.73472166261933
-    ap of each class: plane:0.8930500554457086,
-    baseball-diamond:0.8217149549054004,
-    bridge:0.5065936158627875,
-    ground-track-field:0.6714554300599073,
-    small-vehicle:0.7124281280145158,
-    large-vehicle:0.8007298300840331,
-    ship:0.7882384546833606,
-    tennis-court:0.9082809738039455,
-    basketball-court:0.8527177313970026,
-    storage-tank:0.8376617346583323,
-    soccer-ball-field:0.6384985771115199,
-    roundabout:0.629281367914359,
-    harbor:0.6809692763904096,
-    swimming-pool:0.7184963191710666,
-    helicopter:0.5607084897876002
+    mAP: 0.7379124018227364
+    ap of each class:
+    plane:0.8875770535140012,
+    baseball-diamond:0.8309094860319055,
+    bridge:0.5090833088849657,
+    ground-track-field:0.672702299198631,
+    small-vehicle:0.762280468833193,
+    large-vehicle:0.8039372197150702,
+    ship:0.867204508353548,
+    tennis-court:0.9077897362520245,
+    basketball-court:0.84676255533012,
+    storage-tank:0.8323591746033397,
+    soccer-ball-field:0.619815009368461,
+    roundabout:0.6134619661649249,
+    harbor:0.6691046162956162,
+    swimming-pool:0.7062986843654289,
+    helicopter:0.5393999404298172
 
 The submitted information is :
 
