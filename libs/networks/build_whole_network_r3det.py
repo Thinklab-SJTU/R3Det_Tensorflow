@@ -472,14 +472,16 @@ class DetectionNetwork(object):
         h, w = tf.cast(tf.shape(feature_map)[1], tf.int32), tf.cast(tf.shape(feature_map)[2], tf.int32)
 
         xmin = tf.maximum(0.0, tf.floor(points[:, 0]))
-        ymin = tf.maximum(0.0, tf.floor(points[:, 1]))
-        xmax = tf.minimum(tf.cast(w - 1, tf.float32), tf.ceil(points[:, 0]))
-        ymax = tf.minimum(tf.cast(h - 1, tf.float32), tf.ceil(points[:, 1]))
+        xmin = tf.minimum(tf.cast(w - 1, tf.float32), tf.ceil(xmin))
 
-        # left_top = tf.cast(tf.transpose(tf.stack([xmin, ymin], axis=0)), tf.int32)
-        # right_bottom = tf.cast(tf.transpose(tf.stack([xmax, ymax], axis=0)), tf.int32)
-        # left_bottom = tf.cast(tf.transpose(tf.stack([xmin, ymax], axis=0)), tf.int32)
-        # right_top = tf.cast(tf.transpose(tf.stack([xmax, ymin], axis=0)), tf.int32)
+        ymin = tf.maximum(0.0, tf.floor(points[:, 1]))
+        ymin = tf.minimum(tf.cast(h - 1, tf.float32), tf.ceil(ymin))
+
+        xmax = tf.minimum(tf.cast(w - 1, tf.float32), tf.ceil(points[:, 0]))
+        xmax = tf.maximum(0.0, tf.floor(xmax))
+
+        ymax = tf.minimum(tf.cast(h - 1, tf.float32), tf.ceil(points[:, 1]))
+        ymax = tf.maximum(0.0, tf.floor(ymax))
 
         left_top = tf.cast(tf.transpose(tf.stack([ymin, xmin], axis=0)), tf.int32)
         right_bottom = tf.cast(tf.transpose(tf.stack([ymax, xmax], axis=0)), tf.int32)

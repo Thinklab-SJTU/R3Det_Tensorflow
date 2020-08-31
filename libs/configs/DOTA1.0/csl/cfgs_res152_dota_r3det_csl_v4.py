@@ -5,52 +5,23 @@ import tensorflow as tf
 import math
 
 """
-v1 + iou-smooth l1
-
-
-This is your result for task 1:
-
-    mAP: 0.7028934476676355
-    ap of each class: plane:0.8801946201713119,
-    baseball-diamond:0.7764842050617797,
-    bridge:0.4643570412112182,
-    ground-track-field:0.6624822426633358,
-    small-vehicle:0.6904307539944189,
-    large-vehicle:0.7558123585244143,
-    ship:0.7813761581011679,
-    tennis-court:0.9083275367624628,
-    basketball-court:0.7963554875721496,
-    storage-tank:0.8197638602032603,
-    soccer-ball-field:0.561807957156849,
-    roundabout:0.6076092108155148,
-    harbor:0.6332614567691424,
-    swimming-pool:0.6937568188719159,
-    helicopter:0.511382007135589
-
-The submitted information is :
-
-Description: RetinaNet_DOTA_R3Det_2x_20191128_70.2w
-Username: yangxue
-Institute: DetectionTeamUCAS
-Emailadress: yangxue16@mails.ucas.ac.cn
-TeamMembers: yangxue, yangjirui
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_2x_20191128'
-NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
+VERSION = 'RetinaNet_DOTA_R3Det_CSL_4x_20200827'
+NET_NAME = 'resnet152_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config
 ROOT_PATH = os.path.abspath('../')
 print(20*"++--")
 print(ROOT_PATH)
-GPU_GROUP = "1"
+GPU_GROUP = "1,2,3"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200
-SAVE_WEIGHTS_INTE = 27000
+SAVE_WEIGHTS_INTE = 27000 * 4
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -77,6 +48,7 @@ GRADIENT_CLIPPING_BY_NORM = 10.0  # if None, will not clip
 
 CLS_WEIGHT = 1.0
 REG_WEIGHT = 1.0
+ANGLE_CLS_WEIGHT = 0.5
 USE_IOU_FACTOR = True
 
 BATCH_SIZE = 1
@@ -85,22 +57,26 @@ MOMENTUM = 0.9
 LR = 5e-4
 DECAY_STEP = [SAVE_WEIGHTS_INTE*12, SAVE_WEIGHTS_INTE*16, SAVE_WEIGHTS_INTE*20]
 MAX_ITERATION = SAVE_WEIGHTS_INTE*20
-WARM_SETP = int(1.0 / 4.0 * SAVE_WEIGHTS_INTE)
+WARM_SETP = int(1.0 / 8.0 * SAVE_WEIGHTS_INTE)
+
 
 # -------------------------------------------- Data_preprocess_config
 DATASET_NAME = 'DOTA'  # 'pascal', 'coco'
 PIXEL_MEAN = [123.68, 116.779, 103.939]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
 PIXEL_MEAN_ = [0.485, 0.456, 0.406]
 PIXEL_STD = [0.229, 0.224, 0.225]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
-IMG_SHORT_SIDE_LEN = 800
-IMG_MAX_LENGTH = 800
+IMG_SHORT_SIDE_LEN = [800, 400, 600, 720, 900, 1000, 1100]
+IMG_MAX_LENGTH = 1100
 CLASS_NUM = 15
+LABEL_TYPE = 0
+RADUIUS = 4
+OMEGA = 1
 
-IMG_ROTATE = False
-RGB2GRAY = False
-VERTICAL_FLIP = False
+IMG_ROTATE = True
+RGB2GRAY = True
+VERTICAL_FLIP = True
 HORIZONTAL_FLIP = True
-IMAGE_PYRAMID = False
+IMAGE_PYRAMID = True
 
 # --------------------------------------------- Network_config
 SUBNETS_WEIGHTS_INITIALIZER = tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=None)
@@ -123,7 +99,7 @@ ANCHOR_RATIOS = [1, 1 / 2, 2., 1 / 3., 3., 5., 1 / 5.]
 ANCHOR_ANGLES = [-90, -75, -60, -45, -30, -15]
 ANCHOR_SCALE_FACTORS = None
 USE_CENTER_OFFSET = True
-METHOD = 'R'
+METHOD = 'H'
 USE_ANGLE_COND = False
 ANGLE_RANGE = 90
 

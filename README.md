@@ -10,7 +10,6 @@ Techniques:
 - [x] [R<sup>3</sup>Det++: Instance Level Denoising (InLD)](https://arxiv.org/abs/2004.13316)
 - [x] [IoU-Smooth L1 Loss](https://arxiv.org/abs/1811.07126)
 - [x] [Circular Smooth Label (CSL)](https://arxiv.org/abs/2003.05597)
-- [x] Anchor Free (one anchor per feature point)
 - [x] [mmdetection version](https://github.com/SJTU-Thinklab-Det/r3det-on-mmdetection) is released
 - [x] Dataset support: DOTA, HRSC2016, ICDAR2015, ICDAR2017 MLT, UCAS-AOD, FDDB, OHD-SJTU
 - [x] [OHDet: Object Heading Detection](https://github.com/SJTU-Thinklab-Det/OHDet_Tensorflow)
@@ -19,15 +18,16 @@ Techniques:
 ![5](pipeline.png)
 
 ## Latest Performance
-### DOTA1.0
-### R<sup>3</sup>Det
+### DOTA1.0 (Task1)
 | Model |    Backbone    |    Training data    |    Val data    |    mAP   | Model Link | Anchor | Reg. Loss| Angle Range | lr schd | Data Augmentation | GPU | Image/GPU | Configs |      
 |:------------:|:------------:|:------------:|:---------:|:-----------:|:----------:|:-----------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:---------:|:---------:|    
 | [R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 70.27 | - | H + R | smooth L1 | 90 | 2x | × | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_v1.py](./libs/configs/DOTA1.0/r3det/cfgs_res50_dota_r3det_v1.py) |
 | [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612) | ResNet101_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 73.79 | - | H + R | iou-smooth L1 | 90 | 3x | √ | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res101_dota_r3det_v19.py](./libs/configs/DOTA1.0/r3det/cfgs_res101_dota_r3det_v19.py) |
-| [R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) | ResNet152_v1d MS | DOTA1.0 trainval | DOTA1.0 test | 76.23 | - | H + R | iou-smooth L1 | 90 | 4x | √ | 3X GeForce RTX 2080 Ti | 1 | [cfgs_res152_dota_r3det_v3.py](./libs/configs/DOTA1.0/r3det/cfgs_res152_dota_r3det_v3.py) |     
+| [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612) | ResNet152_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 74.54 | - | H + R | iou-smooth L1 | 90 | 3x | √ | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res152_dota_r3det_v25.py](./libs/configs/DOTA1.0/r3det/cfgs_res152_dota_r3det_v25.py) |
+| [R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) | ResNet152_v1d MS (+Flip) | DOTA1.0 trainval | DOTA1.0 test | 76.23 (+0.24) | - | H + R | iou-smooth L1 | 90 | 4x | √ | 3X GeForce RTX 2080 Ti | 1 | [cfgs_res152_dota_r3det_v3.py](./libs/configs/DOTA1.0/r3det/cfgs_res152_dota_r3det_v3.py) |     
 
 [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612): R<sup>3</sup>Det with two refinement stages      
+**Due to the improvement of the code, the performance of this repo is gradually improving, so the experimental results in other configuration files are for reference only.**        
 
 ### Visualization
 ![1](demo1.png)

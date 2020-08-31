@@ -45,7 +45,7 @@ ADD_BOX_IN_TENSORBOARD = True
 ROOT_PATH = os.path.abspath('../')
 print(20*"++--")
 print(ROOT_PATH)
-GPU_GROUP = "0,1,2,3"
+GPU_GROUP = "0,1,3"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200

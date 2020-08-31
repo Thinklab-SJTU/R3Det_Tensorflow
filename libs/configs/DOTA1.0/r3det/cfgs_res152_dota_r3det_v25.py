@@ -9,26 +9,26 @@ v12 + resnet152 + data aug.
 
 This is your result for task 1:
 
-mAP: 0.7391177685745279
-ap of each class: plane:0.8934053581264703,
-baseball-diamond:0.8342248426250474,
-bridge:0.5176618241717349,
-ground-track-field:0.6646494434103304,
-small-vehicle:0.7090679011806845,
-arge-vehicle:0.8073511551824253,
-ship:0.7900781774514544,
-tennis-court:0.9086099455035218,
-basketball-court:0.8371337558967711,
-storage-tank:0.8534465639705809,
-soccer-ball-field:0.6184319175487843,
-roundabout:0.6129081414866965,
-harbor:0.6865512518526088,
-swimming-pool:0.7257713417532831,
-helicopter:0.6274749084575236
+    mAP: 0.7453927817022267
+    ap of each class: plane:0.8878906752398136,
+    baseball-diamond:0.8295484728341326,
+    bridge:0.516323034148681,
+    ground-track-field:0.6570338759888631,
+    small-vehicle:0.7584292762653476,
+    large-vehicle:0.8125520916449628,
+    ship:0.8729609317835844,
+    tennis-court:0.9081026983217039,
+    basketball-court:0.8367442614238383,
+    storage-tank:0.8426774350637009,
+    soccer-ball-field:0.6049877906210863,
+    roundabout:0.6015865760016794,
+    harbor:0.679622857947632,
+    swimming-pool:0.7279091978721429,
+    helicopter:0.6445225503762324
 
 The submitted information is :
 
-Description: RetinaNet_DOTA_R3Det_2x_20200713_137.7w
+Description: RetinaNet_DOTA_R3Det_2x_20200713_137.7w_
 Username: yangxue
 Institute: DetectionTeamUCAS
 Emailadress: yangxue16@mails.ucas.ac.cn
