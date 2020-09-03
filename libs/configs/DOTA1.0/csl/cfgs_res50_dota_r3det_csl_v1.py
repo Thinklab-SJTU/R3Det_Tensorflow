@@ -37,7 +37,7 @@ TeamMembers: yangxue
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_CSL_2x_20200528'
+VERSION = 'RetinaNet_DOTA_R3Det_CSL_2x_20200901'
 NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -77,7 +77,7 @@ GRADIENT_CLIPPING_BY_NORM = 10.0  # if None, will not clip
 CLS_WEIGHT = 1.0
 REG_WEIGHT = 1.0
 ANGLE_CLS_WEIGHT = 0.5
-USE_IOU_FACTOR = False
+USE_IOU_FACTOR = True
 
 BATCH_SIZE = 1
 EPSILON = 1e-5
@@ -96,7 +96,7 @@ IMG_SHORT_SIDE_LEN = 800
 IMG_MAX_LENGTH = 800
 CLASS_NUM = 15
 LABEL_TYPE = 0
-RADUIUS = 6
+RADUIUS = 4
 OMEGA = 1
 
 IMG_ROTATE = False
@@ -122,7 +122,7 @@ LEVEL = ['P3', 'P4', 'P5', 'P6', 'P7']
 BASE_ANCHOR_SIZE_LIST = [32, 64, 128, 256, 512]
 ANCHOR_STRIDE = [8, 16, 32, 64, 128]
 ANCHOR_SCALES = [2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)]
-ANCHOR_RATIOS = [1.]
+ANCHOR_RATIOS = [1, 1 / 2, 2., 1 / 3., 3., 5., 1 / 5.]
 ANCHOR_ANGLES = [-90, -75, -60, -45, -30, -15]
 ANCHOR_SCALE_FACTORS = None
 USE_CENTER_OFFSET = True

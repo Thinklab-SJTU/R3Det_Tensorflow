@@ -16,7 +16,7 @@ from multiprocessing import Queue, Process
 sys.path.append("../")
 
 from data.io.image_preprocess import short_side_resize_for_inference_data
-from libs.networks import build_whole_network_r3det
+from libs.networks import build_whole_network_r3det_csl
 from help_utils import tools
 from libs.label_name_dict.label_dict import *
 from libs.box_utils import draw_box_in_img
@@ -34,7 +34,7 @@ def worker(gpu_id, images, det_net, args, result_queue):
     img_batch = short_side_resize_for_inference_data(img_tensor=img_batch,
                                                      target_shortside_len=cfgs.IMG_SHORT_SIDE_LEN,
                                                      length_limitation=cfgs.IMG_MAX_LENGTH,
-                                                     is_resize=not args.multi_scale)
+                                                     is_resize=False)
     if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d']:
         img_batch = (img_batch / 255 - tf.constant(cfgs.PIXEL_MEAN_)) / tf.constant(cfgs.PIXEL_STD)
     else:
@@ -42,10 +42,11 @@ def worker(gpu_id, images, det_net, args, result_queue):
 
     img_batch = tf.expand_dims(img_batch, axis=0)
 
-    detection_boxes, detection_scores, detection_category = det_net.build_whole_detection_network(
+    detection_boxes, detection_scores, detection_category, detection_boxes_angle = det_net.build_whole_detection_network(
         input_img_batch=img_batch,
         gtboxes_batch_h=None,
-        gtboxes_batch_r=None)
+        gtboxes_batch_r=None,
+        gt_smooth_label=None)
 
     init_op = tf.group(
         tf.global_variables_initializer(),
@@ -64,8 +65,10 @@ def worker(gpu_id, images, det_net, args, result_queue):
             print('restore model %d ...' % gpu_id)
 
         for img_path in images:
-            # if 'P2043.png' not in img_path:
+
+            # if 'P0016' not in img_path:
             #     continue
+
             img = cv2.imread(img_path)
 
             box_res_rotate = []
@@ -101,7 +104,7 @@ def worker(gpu_id, images, det_net, args, result_queue):
                         ww_ = ww
                     src_img = img[hh_:(hh_ + args.h_len), ww_:(ww_ + args.w_len), :]
 
-                    for short_size in cfgs.IMG_SHORT_SIDE_LEN:
+                    for short_size in img_short_side_len_list:
                         max_len = cfgs.IMG_MAX_LENGTH
                         if args.h_len < args.w_len:
                             new_h, new_w = short_size, min(int(short_size * float(args.w_len) / args.h_len), max_len)
@@ -259,6 +262,7 @@ def test_dota(det_net, real_test_img_list, args, txt_name):
                                                                                 labels=detected_categories,
                                                                                 scores=detected_scores,
                                                                                 method=1,
+                                                                                is_csl=True,
                                                                                 in_graph=False)
             cv2.imwrite(draw_path, final_detections)
 
@@ -328,10 +332,10 @@ def eval(num_imgs, args):
     else:
         real_test_img_list = test_imgname_list[: num_imgs]
 
-    r3det = build_whole_network_r3det.DetectionNetwork(
-        base_network_name=cfgs.NET_NAME,
-        is_training=False)
-    test_dota(det_net=r3det, real_test_img_list=real_test_img_list, args=args, txt_name=txt_name)
+    r3det_csl = build_whole_network_r3det_csl.DetectionNetwork(base_network_name=cfgs.NET_NAME,
+                                                               is_training=False)
+
+    test_dota(det_net=r3det_csl, real_test_img_list=real_test_img_list, args=args, txt_name=txt_name)
 
     if not args.show_box:
         os.remove(txt_name)
@@ -339,7 +343,7 @@ def eval(num_imgs, args):
 
 def parse_args():
 
-    parser = argparse.ArgumentParser('evaluate the result with Pascal2007 strand')
+    parser = argparse.ArgumentParser('evaluate the result.')
 
     parser.add_argument('--test_dir', dest='test_dir',
                         help='evaluate imgs dir ',
@@ -380,5 +384,22 @@ if __name__ == '__main__':
     print(20*"--")
     eval(args.eval_num,
          args=args)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

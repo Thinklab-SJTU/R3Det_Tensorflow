@@ -96,6 +96,4 @@ def postprocess_detctions(refine_bbox_pred, refine_cls_prob, refine_angle_prob, 
     return_scores = tf.concat(return_scores, axis=0)
     return_labels = tf.concat(return_labels, axis=0)
 
-    # return_boxes_pred_angle = tf.Print(return_boxes_pred_angle, [return_boxes_pred_angle], 'return_boxes_pred_angle', summarize=50)
-
     return return_boxes_pred, return_scores, return_labels, return_boxes_pred_angle

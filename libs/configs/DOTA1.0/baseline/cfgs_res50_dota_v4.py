@@ -5,39 +5,40 @@ import tensorflow as tf
 import math
 
 """
-v3 + single gpu
+RetinaNet-H
 This is your result for task 1:
 
-    mAP: 0.6317708176766469
+    mAP: 0.6572506703256068
     ap of each class:
-    plane:0.8852653294283945,
-    baseball-diamond:0.7498262295051162,
-    bridge:0.41145566588430577,
-    ground-track-field:0.6776071064117907,
-    small-vehicle:0.5374548529638528,
-    large-vehicle:0.48302905195645396,
-    ship:0.5591965949336322,
-    tennis-court:0.9018964535303656,
-    basketball-court:0.8126298860759724,
-    storage-tank:0.7912348207016853,
-    soccer-ball-field:0.5282200549286691,
-    roundabout:0.6197750079280963,
-    harbor:0.55768062609549,
-    swimming-pool:0.5671700322865507,
-    helicopter:0.3941205525193267
+    plane:0.8831119481871824,
+    baseball-diamond:0.7554052281871614,
+    bridge:0.4217303911789575,
+    ground-track-field:0.6707230071220774,
+    small-vehicle:0.6592650965532021,
+    large-vehicle:0.5111005162900164,
+    ship:0.7261407293679227,
+    tennis-court:0.9071013790480128,
+    basketball-court:0.7822207883168055,
+    storage-tank:0.7883844023962553,
+    soccer-ball-field:0.544082059014562,
+    roundabout:0.6200017658693254,
+    harbor:0.5324027345069116,
+    swimming-pool:0.6718903394664805,
+    helicopter:0.3851996693792289
 
 The submitted information is :
 
-Description: RetinaNet_DOTA_1x_20190530_54w
+Description: RetinaNet_DOTA_2x_20190530_108w
 Username: DetectionTeamCSU
 Institute: CSU
 Emailadress: yangxue@csu.edu.cn
 TeamMembers: YangXue
 
+
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_1x_20190530'
+VERSION = 'RetinaNet_DOTA_2x_20190530'
 NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -45,11 +46,11 @@ ADD_BOX_IN_TENSORBOARD = True
 ROOT_PATH = os.path.abspath('../')
 print(20*"++--")
 print(ROOT_PATH)
-GPU_GROUP = "0"
+GPU_GROUP = "0,1,3"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200
-SAVE_WEIGHTS_INTE = 27000
+SAVE_WEIGHTS_INTE = 27000 * 2
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -77,6 +78,8 @@ GRADIENT_CLIPPING_BY_NORM = 10.0  # if None, will not clip
 CLS_WEIGHT = 1.0
 REG_WEIGHT = 1.0 / 5.0
 REG_LOSS_MODE = None
+ALPHA = 1.0
+BETA = 1.0
 
 BATCH_SIZE = 1
 EPSILON = 1e-5
@@ -95,6 +98,12 @@ IMG_SHORT_SIDE_LEN = 800
 IMG_MAX_LENGTH = 800
 CLASS_NUM = 15
 
+IMG_ROTATE = False
+RGB2GRAY = False
+VERTICAL_FLIP = False
+HORIZONTAL_FLIP = True
+IMAGE_PYRAMID = False
+
 # --------------------------------------------- Network_config
 SUBNETS_WEIGHTS_INITIALIZER = tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=None)
 SUBNETS_BIAS_INITIALIZER = tf.constant_initializer(value=0.0)
@@ -102,6 +111,7 @@ PROBABILITY = 0.01
 FINAL_CONV_BIAS_INITIALIZER = tf.constant_initializer(value=-math.log((1.0 - PROBABILITY) / PROBABILITY))
 WEIGHT_DECAY = 1e-4
 USE_GN = False
+FPN_CHANNEL = 256
 
 # ---------------------------------------------Anchor config
 LEVEL = ['P3', 'P4', 'P5', 'P6', 'P7']

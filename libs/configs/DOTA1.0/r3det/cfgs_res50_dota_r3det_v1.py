@@ -7,31 +7,31 @@ import math
 """
 This is your result for task 1:
 
-    mAP: 0.7026631993550164
+    mAP: 0.7040175568277504
     ap of each class:
-    plane:0.8866133571041938,
-    baseball-diamond:0.7661509333665146,
-    bridge:0.4725793738087695,
-    ground-track-field:0.6747839904225508,
-    small-vehicle:0.6911298766002514,
-    large-vehicle:0.7510951799278639,
-    ship:0.7713223613957406,
-    tennis-court:0.9084022969827755,
-    basketball-court:0.8233104200518367,
-    storage-tank:0.8300325328735665,
-    soccer-ball-field:0.5811113677992319,
-    roundabout:0.6154221404813383,
-    harbor:0.5978245340093459,
-    swimming-pool:0.6775540041450172,
-    helicopter:0.4926156213562474
+    plane:0.890153676787004,
+    baseball-diamond:0.7546823004821948,
+    bridge:0.43856818970048655,
+    ground-track-field:0.6584323172228589,
+    small-vehicle:0.758265556666476,
+    large-vehicle:0.7343692077868644,
+    ship:0.8603390134740575,
+    tennis-court:0.9056898929544596,
+    basketball-court:0.8111416145602515,
+    storage-tank:0.8284442512925325,
+    soccer-ball-field:0.5557191091213718,
+    roundabout:0.5910437513923295,
+    harbor:0.5657488814247862,
+    swimming-pool:0.7031169348003156,
+    helicopter:0.5045486547502677
 
 The submitted information is :
 
-Description: RetinaNet_DOTA_R3Det_2x_20191108_91.8w
-Username: yangxue
-Institute: DetectionTeamUCAS
-Emailadress: yangxue16@mails.ucas.ac.cn
-TeamMembers: yangxue, yangjirui
+Description: RetinaNet_DOTA_R3Det_2x_20191108_75.6w
+Username: SJTU-Det
+Institute: SJTU
+Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
+TeamMembers: yangxue
 
 
 """

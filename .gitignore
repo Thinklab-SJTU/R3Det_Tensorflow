@@ -134,6 +134,8 @@ __pycache__/
 *head*
 *ohd-sjtu*
 *test_ohd_sjtu*
+*binary_label*
+*bcl*
 
 tools/demos/*
 tools/test_dota/*

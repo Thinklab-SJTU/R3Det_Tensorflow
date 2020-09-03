@@ -10,6 +10,7 @@ from libs.box_utils.iou_rotate import iou_rotate_calculate2, diou_rotate_calcula
 from libs.box_utils.iou import iou_calculate
 from libs.configs import cfgs
 from libs.box_utils.coordinate_convert import coordinate90_2_180_tf
+from help_utils.binary_label import binary_label_decode
 
 
 def focal_loss_(labels, pred, anchor_state, alpha=0.25, gamma=2.0):
@@ -473,6 +474,55 @@ def angle_focal_loss(labels, pred, anchor_state, alpha=0.25, gamma=2.0):
                                 per_entry_cross_ent)
 
     # compute the normalizer: the number of positive anchors
+    normalizer = tf.stop_gradient(tf.where(tf.equal(anchor_state, 1)))
+    normalizer = tf.cast(tf.shape(normalizer)[0], tf.float32)
+    normalizer = tf.maximum(1.0, normalizer)
+
+    # normalizer = tf.stop_gradient(tf.cast(tf.equal(anchor_state, 1), tf.float32))
+    # normalizer = tf.maximum(tf.reduce_sum(normalizer), 1)
+
+    return tf.reduce_sum(focal_cross_entropy_loss) / normalizer
+
+
+def binary_focal_angle_loss(labels, pred, anchor_state, alpha=None, gamma=2.0):
+
+    indices = tf.reshape(tf.where(tf.equal(anchor_state, 1)), [-1, ])
+    labels = tf.gather(labels, indices)
+    pred = tf.gather(pred, indices)
+
+    debinary_labels = tf.py_func(func=binary_label_decode,
+                                 inp=[labels, cfgs.ANGLE_RANGE],
+                                 Tout=[tf.float32])
+    debinary_labels = tf.reshape(debinary_labels, [-1, ]) * -1
+
+    debinary_pred = tf.py_func(func=binary_label_decode,
+                               inp=[tf.sigmoid(pred), cfgs.ANGLE_RANGE],
+                               Tout=[tf.float32])
+
+    debinary_pred = tf.reshape(debinary_pred, [-1, ]) * -1
+
+    diff_weight = tf.reshape(tf.log(abs(debinary_labels - debinary_pred) + 1), [-1, 1])
+
+    # compute the focal loss
+    per_entry_cross_ent = - labels * tf.log(tf.sigmoid(pred) + cfgs.EPSILON) \
+                          - (1 - labels) * tf.log(1 - tf.sigmoid(pred) + cfgs.EPSILON)
+
+    prediction_probabilities = tf.sigmoid(pred)
+    p_t = ((labels * prediction_probabilities) +
+           ((1 - labels) * (1 - prediction_probabilities)))
+    modulating_factor = 1.0
+    if gamma:
+        modulating_factor = tf.pow(1.0 - p_t, gamma)
+    alpha_weight_factor = 1.0
+    if alpha is not None:
+        alpha_weight_factor = (labels * alpha +
+                               (1 - labels) * (1 - alpha))
+
+    focal_cross_entropy_loss = (diff_weight * modulating_factor * alpha_weight_factor *
+                                per_entry_cross_ent)
+
+    # compute the normalizer: the number of positive anchors
+    # normalizer = tf.stop_gradient(tf.where(tf.greater(anchor_state, -2)))
     normalizer = tf.stop_gradient(tf.where(tf.equal(anchor_state, 1)))
     normalizer = tf.cast(tf.shape(normalizer)[0], tf.float32)
     normalizer = tf.maximum(1.0, normalizer)

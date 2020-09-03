@@ -214,6 +214,7 @@ def test_dota(det_net, real_test_img_list, args, txt_name):
                                                                                 labels=detected_categories,
                                                                                 scores=detected_scores,
                                                                                 method=1,
+                                                                                is_csl=True,
                                                                                 in_graph=False)
             cv2.imwrite(draw_path, final_detections)
 

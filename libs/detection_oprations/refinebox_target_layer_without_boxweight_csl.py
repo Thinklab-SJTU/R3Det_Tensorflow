@@ -58,7 +58,7 @@ def refinebox_target_layer(gt_boxes_r, gt_smooth_label, anchors, pos_threshold, 
     else:
         # no annotations? then everything is background
         target_boxes = np.zeros((anchors.shape[0], gt_boxes_r.shape[1]))
-        target_smooth_label = np.zeros((anchors.shape[0], 90))
+        target_smooth_label = np.zeros((anchors.shape[0], gt_smooth_label.shape[1]))
 
     if cfgs.ANGLE_RANGE == 180:
         target_boxes = coordinate_present_convert(target_boxes, mode=-1)

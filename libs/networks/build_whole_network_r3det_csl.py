@@ -533,44 +533,51 @@ class DetectionNetwork(object):
         h, w = tf.cast(tf.shape(feature_map)[1], tf.int32), tf.cast(tf.shape(feature_map)[2], tf.int32)
 
         xmin = tf.maximum(0.0, tf.floor(points[:, 0]))
+        xmin = tf.minimum(tf.cast(w - 1, tf.float32), tf.ceil(xmin))
+
         ymin = tf.maximum(0.0, tf.floor(points[:, 1]))
+        ymin = tf.minimum(tf.cast(h - 1, tf.float32), tf.ceil(ymin))
+
         xmax = tf.minimum(tf.cast(w - 1, tf.float32), tf.ceil(points[:, 0]))
+        xmax = tf.maximum(0.0, tf.floor(xmax))
+
         ymax = tf.minimum(tf.cast(h - 1, tf.float32), tf.ceil(points[:, 1]))
+        ymax = tf.maximum(0.0, tf.floor(ymax))
 
         left_top = tf.cast(tf.transpose(tf.stack([ymin, xmin], axis=0)), tf.int32)
         right_bottom = tf.cast(tf.transpose(tf.stack([ymax, xmax], axis=0)), tf.int32)
         left_bottom = tf.cast(tf.transpose(tf.stack([ymax, xmin], axis=0)), tf.int32)
         right_top = tf.cast(tf.transpose(tf.stack([ymin, xmax], axis=0)), tf.int32)
 
-        # feature_1x5 = slim.conv2d(inputs=feature_map,
-        #                           num_outputs=cfgs.FPN_CHANNEL,
-        #                           kernel_size=[1, 5],
-        #                           weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
-        #                           biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
-        #                           stride=1,
-        #                           activation_fn=None,
-        #                           scope='refine_1x5_{}'.format(name))
-        #
-        # feature5x1 = slim.conv2d(inputs=feature_1x5,
-        #                          num_outputs=cfgs.FPN_CHANNEL,
-        #                          kernel_size=[5, 1],
-        #                          weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
-        #                          biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
-        #                          stride=1,
-        #                          activation_fn=None,
-        #                          scope='refine_5x1_{}'.format(name))
-        #
-        # feature_1x1 = slim.conv2d(inputs=feature_map,
-        #                           num_outputs=cfgs.FPN_CHANNEL,
-        #                           kernel_size=[1, 1],
-        #                           weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
-        #                           biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
-        #                           stride=1,
-        #                           activation_fn=None,
-        #                           scope='refine_1x1_{}'.format(name))
-        #
-        # feature = feature5x1 + feature_1x1
-        feature = feature_map
+        feature_1x5 = slim.conv2d(inputs=feature_map,
+                                  num_outputs=cfgs.FPN_CHANNEL,
+                                  kernel_size=[1, 5],
+                                  weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
+                                  biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
+                                  stride=1,
+                                  activation_fn=None,
+                                  scope='refine_1x5_{}'.format(name))
+
+        feature5x1 = slim.conv2d(inputs=feature_1x5,
+                                 num_outputs=cfgs.FPN_CHANNEL,
+                                 kernel_size=[5, 1],
+                                 weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
+                                 biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
+                                 stride=1,
+                                 activation_fn=None,
+                                 scope='refine_5x1_{}'.format(name))
+
+        feature_1x1 = slim.conv2d(inputs=feature_map,
+                                  num_outputs=cfgs.FPN_CHANNEL,
+                                  kernel_size=[1, 1],
+                                  weights_initializer=cfgs.SUBNETS_WEIGHTS_INITIALIZER,
+                                  biases_initializer=cfgs.SUBNETS_BIAS_INITIALIZER,
+                                  stride=1,
+                                  activation_fn=None,
+                                  scope='refine_1x1_{}'.format(name))
+
+        feature = feature5x1 + feature_1x1
+        # feature = feature_map
 
         left_top_feature = tf.gather_nd(tf.squeeze(feature), left_top)
         right_bottom_feature = tf.gather_nd(tf.squeeze(feature), right_bottom)

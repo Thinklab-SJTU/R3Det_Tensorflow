@@ -38,22 +38,22 @@ TeamMembers: yangxue
 add flip
 This is your result for task 1:
 
-mAP: 0.7647417332616955
-ap of each class: plane:0.8980075439345729,
-baseball-diamond:0.8377264712427869,
-bridge:0.48115376816317507,
-ground-track-field:0.6677152155629779,
-small-vehicle:0.7876448261580992,
-large-vehicle:0.8327169902915853,
-ship:0.8783577280870772,
-tennis-court:0.9082236256734083,
-basketball-court:0.8538214275625156,
-storage-tank:0.8551179251235709,
-soccer-ball-field:0.6566936371507965,
-roundabout:0.6268171396548151,
-harbor:0.6752747779498159,
-swimming-pool:0.7856280736874842,
-helicopter:0.7262268486827509
+    mAP: 0.7647417332616955
+    ap of each class: plane:0.8980075439345729,
+    baseball-diamond:0.8377264712427869,
+    bridge:0.48115376816317507,
+    ground-track-field:0.6677152155629779,
+    small-vehicle:0.7876448261580992,
+    large-vehicle:0.8327169902915853,
+    ship:0.8783577280870772,
+    tennis-court:0.9082236256734083,
+    basketball-court:0.8538214275625156,
+    storage-tank:0.8551179251235709,
+    soccer-ball-field:0.6566936371507965,
+    roundabout:0.6268171396548151,
+    harbor:0.6752747779498159,
+    swimming-pool:0.7856280736874842,
+    helicopter:0.7262268486827509
 
 The submitted information is :
 
