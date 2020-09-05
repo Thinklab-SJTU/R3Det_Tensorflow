@@ -206,7 +206,7 @@ def draw_boxes_with_label_and_scores(img_array, boxes, labels, scores, method, h
         else:
             img_array = img_array + np.array(cfgs.PIXEL_MEAN)
     img_array.astype(np.float32)
-    boxes = boxes.astype(np.int64)
+    boxes = boxes.astype(np.float32)
     labels = labels.astype(np.int32)
     img_array = np.array(img_array * 255 / np.max(img_array), dtype=np.uint8)
 
