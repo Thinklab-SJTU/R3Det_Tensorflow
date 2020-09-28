@@ -15,7 +15,6 @@ import argparse
 from multiprocessing import Queue, Process
 sys.path.append("../")
 
-from data.io.image_preprocess import short_side_resize_for_inference_data
 from libs.networks import build_whole_network
 from help_utils import tools
 from libs.label_name_dict.label_dict import *
@@ -31,9 +30,6 @@ def worker(gpu_id, images, det_net, args, result_queue):
     img_plac = tf.placeholder(dtype=tf.uint8, shape=[None, None, 3])  # is RGB. not BGR
     img_batch = tf.cast(img_plac, tf.float32)
 
-    img_batch = short_side_resize_for_inference_data(img_tensor=img_batch,
-                                                     target_shortside_len=cfgs.IMG_SHORT_SIDE_LEN,
-                                                     length_limitation=cfgs.IMG_MAX_LENGTH)
     if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d']:
         img_batch = (img_batch / 255 - tf.constant(cfgs.PIXEL_MEAN_)) / tf.constant(cfgs.PIXEL_STD)
     else:
@@ -76,6 +72,10 @@ def worker(gpu_id, images, det_net, args, result_queue):
             imgH = img.shape[0]
             imgW = img.shape[1]
 
+            img_short_side_len_list = cfgs.IMG_SHORT_SIDE_LEN if isinstance(cfgs.IMG_SHORT_SIDE_LEN, list) else [
+                cfgs.IMG_SHORT_SIDE_LEN]
+            img_short_side_len_list = [img_short_side_len_list[0]] if not args.multi_scale else img_short_side_len_list
+
             if imgH < args.h_len:
                 temp = np.zeros([args.h_len, imgW, 3], np.float32)
                 temp[0:imgH, :, :] = img
@@ -100,28 +100,36 @@ def worker(gpu_id, images, det_net, args, result_queue):
                         ww_ = ww
                     src_img = img[hh_:(hh_ + args.h_len), ww_:(ww_ + args.w_len), :]
 
-                    resized_img, det_boxes_r_, det_scores_r_, det_category_r_ = \
-                        sess.run(
-                            [img_batch, detection_boxes, detection_scores, detection_category],
-                            feed_dict={img_plac: src_img[:, :, ::-1]}
-                        )
+                    for short_size in img_short_side_len_list:
+                        max_len = cfgs.IMG_MAX_LENGTH
+                        if args.h_len < args.w_len:
+                            new_h, new_w = short_size, min(int(short_size * float(args.w_len) / args.h_len), max_len)
+                        else:
+                            new_h, new_w = min(int(short_size * float(args.h_len) / args.w_len), max_len), short_size
+                        img_resize = cv2.resize(src_img, (new_w, new_h))
 
-                    resized_h, resized_w = resized_img.shape[1], resized_img.shape[2]
-                    src_h, src_w = src_img.shape[0], src_img.shape[1]
+                        resized_img, det_boxes_r_, det_scores_r_, det_category_r_ = \
+                            sess.run(
+                                [img_batch, detection_boxes, detection_scores, detection_category],
+                                feed_dict={img_plac: img_resize[:, :, ::-1]}
+                            )
 
-                    if len(det_boxes_r_) > 0:
-                        det_boxes_r_ = forward_convert(det_boxes_r_, False)
-                        det_boxes_r_[:, 0::2] *= (src_w / resized_w)
-                        det_boxes_r_[:, 1::2] *= (src_h / resized_h)
-                        # det_boxes_r_ = backward_convert(det_boxes_r_, False)
+                        resized_h, resized_w = resized_img.shape[1], resized_img.shape[2]
+                        src_h, src_w = src_img.shape[0], src_img.shape[1]
 
-                        for ii in range(len(det_boxes_r_)):
-                            box_rotate = det_boxes_r_[ii]
-                            box_rotate[0::2] = box_rotate[0::2] + ww_
-                            box_rotate[1::2] = box_rotate[1::2] + hh_
-                            box_res_rotate.append(box_rotate)
-                            label_res_rotate.append(det_category_r_[ii])
-                            score_res_rotate.append(det_scores_r_[ii])
+                        if len(det_boxes_r_) > 0:
+                            det_boxes_r_ = forward_convert(det_boxes_r_, False)
+                            det_boxes_r_[:, 0::2] *= (src_w / resized_w)
+                            det_boxes_r_[:, 1::2] *= (src_h / resized_h)
+                            # det_boxes_r_ = backward_convert(det_boxes_r_, False)
+
+                            for ii in range(len(det_boxes_r_)):
+                                box_rotate = det_boxes_r_[ii]
+                                box_rotate[0::2] = box_rotate[0::2] + ww_
+                                box_rotate[1::2] = box_rotate[1::2] + hh_
+                                box_res_rotate.append(box_rotate)
+                                label_res_rotate.append(det_category_r_[ii])
+                                score_res_rotate.append(det_scores_r_[ii])
 
             box_res_rotate = np.array(box_res_rotate)
             label_res_rotate = np.array(label_res_rotate)
