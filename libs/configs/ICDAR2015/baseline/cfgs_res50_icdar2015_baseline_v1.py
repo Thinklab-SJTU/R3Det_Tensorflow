@@ -5,43 +5,12 @@ import tensorflow as tf
 import math
 
 """
-gaussian label, omega=10
-
-
-
-This is your result for task 1:
-
-    mAP: 0.6738304898085752
-    ap of each class:
-    plane:0.8914335719717486,
-    baseball-diamond:0.7825554534383872,
-    bridge:0.42253905536333874,
-    ground-track-field:0.618954473632168,
-    small-vehicle:0.682804572312177,
-    large-vehicle:0.5450885181789469,
-    ship:0.7285446732619127,
-    tennis-court:0.9086060935169401,
-    basketball-court:0.7934179459801323,
-    storage-tank:0.7558745355233758,
-    soccer-ball-field:0.5327609959142836,
-    roundabout:0.5898646648632354,
-    harbor:0.5310054187218879,
-    swimming-pool:0.6949448883695547,
-    helicopter:0.6290624860805408
-
-The submitted information is :
-
-Description: RetinaNet_DOTA_2x_20200729_75.6w
-Username: DetectionTeamCSU
-Institute: CSU
-Emailadress: yangxue@csu.edu.cn
-TeamMembers: YangXue
-
+2020-09-25  retinanet	72.32%	66.23%	69.14%
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_2x_20200729'
+VERSION = 'RetinaNet_ICDAR2015_Baseline_2x_20200925'
 NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -49,11 +18,11 @@ ADD_BOX_IN_TENSORBOARD = True
 ROOT_PATH = os.path.abspath('../')
 print(20*"++--")
 print(ROOT_PATH)
-GPU_GROUP = "0,1,2"
+GPU_GROUP = "3"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200
-SAVE_WEIGHTS_INTE = 27000 * 2
+SAVE_WEIGHTS_INTE = 10000
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -80,8 +49,10 @@ GRADIENT_CLIPPING_BY_NORM = 10.0  # if None, will not clip
 
 CLS_WEIGHT = 1.0
 REG_WEIGHT = 1.0
-ANGLE_WEIGHT = 2.0
+ANGLE_WEIGHT = 0.5
 REG_LOSS_MODE = None
+ALPHA = 1.0
+BETA = 1.0
 
 BATCH_SIZE = 1
 EPSILON = 1e-5
@@ -92,16 +63,13 @@ MAX_ITERATION = SAVE_WEIGHTS_INTE*20
 WARM_SETP = int(1.0 / 4.0 * SAVE_WEIGHTS_INTE)
 
 # -------------------------------------------- Data_preprocess_config
-DATASET_NAME = 'DOTA'  # 'pascal', 'coco'
+DATASET_NAME = 'ICDAR2015'  # 'pascal', 'coco'
 PIXEL_MEAN = [123.68, 116.779, 103.939]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
 PIXEL_MEAN_ = [0.485, 0.456, 0.406]
 PIXEL_STD = [0.229, 0.224, 0.225]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
 IMG_SHORT_SIDE_LEN = 800
-IMG_MAX_LENGTH = 800
-CLASS_NUM = 15
-LABEL_TYPE = 0
-RADUIUS = 1
-OMEGA = 10
+IMG_MAX_LENGTH = 1000
+CLASS_NUM = 1
 
 IMG_ROTATE = False
 RGB2GRAY = False
@@ -141,5 +109,6 @@ NMS = True
 NMS_IOU_THRESHOLD = 0.1
 MAXIMUM_DETECTIONS = 100
 FILTERED_SCORE = 0.05
-VIS_SCORE = 0.4
+VIS_SCORE = 0.8
+
 

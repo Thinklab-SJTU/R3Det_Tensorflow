@@ -105,10 +105,11 @@ def get_horizen_minAreaRectangle(boxes, with_label=True):
     return tf.transpose(tf.stack([x_min, y_min, x_max, y_max], axis=0))
 
 
-def coordinate_present_convert(coords, mode=1):
+def coordinate_present_convert(coords, mode=1, shift=True):
     """
     :param coords: shape [-1, 5]
     :param mode: -1 convert coords range to [-90, 90), 1 convert coords range to [-90, 0)
+    :param shift: [-90, 90) --> [-180, 0)
     :return: shape [-1, 5]
     """
     # angle range from [-90, 0) to [-180, 0)
@@ -128,7 +129,8 @@ def coordinate_present_convert(coords, mode=1):
 
         coords_new = remain_coords + convert_coords
 
-        coords_new[:, 4] -= 90
+        if shift:
+            coords_new[:, 4] -= 90
 
     # angle range from [-180, 0) to [-90, 0)
     elif mode == 1:
@@ -166,9 +168,10 @@ def coordinate_present_convert(coords, mode=1):
         xrd_ = np.cos(theta) * xrd + np.sin(theta) * yrd + coords[:, 0]
         yrd_ = -np.sin(theta) * xrd + np.cos(theta) * yrd + coords[:, 1]
 
-        convert_box = np.transpose(np.stack([xlt_, ylt_, xrt_, yrt_, xrd_, yrd_, xld_, yld_], axis=0))
+        coords_new = np.transpose(np.stack([xlt_, ylt_, xrt_, yrt_, xrd_, yrd_, xld_, yld_], axis=0))
 
-        coords_new = backward_convert(convert_box, False)
+        if shift:
+            coords_new = backward_convert(coords_new, False)
 
     else:
         raise Exception('mode error!')

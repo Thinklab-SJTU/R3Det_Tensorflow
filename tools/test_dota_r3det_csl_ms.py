@@ -15,7 +15,6 @@ import argparse
 from multiprocessing import Queue, Process
 sys.path.append("../")
 
-from data.io.image_preprocess import short_side_resize_for_inference_data
 from libs.networks import build_whole_network_r3det_csl
 from help_utils import tools
 from libs.label_name_dict.label_dict import *
@@ -31,10 +30,6 @@ def worker(gpu_id, images, det_net, args, result_queue):
     img_plac = tf.placeholder(dtype=tf.uint8, shape=[None, None, 3])  # is RGB. not BGR
     img_batch = tf.cast(img_plac, tf.float32)
 
-    img_batch = short_side_resize_for_inference_data(img_tensor=img_batch,
-                                                     target_shortside_len=cfgs.IMG_SHORT_SIDE_LEN,
-                                                     length_limitation=cfgs.IMG_MAX_LENGTH,
-                                                     is_resize=False)
     if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d']:
         img_batch = (img_batch / 255 - tf.constant(cfgs.PIXEL_MEAN_)) / tf.constant(cfgs.PIXEL_STD)
     else:
@@ -78,7 +73,9 @@ def worker(gpu_id, images, det_net, args, result_queue):
             imgH = img.shape[0]
             imgW = img.shape[1]
 
-            img_short_side_len_list = cfgs.IMG_SHORT_SIDE_LEN if args.multi_scale else [cfgs.IMG_SHORT_SIDE_LEN]
+            img_short_side_len_list = cfgs.IMG_SHORT_SIDE_LEN if isinstance(cfgs.IMG_SHORT_SIDE_LEN, list) else [
+                cfgs.IMG_SHORT_SIDE_LEN]
+            img_short_side_len_list = [img_short_side_len_list[0]] if not args.multi_scale else img_short_side_len_list
 
             if imgH < args.h_len:
                 temp = np.zeros([args.h_len, imgW, 3], np.float32)

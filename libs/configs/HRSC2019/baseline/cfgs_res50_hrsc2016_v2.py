@@ -5,43 +5,15 @@ import tensorflow as tf
 import math
 
 """
-gaussian label, omega=10
+RetinaNet-H
 
-
-
-This is your result for task 1:
-
-    mAP: 0.6738304898085752
-    ap of each class:
-    plane:0.8914335719717486,
-    baseball-diamond:0.7825554534383872,
-    bridge:0.42253905536333874,
-    ground-track-field:0.618954473632168,
-    small-vehicle:0.682804572312177,
-    large-vehicle:0.5450885181789469,
-    ship:0.7285446732619127,
-    tennis-court:0.9086060935169401,
-    basketball-court:0.7934179459801323,
-    storage-tank:0.7558745355233758,
-    soccer-ball-field:0.5327609959142836,
-    roundabout:0.5898646648632354,
-    harbor:0.5310054187218879,
-    swimming-pool:0.6949448883695547,
-    helicopter:0.6290624860805408
-
-The submitted information is :
-
-Description: RetinaNet_DOTA_2x_20200729_75.6w
-Username: DetectionTeamCSU
-Institute: CSU
-Emailadress: yangxue@csu.edu.cn
-TeamMembers: YangXue
-
-
+cls : ship|| Recall: 0.8754071661237784 || Precison: 0.4811996418979409|| AP: 0.7129893410485995
+F1:0.7847790507364976 P:0.7886513157894737 R:0.7809446254071661
+mAP is : 0.7129893410485995
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_2x_20200729'
+VERSION = 'RetinaNet_HRSC2016_2x_20200920'
 NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -53,7 +25,7 @@ GPU_GROUP = "0,1,2"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200
-SAVE_WEIGHTS_INTE = 27000 * 2
+SAVE_WEIGHTS_INTE = 10000
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -67,21 +39,23 @@ else:
 
 PRETRAINED_CKPT = ROOT_PATH + '/data/pretrained_weights/' + weights_name + '.ckpt'
 TRAINED_CKPT = os.path.join(ROOT_PATH, 'output/trained_weights')
-EVALUATE_DIR = ROOT_PATH + '/output/evaluate_result_pickle/'
+EVALUATE_R_DIR = ROOT_PATH + '/output/evaluate_result_pickle/'
 
 # ------------------------------------------ Train config
 RESTORE_FROM_RPN = False
 FIXED_BLOCKS = 1  # allow 0~3
 FREEZE_BLOCKS = [True, False, False, False, False]  # for gluoncv backbone
 USE_07_METRIC = True
+EVAL_THRESHOLD = 0.5
 
 MUTILPY_BIAS_GRADIENT = 2.0  # if None, will not multipy
 GRADIENT_CLIPPING_BY_NORM = 10.0  # if None, will not clip
 
 CLS_WEIGHT = 1.0
-REG_WEIGHT = 1.0
-ANGLE_WEIGHT = 2.0
+REG_WEIGHT = 1.0 / 5.0
 REG_LOSS_MODE = None
+ALPHA = 1.0
+BETA = 1.0
 
 BATCH_SIZE = 1
 EPSILON = 1e-5
@@ -92,20 +66,17 @@ MAX_ITERATION = SAVE_WEIGHTS_INTE*20
 WARM_SETP = int(1.0 / 4.0 * SAVE_WEIGHTS_INTE)
 
 # -------------------------------------------- Data_preprocess_config
-DATASET_NAME = 'DOTA'  # 'pascal', 'coco'
+DATASET_NAME = 'HRSC2016'  # 'pascal', 'coco'
 PIXEL_MEAN = [123.68, 116.779, 103.939]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
 PIXEL_MEAN_ = [0.485, 0.456, 0.406]
 PIXEL_STD = [0.229, 0.224, 0.225]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
-IMG_SHORT_SIDE_LEN = 800
-IMG_MAX_LENGTH = 800
-CLASS_NUM = 15
-LABEL_TYPE = 0
-RADUIUS = 1
-OMEGA = 10
+IMG_SHORT_SIDE_LEN = 512
+IMG_MAX_LENGTH = 512
+CLASS_NUM = 1
 
-IMG_ROTATE = False
-RGB2GRAY = False
-VERTICAL_FLIP = False
+IMG_ROTATE = True
+RGB2GRAY = True
+VERTICAL_FLIP = True
 HORIZONTAL_FLIP = True
 IMAGE_PYRAMID = False
 
@@ -123,13 +94,13 @@ LEVEL = ['P3', 'P4', 'P5', 'P6', 'P7']
 BASE_ANCHOR_SIZE_LIST = [32, 64, 128, 256, 512]
 ANCHOR_STRIDE = [8, 16, 32, 64, 128]
 ANCHOR_SCALES = [2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)]
-ANCHOR_RATIOS = [1, 1 / 2, 2., 1 / 3., 3., 5., 1 / 5.]
+ANCHOR_RATIOS = [1, 1 / 2, 2., 1 / 3., 3.]
 ANCHOR_ANGLES = [-90, -75, -60, -45, -30, -15]
 ANCHOR_SCALE_FACTORS = None
 USE_CENTER_OFFSET = True
 METHOD = 'H'
 USE_ANGLE_COND = False
-ANGLE_RANGE = 180  # 90 or 180
+ANGLE_RANGE = 90  # or 180
 
 # --------------------------------------------RPN config
 SHARE_NET = True
@@ -142,4 +113,5 @@ NMS_IOU_THRESHOLD = 0.1
 MAXIMUM_DETECTIONS = 100
 FILTERED_SCORE = 0.05
 VIS_SCORE = 0.4
+
 

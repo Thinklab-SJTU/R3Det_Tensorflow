@@ -250,7 +250,7 @@ if __name__ == '__main__':
     # test only draw boxes
     labes = np.ones(shape=[len(boxes), ], dtype=np.float32) * ONLY_DRAW_BOXES
     scores = np.zeros_like(labes)
-    imm = draw_boxes_with_label_and_scores(img_array, boxes, labes ,scores)
+    imm = draw_boxes_with_label_and_scores(img_array, boxes, labes, scores)
     # imm = np.array(imm)
 
     cv2.imshow("te", imm)

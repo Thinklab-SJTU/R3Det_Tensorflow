@@ -5,41 +5,39 @@ import tensorflow as tf
 import math
 
 """
-v4 + [-90, 0) --> [-180, 0)
-This is your result for task 1:
+v4 180
 
 This is your result for task 1:
 
-    mAP: 0.6410387162340515
+    mAP: 0.6416730011061602
     ap of each class:
-    plane:0.8825002666630422,
-    baseball-diamond:0.7687908856808928,
-    bridge:0.384748290602071,
-    ground-track-field:0.664809884478965,
-    small-vehicle:0.5414514889058302,
-    large-vehicle:0.4788509185128642,
-    ship:0.608654819886516,
-    tennis-court:0.90013300277984,
-    basketball-court:0.7921189604715826,
-    storage-tank:0.7940181430812733,
-    soccer-ball-field:0.5191877296004171,
-    roundabout:0.6054245683222966,
-    harbor:0.5363073420071247,
-    swimming-pool:0.5913801884362678,
-    helicopter:0.547204254081788
+    plane:0.8821742942919781,
+    baseball-diamond:0.7440080093044878,
+    bridge:0.3831123976957141,
+    ground-track-field:0.6589485990451555,
+    small-vehicle:0.604798345202343,
+    large-vehicle:0.49767737835506365,
+    ship:0.6829402579754312,
+    tennis-court:0.871338023329556,
+    basketball-court:0.7813852482817419,
+    storage-tank:0.786012241585395,
+    soccer-ball-field:0.521218693379607,
+    roundabout:0.6001757439327997,
+    harbor:0.5127709102957538,
+    swimming-pool:0.5936834817142064,
+    helicopter:0.5048513922031709
 
 The submitted information is :
 
-Description: RetinaNet_DOTA_1x_20191103_54w
-Username: yangxue
-Institute: DetectionTeamUCAS
-Emailadress: yangxue16@mails.ucas.ac.cn
-TeamMembers: yangxue, yangjirui
-
+Description: RetinaNet_DOTA_2x_20200915_70.2w
+Username: liuqingiqng
+Institute: Central South University
+Emailadress: liuqingqing@csu.edu.cn
+TeamMembers: liuqingqing
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_1x_20191102'
+VERSION = 'RetinaNet_DOTA_2x_20200915'
 NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -47,11 +45,11 @@ ADD_BOX_IN_TENSORBOARD = True
 ROOT_PATH = os.path.abspath('../')
 print(20*"++--")
 print(ROOT_PATH)
-GPU_GROUP = "0"
+GPU_GROUP = "0,1,2"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200
-SAVE_WEIGHTS_INTE = 27000
+SAVE_WEIGHTS_INTE = 27000 * 2
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -79,6 +77,8 @@ GRADIENT_CLIPPING_BY_NORM = 10.0  # if None, will not clip
 CLS_WEIGHT = 1.0
 REG_WEIGHT = 1.0 / 5.0
 REG_LOSS_MODE = None
+ALPHA = 1.0
+BETA = 1.0
 
 BATCH_SIZE = 1
 EPSILON = 1e-5
@@ -97,6 +97,12 @@ IMG_SHORT_SIDE_LEN = 800
 IMG_MAX_LENGTH = 800
 CLASS_NUM = 15
 
+IMG_ROTATE = False
+RGB2GRAY = False
+VERTICAL_FLIP = False
+HORIZONTAL_FLIP = True
+IMAGE_PYRAMID = False
+
 # --------------------------------------------- Network_config
 SUBNETS_WEIGHTS_INITIALIZER = tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=None)
 SUBNETS_BIAS_INITIALIZER = tf.constant_initializer(value=0.0)
@@ -104,6 +110,7 @@ PROBABILITY = 0.01
 FINAL_CONV_BIAS_INITIALIZER = tf.constant_initializer(value=-math.log((1.0 - PROBABILITY) / PROBABILITY))
 WEIGHT_DECAY = 1e-4
 USE_GN = False
+FPN_CHANNEL = 256
 
 # ---------------------------------------------Anchor config
 LEVEL = ['P3', 'P4', 'P5', 'P6', 'P7']
@@ -116,7 +123,7 @@ ANCHOR_SCALE_FACTORS = None
 USE_CENTER_OFFSET = True
 METHOD = 'H'
 USE_ANGLE_COND = False
-ANGLE_RANGE = 180  # or 90
+ANGLE_RANGE = 180  # 90 or 180
 
 # --------------------------------------------RPN config
 SHARE_NET = True

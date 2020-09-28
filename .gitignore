@@ -135,10 +135,20 @@ __pycache__/
 *ohd-sjtu*
 *test_ohd_sjtu*
 *binary_label*
-*bcl*
+*gray_label*
+*dichotomy_label*
+*dcl*
+*r3det_dcl*
+*densely_coded_label*
+*dota_train*
+*batch*
+*tsne*
 
+demo
+tools/demo.py
 tools/demos/*
 tools/test_dota/*
 tools/test_icdar2015/*
+tools/test_ohd_sjtu/*
 output/summary/*
 data/tfrecord/*

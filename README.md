@@ -94,8 +94,10 @@ python multi_gpu_train_r3det.py
 ## Eval
 ```  
 cd $PATH_ROOT/tools
-python test_dota_r3det.py --test_dir='/PATH/TO/IMAGES/'  
-                          --gpus=0,1,2,3,4,5,6,7          
+python test_dota_r3det_ms.py --test_dir='/PATH/TO/IMAGES/'  
+                             --gpus=0,1,2,3,4,5,6,7  
+                             -ms (multi-scale testing, optional)
+                             -s (visualization, optional)
 ``` 
 
 ## Tensorboard

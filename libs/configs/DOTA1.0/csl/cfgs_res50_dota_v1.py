@@ -5,43 +5,40 @@ import tensorflow as tf
 import math
 
 """
-gaussian label, omega=10
-
-
+gaussian label, omega=1, r=6
 
 This is your result for task 1:
 
-    mAP: 0.6738304898085752
+    mAP: 0.6569045253137319
     ap of each class:
-    plane:0.8914335719717486,
-    baseball-diamond:0.7825554534383872,
-    bridge:0.42253905536333874,
-    ground-track-field:0.618954473632168,
-    small-vehicle:0.682804572312177,
-    large-vehicle:0.5450885181789469,
-    ship:0.7285446732619127,
-    tennis-court:0.9086060935169401,
-    basketball-court:0.7934179459801323,
-    storage-tank:0.7558745355233758,
-    soccer-ball-field:0.5327609959142836,
-    roundabout:0.5898646648632354,
-    harbor:0.5310054187218879,
-    swimming-pool:0.6949448883695547,
-    helicopter:0.6290624860805408
+    plane:0.8867964561407189,
+    baseball-diamond:0.7621447630919623,
+    bridge:0.4055336223125793,
+    ground-track-field:0.6106504178923284,
+    small-vehicle:0.6676809751876145,
+    large-vehicle:0.5149858260302362,
+    ship:0.7359685211242706,
+    tennis-court:0.9083268053106571,
+    basketball-court:0.7900280506333788,
+    storage-tank:0.7926176857759603,
+    soccer-ball-field:0.5518343006559859,
+    roundabout:0.5743420301956235,
+    harbor:0.537573063205451,
+    swimming-pool:0.6545719624624141,
+    helicopter:0.4605133996867981
 
 The submitted information is :
 
-Description: RetinaNet_DOTA_2x_20200729_75.6w
-Username: DetectionTeamCSU
-Institute: CSU
-Emailadress: yangxue@csu.edu.cn
-TeamMembers: YangXue
-
+Description: RetinaNet_DOTA_CSL_2x_20200912_70.2w
+Username: liuqingiqng
+Institute: Central South University
+Emailadress: liuqingqing@csu.edu.cn
+TeamMembers: liuqingqing
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_2x_20200729'
+VERSION = 'RetinaNet_DOTA_CSL_2x_20200912'
 NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -80,7 +77,7 @@ GRADIENT_CLIPPING_BY_NORM = 10.0  # if None, will not clip
 
 CLS_WEIGHT = 1.0
 REG_WEIGHT = 1.0
-ANGLE_WEIGHT = 2.0
+ANGLE_WEIGHT = 0.5
 REG_LOSS_MODE = None
 
 BATCH_SIZE = 1
@@ -100,8 +97,8 @@ IMG_SHORT_SIDE_LEN = 800
 IMG_MAX_LENGTH = 800
 CLASS_NUM = 15
 LABEL_TYPE = 0
-RADUIUS = 1
-OMEGA = 10
+RADUIUS = 6
+OMEGA = 1
 
 IMG_ROTATE = False
 RGB2GRAY = False

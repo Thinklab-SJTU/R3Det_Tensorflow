@@ -239,12 +239,12 @@ def resnet_base(img_batch, scope_name, is_training=True):
 
             pyramid_dict['P5'] = P5
 
-            for level in range(4, 2, -1):  # build [P4, P3]
+            for level in range(4, int(cfgs.LEVEL[0][-1]) - 1, -1):  # build [P4, P3]
 
                 pyramid_dict['P%d' % level] = fusion_two_layer(C_i=feature_dict["C%d" % level],
                                                                P_j=pyramid_dict["P%d" % (level + 1)],
                                                                scope='build_P%d' % level)
-            for level in range(5, 2, -1):
+            for level in range(5, int(cfgs.LEVEL[0][-1]) - 1, -1):
                 pyramid_dict['P%d' % level] = slim.conv2d(pyramid_dict['P%d' % level],
                                                           num_outputs=cfgs.FPN_CHANNEL, kernel_size=[3, 3], padding="SAME",
                                                           stride=1, scope="fuse_P%d" % level)

@@ -98,7 +98,7 @@ def next_batch(dataset_name, batch_size, shortside_len, is_training):
     # assert batch_size == 1, "we only support batch_size is 1.We may support large batch_size in the future"
 
     valid_dataset= ['DOTA1.5', 'ICDAR2015', 'pascal', 'coco', 'bdd100k', 'DOTA', 'DOTA800', 'DOTA600',
-                    'HRSC2016', 'UCAS-AOD', 'OHD-SJTU', 'OHD-SJTU-600', 'OHD-SJTU-ALL-600']
+                    'HRSC2016', 'UCAS-AOD', 'OHD-SJTU', 'OHD-SJTU-600', 'OHD-SJTU-ALL-600', 'DOTATrain']
     if dataset_name not in valid_dataset:
         raise ValueError('dataSet name must be in {}'.format(valid_dataset))
 

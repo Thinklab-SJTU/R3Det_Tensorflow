@@ -9,6 +9,7 @@ import cv2
 from libs.configs import cfgs
 import tensorflow as tf
 from libs.box_utils.rotate_polygon_nms import rotate_gpu_nms
+from libs.box_utils.coordinate_convert import forward_convert
 
 
 def nms_rotate(decode_boxes, scores, iou_threshold, max_output_size,
@@ -64,28 +65,33 @@ def nms_rotate_cpu(boxes, scores, iou_threshold, max_output_size):
             j = order[_j]
             if suppressed[i] == 1:
                 continue
-            r2 = ((boxes[j, 0], boxes[j, 1]), (boxes[j, 2], boxes[j, 3]), boxes[j, 4])
-            area_r2 = boxes[j, 2] * boxes[j, 3]
-            inter = 0.0
 
-            try:
-                int_pts = cv2.rotatedRectangleIntersection(r1, r2)[1]
+            if np.sqrt((boxes[i, 0] - boxes[j, 0])**2 + (boxes[i, 1] - boxes[j, 1])**2) > (boxes[i, 2] + boxes[j, 2] + boxes[i, 3] + boxes[j, 3]):
+                inter = 0.0
+            else:
 
-                if int_pts is not None:
-                    order_pts = cv2.convexHull(int_pts, returnPoints=True)
+                r2 = ((boxes[j, 0], boxes[j, 1]), (boxes[j, 2], boxes[j, 3]), boxes[j, 4])
+                area_r2 = boxes[j, 2] * boxes[j, 3]
+                inter = 0.0
 
-                    int_area = cv2.contourArea(order_pts)
+                try:
+                    int_pts = cv2.rotatedRectangleIntersection(r1, r2)[1]
 
-                    inter = int_area * 1.0 / (area_r1 + area_r2 - int_area + cfgs.EPSILON)
+                    if int_pts is not None:
+                        order_pts = cv2.convexHull(int_pts, returnPoints=True)
 
-            except:
-                """
-                  cv2.error: /io/opencv/modules/imgproc/src/intersection.cpp:247:
-                  error: (-215) intersection.size() <= 8 in function rotatedRectangleIntersection
-                """
-                # print(r1)
-                # print(r2)
-                inter = 0.9999
+                        int_area = cv2.contourArea(order_pts)
+
+                        inter = int_area * 1.0 / (area_r1 + area_r2 - int_area + cfgs.EPSILON)
+
+                except:
+                    """
+                      cv2.error: /io/opencv/modules/imgproc/src/intersection.cpp:247:
+                      error: (-215) intersection.size() <= 8 in function rotatedRectangleIntersection
+                    """
+                    # print(r1)
+                    # print(r2)
+                    inter = 0.9999
 
             if inter >= iou_threshold:
                 suppressed[j] = 1

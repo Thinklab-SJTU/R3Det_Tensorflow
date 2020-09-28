@@ -219,8 +219,6 @@ def train():
                                                                       cfgs.LABEL_TYPE, cfgs.RADUIUS, cfgs.OMEGA],
                                                                  Tout=tf.float32)
 
-                                gt_smooth_label = tf.reshape(gt_smooth_label, [-1, cfgs.ANGLE_RANGE // cfgs.OMEGA])
-
                                 img = inputs_list[i][0]
                                 img_shape = inputs_list[i][-2:]
                                 img = tf.image.crop_to_bounding_box(image=img,
