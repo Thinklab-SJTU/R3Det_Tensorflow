@@ -63,6 +63,7 @@ def worker(gpu_id, images, det_net, result_queue):
             raw_h, raw_w = raw_img.shape[0], raw_img.shape[1]
 
             det_boxes_r_all, det_scores_r_all, det_category_r_all = [], [], []
+
             img_short_side_len_list = cfgs.IMG_SHORT_SIDE_LEN if isinstance(cfgs.IMG_SHORT_SIDE_LEN, list) else [
                 cfgs.IMG_SHORT_SIDE_LEN]
             img_short_side_len_list = [img_short_side_len_list[0]] if not args.multi_scale else img_short_side_len_list

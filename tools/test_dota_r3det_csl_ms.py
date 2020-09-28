@@ -111,7 +111,7 @@ def worker(gpu_id, images, det_net, args, result_queue):
 
                         resized_img, det_boxes_r_, det_scores_r_, det_category_r_ = \
                             sess.run(
-                                [img_batch, detection_boxes, detection_scores, detection_category],
+                                [img_batch, detection_boxes_angle, detection_scores, detection_category],
                                 feed_dict={img_plac: img_resize[:, :, ::-1]}
                             )
 

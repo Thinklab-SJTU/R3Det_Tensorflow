@@ -15,8 +15,7 @@ import argparse
 from multiprocessing import Queue, Process
 sys.path.append("../")
 
-from data.io.image_preprocess import short_side_resize_for_inference_data
-from libs.networks import build_whole_network_r3det_efficientnet
+from libs.networks import build_whole_network_refine_retinanet
 from help_utils import tools
 from libs.label_name_dict.label_dict import *
 from libs.box_utils import draw_box_in_img
@@ -31,9 +30,6 @@ def worker(gpu_id, images, det_net, args, result_queue):
     img_plac = tf.placeholder(dtype=tf.uint8, shape=[None, None, 3])  # is RGB. not BGR
     img_batch = tf.cast(img_plac, tf.float32)
 
-    img_batch = short_side_resize_for_inference_data(img_tensor=img_batch,
-                                                     target_shortside_len=cfgs.IMG_SHORT_SIDE_LEN,
-                                                     length_limitation=cfgs.IMG_MAX_LENGTH)
     if cfgs.NET_NAME in ['resnet152_v1d', 'resnet101_v1d', 'resnet50_v1d']:
         img_batch = (img_batch / 255 - tf.constant(cfgs.PIXEL_MEAN_)) / tf.constant(cfgs.PIXEL_STD)
     else:
@@ -63,10 +59,6 @@ def worker(gpu_id, images, det_net, args, result_queue):
             print('restore model %d ...' % gpu_id)
 
         for img_path in images:
-
-            # if 'P0016' not in img_path:
-            #     continue
-
             img = cv2.imread(img_path)
 
             box_res_rotate = []
@@ -75,6 +67,10 @@ def worker(gpu_id, images, det_net, args, result_queue):
 
             imgH = img.shape[0]
             imgW = img.shape[1]
+
+            img_short_side_len_list = cfgs.IMG_SHORT_SIDE_LEN if isinstance(cfgs.IMG_SHORT_SIDE_LEN, list) else [
+                cfgs.IMG_SHORT_SIDE_LEN]
+            img_short_side_len_list = [img_short_side_len_list[0]] if not args.multi_scale else img_short_side_len_list
 
             if imgH < args.h_len:
                 temp = np.zeros([args.h_len, imgW, 3], np.float32)
@@ -100,28 +96,36 @@ def worker(gpu_id, images, det_net, args, result_queue):
                         ww_ = ww
                     src_img = img[hh_:(hh_ + args.h_len), ww_:(ww_ + args.w_len), :]
 
-                    resized_img, det_boxes_r_, det_scores_r_, det_category_r_ = \
-                        sess.run(
-                            [img_batch, detection_boxes, detection_scores, detection_category],
-                            feed_dict={img_plac: src_img[:, :, ::-1]}
-                        )
+                    for short_size in img_short_side_len_list:
+                        max_len = cfgs.IMG_MAX_LENGTH
+                        if args.h_len < args.w_len:
+                            new_h, new_w = short_size, min(int(short_size * float(args.w_len) / args.h_len), max_len)
+                        else:
+                            new_h, new_w = min(int(short_size * float(args.h_len) / args.w_len), max_len), short_size
+                        img_resize = cv2.resize(src_img, (new_w, new_h))
 
-                    resized_h, resized_w = resized_img.shape[1], resized_img.shape[2]
-                    src_h, src_w = src_img.shape[0], src_img.shape[1]
+                        resized_img, det_boxes_r_, det_scores_r_, det_category_r_ = \
+                            sess.run(
+                                [img_batch, detection_boxes, detection_scores, detection_category],
+                                feed_dict={img_plac: img_resize[:, :, ::-1]}
+                            )
 
-                    if len(det_boxes_r_) > 0:
-                        det_boxes_r_ = forward_convert(det_boxes_r_, False)
-                        det_boxes_r_[:, 0::2] *= (src_w / resized_w)
-                        det_boxes_r_[:, 1::2] *= (src_h / resized_h)
-                        # det_boxes_r_ = backward_convert(det_boxes_r_, False)
+                        resized_h, resized_w = resized_img.shape[1], resized_img.shape[2]
+                        src_h, src_w = src_img.shape[0], src_img.shape[1]
 
-                        for ii in range(len(det_boxes_r_)):
-                            box_rotate = det_boxes_r_[ii]
-                            box_rotate[0::2] = box_rotate[0::2] + ww_
-                            box_rotate[1::2] = box_rotate[1::2] + hh_
-                            box_res_rotate.append(box_rotate)
-                            label_res_rotate.append(det_category_r_[ii])
-                            score_res_rotate.append(det_scores_r_[ii])
+                        if len(det_boxes_r_) > 0:
+                            det_boxes_r_ = forward_convert(det_boxes_r_, False)
+                            det_boxes_r_[:, 0::2] *= (src_w / resized_w)
+                            det_boxes_r_[:, 1::2] *= (src_h / resized_h)
+                            # det_boxes_r_ = backward_convert(det_boxes_r_, False)
+
+                            for ii in range(len(det_boxes_r_)):
+                                box_rotate = det_boxes_r_[ii]
+                                box_rotate[0::2] = box_rotate[0::2] + ww_
+                                box_rotate[1::2] = box_rotate[1::2] + hh_
+                                box_res_rotate.append(box_rotate)
+                                label_res_rotate.append(det_category_r_[ii])
+                                score_res_rotate.append(det_scores_r_[ii])
 
             box_res_rotate = np.array(box_res_rotate)
             label_res_rotate = np.array(label_res_rotate)
@@ -131,7 +135,7 @@ def worker(gpu_id, images, det_net, args, result_queue):
             label_res_rotate_ = []
             score_res_rotate_ = []
             threshold = {'roundabout': 0.1, 'tennis-court': 0.3, 'swimming-pool': 0.1, 'storage-tank': 0.2,
-                         'soccer-ball-field': 0.3, 'small-vehicle': 0.2, 'ship': 0.05, 'plane': 0.3,
+                         'soccer-ball-field': 0.3, 'small-vehicle': 0.2, 'ship': 0.2, 'plane': 0.3,
                          'large-vehicle': 0.1, 'helicopter': 0.2, 'harbor': 0.0001, 'ground-track-field': 0.3,
                          'bridge': 0.0001, 'basketball-court': 0.3, 'baseball-diamond': 0.3}
 
@@ -143,20 +147,21 @@ def worker(gpu_id, images, det_net, args, result_queue):
                 tmp_label_r = label_res_rotate[index]
                 tmp_score_r = score_res_rotate[index]
 
-                tmp_boxes_r = np.array(tmp_boxes_r)
-                tmp = np.zeros([tmp_boxes_r.shape[0], tmp_boxes_r.shape[1] + 1])
-                tmp[:, 0:-1] = tmp_boxes_r
-                tmp[:, -1] = np.array(tmp_score_r)
+                tmp_boxes_r_ = backward_convert(tmp_boxes_r, False)
 
                 try:
-                    inx = nms_rotate.nms_rotate_cpu(boxes=np.array(tmp_boxes_r),
+                    inx = nms_rotate.nms_rotate_cpu(boxes=np.array(tmp_boxes_r_),
                                                     scores=np.array(tmp_score_r),
                                                     iou_threshold=threshold[LABEL_NAME_MAP[sub_class]],
                                                     max_output_size=5000)
                 except:
+                    tmp_boxes_r_ = np.array(tmp_boxes_r_)
+                    tmp = np.zeros([tmp_boxes_r_.shape[0], tmp_boxes_r_.shape[1] + 1])
+                    tmp[:, 0:-1] = tmp_boxes_r_
+                    tmp[:, -1] = np.array(tmp_score_r)
                     # Note: the IoU of two same rectangles is 0, which is calculated by rotate_gpu_nms
-                    jitter = np.zeros([tmp_boxes_r.shape[0], tmp_boxes_r.shape[1] + 1])
-                    jitter[:, 0] += np.random.rand(tmp_boxes_r.shape[0], ) / 1000
+                    jitter = np.zeros([tmp_boxes_r_.shape[0], tmp_boxes_r_.shape[1] + 1])
+                    jitter[:, 0] += np.random.rand(tmp_boxes_r_.shape[0], ) / 1000
                     inx = rotate_gpu_nms(np.array(tmp, np.float32) + np.array(jitter, np.float32),
                                          float(threshold[LABEL_NAME_MAP[sub_class]]), 0)
 
@@ -200,10 +205,11 @@ def test_dota(det_net, real_test_img_list, args, txt_name):
             draw_path = os.path.join(save_path, 'dota_img_vis', nake_name)
 
             draw_img = np.array(cv2.imread(res['image_id']), np.float32)
+            detected_boxes = backward_convert(res['boxes'], with_label=False)
 
             detected_indices = res['scores'] >= cfgs.VIS_SCORE
             detected_scores = res['scores'][detected_indices]
-            detected_boxes = res['boxes'][detected_indices]
+            detected_boxes = detected_boxes[detected_indices]
             detected_categories = res['labels'][detected_indices]
 
             final_detections = draw_box_in_img.draw_boxes_with_label_and_scores(draw_img,
@@ -224,9 +230,9 @@ def test_dota(det_net, real_test_img_list, args, txt_name):
                     continue
                 write_handle[sub_class] = open(os.path.join(save_path, 'dota_res', 'Task1_%s.txt' % sub_class), 'a+')
 
-            rboxes = forward_convert(res['boxes'], with_label=False)
+            # rboxes = forward_convert(res['boxes'], with_label=False)
 
-            for i, rbox in enumerate(rboxes):
+            for i, rbox in enumerate(res['boxes']):
                 command = '%s %.3f %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f\n' % (res['image_id'].split('/')[-1].split('.')[0],
                                                                                  res['scores'][i],
                                                                                  rbox[0], rbox[1], rbox[2], rbox[3],
@@ -280,9 +286,9 @@ def eval(num_imgs, args):
     else:
         real_test_img_list = test_imgname_list[: num_imgs]
 
-    retinanet = build_whole_network_r3det_efficientnet.DetectionNetwork(base_network_name=cfgs.NET_NAME,
-                                                                        is_training=False)
-    test_dota(det_net=retinanet, real_test_img_list=real_test_img_list, args=args, txt_name=txt_name)
+    refine_retinanet = build_whole_network_refine_retinanet.DetectionNetwork(base_network_name=cfgs.NET_NAME,
+                                                                             is_training=False)
+    test_dota(det_net=refine_retinanet, real_test_img_list=real_test_img_list, args=args, txt_name=txt_name)
 
     if not args.show_box:
         os.remove(txt_name)
@@ -294,7 +300,7 @@ def parse_args():
 
     parser.add_argument('--test_dir', dest='test_dir',
                         help='evaluate imgs dir ',
-                        default='/data/dataset/DOTA/test/images/', type=str)
+                        default='/data/DOTA/test/images/', type=str)
     parser.add_argument('--gpus', dest='gpus',
                         help='gpu id',
                         default='0,1,2,3,4,5,6,7', type=str)
@@ -327,22 +333,5 @@ if __name__ == '__main__':
     print(20*"--")
     eval(args.eval_num,
          args=args)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
