@@ -221,6 +221,7 @@ def test_dota(det_net, real_test_img_list, args, txt_name):
                                                                                 labels=detected_categories,
                                                                                 scores=detected_scores,
                                                                                 method=1,
+                                                                                is_csl=True,
                                                                                 in_graph=False)
             cv2.imwrite(draw_path, final_detections)
 
@@ -312,6 +313,8 @@ def parse_args():
                         help='the num of eval imgs',
                         default=np.inf, type=int)
     parser.add_argument('--show_box', '-s', default=False,
+                        action='store_true')
+    parser.add_argument('--multi_scale', '-ms', default=False,
                         action='store_true')
     parser.add_argument('--h_len', dest='h_len',
                         help='image height',

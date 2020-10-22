@@ -125,7 +125,7 @@ __pycache__/
 *refine_feature_multi_stage*
 *mining_loss*
 *ablation_study*
-*tmp.py*
+*tmp*
 *gaussian_wasserstein*
 *gwd*
 *OHD-SJTU*
@@ -138,11 +138,13 @@ __pycache__/
 *gray_label*
 *dichotomy_label*
 *dcl*
+*csl*
 *r3det_dcl*
 *densely_coded_label*
 *dota_train*
 *batch*
 *tsne*
+*inld*
 
 demo
 tools/demo.py

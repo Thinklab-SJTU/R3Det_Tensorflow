@@ -147,9 +147,9 @@ def worker(gpu_id, images, det_net, result_queue):
             result_queue.put_nowait(result_dict)
 
 
-def test_icdar2015(det_net, real_test_img_list, gpu_ids, show_box, txt_name):
+def test_mlt(det_net, real_test_img_list, gpu_ids, show_box, txt_name):
 
-    save_path = os.path.join('./test_icdar2015', cfgs.VERSION)
+    save_path = os.path.join('./test_mlt', cfgs.VERSION)
     tools.mkdir(save_path)
 
     nr_records = len(real_test_img_list)
@@ -172,14 +172,15 @@ def test_icdar2015(det_net, real_test_img_list, gpu_ids, show_box, txt_name):
     for i in range(nr_records):
         res = result_queue.get()
         if res['boxes'].shape[0] == 0:
-            fw_txt_dt = open(os.path.join(save_path, 'res_{}.txt'.format(res['image_id'].split('/')[-1].split('.')[0])),
-                             'w')
+            fw_txt_dt = open(os.path.join(save_path, 'res_{}.txt'.format(
+                res['image_id'].split('/')[-1].split('.')[0].split('ts_')[1])), 'w')
             fw_txt_dt.close()
             pbar.update(1)
 
             fw = open(txt_name, 'a+')
             fw.write('{}\n'.format(res['image_id'].split('/')[-1]))
             fw.close()
+
             continue
         x1, y1, x2, y2, x3, y3, x4, y4 = res['boxes'][:, 0], res['boxes'][:, 1], res['boxes'][:, 2], res['boxes'][:, 3],\
                                          res['boxes'][:, 4], res['boxes'][:, 5], res['boxes'][:, 6], res['boxes'][:, 7]
@@ -206,11 +207,12 @@ def test_icdar2015(det_net, real_test_img_list, gpu_ids, show_box, txt_name):
             cv2.imwrite(draw_path, final_detections)
 
         else:
-            fw_txt_dt = open(os.path.join(save_path, 'res_{}.txt'.format(res['image_id'].split('/')[-1].split('.')[0])), 'w')
+            fw_txt_dt = open(os.path.join(save_path, 'res_{}.txt'.format(
+                res['image_id'].split('/')[-1].split('.')[0].split('ts_')[1])), 'w')
 
-            for box in boxes:
-                line = '%d,%d,%d,%d,%d,%d,%d,%d\n' % (box[0], box[1], box[2], box[3],
-                                                      box[4], box[5], box[6], box[7])
+            for ii, box in enumerate(boxes):
+                line = '%d,%d,%d,%d,%d,%d,%d,%d,%.3f\n' % (box[0], box[1], box[2], box[3],
+                                                           box[4], box[5], box[6], box[7], res['scores'][ii])
                 fw_txt_dt.write(line)
             fw_txt_dt.close()
 
@@ -242,11 +244,11 @@ def eval(num_imgs, test_dir, gpu_ids, show_box):
         fr.close()
 
         test_imgname_list = [os.path.join(test_dir, img_name) for img_name in os.listdir(args.test_dir)
-                             if img_name.endswith(('.jpg', '.png', '.jpeg', '.tif', '.tiff')) and
+                             if img_name.endswith(('.jpg', '.JPG', '.png', '.jpeg', '.tif', '.tiff')) and
                              (img_name + '\n' not in img_filter)]
     else:
         test_imgname_list = [os.path.join(test_dir, img_name) for img_name in os.listdir(args.test_dir)
-                             if img_name.endswith(('.jpg', '.png', '.jpeg', '.tif', '.tiff'))]
+                             if img_name.endswith(('.jpg', '.JPG', '.png', '.jpeg', '.tif', '.tiff'))]
 
     assert len(test_imgname_list) != 0, 'test_dir has no imgs there.' \
                                         ' Note that, we only support img format of (.jpg, .png, and .tiff) '
@@ -259,7 +261,7 @@ def eval(num_imgs, test_dir, gpu_ids, show_box):
     retinanet = build_whole_network.DetectionNetwork(base_network_name=cfgs.NET_NAME,
                                                      is_training=False)
 
-    test_icdar2015(det_net=retinanet, real_test_img_list=real_test_img_list, gpu_ids=gpu_ids, show_box=show_box, txt_name=txt_name)
+    test_mlt(det_net=retinanet, real_test_img_list=real_test_img_list, gpu_ids=gpu_ids, show_box=show_box, txt_name=txt_name)
 
     if not show_box:
         os.remove(txt_name)
@@ -271,7 +273,7 @@ def parse_args():
 
     parser.add_argument('--test_dir', dest='test_dir',
                         help='evaluate imgs dir ',
-                        default='/data/yangxue/dataset/ICDAR2015/ch4_test_images', type=str)
+                        default='/data/yangxue/dataset/MLT/test/ch8_test_images', type=str)
     parser.add_argument('--gpus', dest='gpus',
                         help='gpu id',
                         default='0,1,2,3,4,5,6,7', type=str)

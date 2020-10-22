@@ -60,7 +60,7 @@ def worker(gpu_id, images, det_net, args, result_queue):
             print('restore model %d ...' % gpu_id)
 
         for img_path in images:
-            # if 'P1925' not in img_path:
+            # if 'P0016' not in img_path:  # 'P1925'
             #     continue
             img = cv2.imread(img_path)
 

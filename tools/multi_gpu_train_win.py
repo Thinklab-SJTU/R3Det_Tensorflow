@@ -238,7 +238,7 @@ def train():
                                     total_losses += loss_dict[k]
                                     total_loss_dict[k] += loss_dict[k] / num_gpu
 
-                                total_losses = total_losses / num_gpu
+                                total_losses /= num_gpu
                                 total_loss_dict['total_losses'] += total_losses
 
                                 if i == num_gpu - 1:

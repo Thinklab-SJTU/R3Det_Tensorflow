@@ -327,7 +327,7 @@ class DetectionNetwork(object):
         #         feature_pyramid['P{}'.format(i + 3)] *= d
         rpn_box_pred_list, rpn_cls_score_list, rpn_cls_prob_list = self.rpn_net(feature_pyramid, 'rpn_net')
 
-        # 3. generate_anchors and mask
+        # 3. generate anchors and mask
         anchor_list = self.make_anchors(feature_pyramid)
 
         if cfgs.USE_SUPERVISED_MASK:

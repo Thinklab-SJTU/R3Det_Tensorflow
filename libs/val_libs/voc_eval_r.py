@@ -81,11 +81,12 @@ def parse_rec(filename):
     obj_struct['pose'] = obj.find('pose').text
     obj_struct['truncated'] = int(obj.find('truncated').text)
     obj_struct['difficult'] = int(obj.find('difficult').text)
+    # obj_struct['difficult'] = 0
     bbox = obj.find('bndbox')
-    rbox = [int(bbox.find('x1').text), int(bbox.find('y1').text),
-            int(bbox.find('x2').text), int(bbox.find('y2').text),
-            int(bbox.find('x3').text), int(bbox.find('y3').text),
-            int(bbox.find('x4').text), int(bbox.find('y4').text)]
+    rbox = [eval(bbox.find('x1').text), eval(bbox.find('y1').text),
+            eval(bbox.find('x2').text), eval(bbox.find('y2').text),
+            eval(bbox.find('x3').text), eval(bbox.find('y3').text),
+            eval(bbox.find('x4').text), eval(bbox.find('y4').text)]
     rbox = np.array([rbox], np.float32)
     rbox = coordinate_convert.backward_convert(rbox, with_label=False)
     obj_struct['bbox'] = rbox
