@@ -309,6 +309,8 @@ def parse_args():
                         default=np.inf, type=int)
     parser.add_argument('--show_box', '-s', default=False,
                         action='store_true')
+    parser.add_argument('--multi_scale', '-ms', default=False,
+                        action='store_true')
     parser.add_argument('--h_len', dest='h_len',
                         help='image height',
                         default=600, type=int)

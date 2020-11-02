@@ -134,7 +134,8 @@ def coordinate_present_convert(coords, mode=1, shift=True):
 
     # angle range from [-180, 0) to [-90, 0)
     elif mode == 1:
-        coords[:, 4] += 90
+        if shift:
+            coords[:, 4] += 90
 
         # theta = coords[:, 4]
         # remain_mask = np.logical_and(np.greater_equal(theta, -90), np.less(theta, 0))
@@ -170,8 +171,7 @@ def coordinate_present_convert(coords, mode=1, shift=True):
 
         coords_new = np.transpose(np.stack([xlt_, ylt_, xrt_, yrt_, xrd_, yrd_, xld_, yld_], axis=0))
 
-        if shift:
-            coords_new = backward_convert(coords_new, False)
+        coords_new = backward_convert(coords_new, False)
 
     else:
         raise Exception('mode error!')

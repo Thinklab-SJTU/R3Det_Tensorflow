@@ -3,17 +3,19 @@
 ## Abstract
 [R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) and [R<sup>3</sup>Det++](https://arxiv.org/abs/2004.13316) are based on [Focal Loss for Dense Object Detection](https://arxiv.org/pdf/1708.02002.pdf), and it is completed by [YangXue](https://yangxue0827.github.io/).
 
-Techniques:     
-- [x] [ResNet](https://arxiv.org/abs/1512.03385), [MobileNetV2](https://arxiv.org/abs/1801.04381), [EfficientNet](https://arxiv.org/abs/1905.11946)
-- [x] [RetinaNet-H, RetinaNet-R](https://arxiv.org/abs/1908.05612)
-- [x] [R<sup>3</sup>Det: Feature Refinement Module (FRM)](https://arxiv.org/abs/1908.05612)
-- [x] [R<sup>3</sup>Det++: Instance Level Denoising (InLD)](https://arxiv.org/abs/2004.13316)
-- [x] [IoU-Smooth L1 Loss](https://arxiv.org/abs/1811.07126)
-- [x] [Circular Smooth Label (CSL)](https://arxiv.org/abs/2003.05597)
-- [ ] [Densely Coded Label (DCL)]()
-- [x] [mmdetection version](https://github.com/SJTU-Thinklab-Det/r3det-on-mmdetection) is released
-- [x] Dataset support: DOTA, HRSC2016, ICDAR2015, ICDAR2017 MLT, UCAS-AOD, FDDB, OHD-SJTU, SSDD++
-- [x] [OHDet: Object Heading Detection](https://github.com/SJTU-Thinklab-Det/OHDet_Tensorflow)
+**We also recommend a tensorflow-based [rotation detection benchmark](https://github.com/yangxue0827/RotationDetection), which is led by [YangXue](https://yangxue0827.github.io/).**
+
+<!-- Techniques:      -->
+<!-- - [x] [ResNet](https://arxiv.org/abs/1512.03385), [MobileNetV2](https://arxiv.org/abs/1801.04381), [EfficientNet](https://arxiv.org/abs/1905.11946) -->
+<!-- - [x] [RetinaNet-H, RetinaNet-R](https://arxiv.org/abs/1908.05612) -->
+<!-- - [x] [R<sup>3</sup>Det: Feature Refinement Module (FRM)](https://arxiv.org/abs/1908.05612) -->
+<!-- - [x] [R<sup>3</sup>Det++: Instance Level Denoising (InLD)](https://arxiv.org/abs/2004.13316) -->
+<!-- - [x] [IoU-Smooth L1 Loss](https://arxiv.org/abs/1811.07126) -->
+<!-- - [x] [Circular Smooth Label (CSL)](https://arxiv.org/abs/2003.05597) -->
+<!-- - [x] [Densely Coded Label (DCL)]() -->
+<!-- - [x] [mmdetection version](https://github.com/SJTU-Thinklab-Det/r3det-on-mmdetection) is released -->
+<!-- - [x] Dataset support: DOTA, HRSC2016, ICDAR2015, ICDAR2017 MLT, UCAS-AOD, FDDB, OHD-SJTU, SSDD++ -->
+<!-- - [x] [OHDet: Object Heading Detection](https://github.com/SJTU-Thinklab-Det/OHDet_Tensorflow) -->
 
 ## Pipeline
 ![5](pipeline.png)
@@ -23,14 +25,16 @@ Techniques:
 | Model |    Backbone    |    Training data    |    Val data    |    mAP   | Model Link | Anchor | Angle Pred. | Reg. Loss| Angle Range | lr schd | Data Augmentation | GPU | Image/GPU | Configs |      
 |:------------:|:------------:|:------------:|:---------:|:-----------:|:----------:|:-----------:|:-----------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:---------:|:---------:|    
 | [RetinaNet-H](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 65.73 | [Baidu Drive (jum2)](https://pan.baidu.com/s/19-hEtCGxLfYuluTATQJpdg) | H | Reg. | smooth L1 | 90 | 2x | × | 3X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_v4.py](./libs/configs/DOTA1.0/baseline/cfgs_res50_dota_v4.py) |
-| [CSL](https://arxiv.org/abs/2003.05597) | ResNet50_v1 600->800 | DOTA1.0 trainval | DOTA1.0 test | 65.69 | [Baidu Drive (kgr3)](https://pan.baidu.com/s/1gvkLhyoIMqVKWsSK38wyrw) | H | **Cls.: Gaussian (r=6, w=1)** | smooth L1 | **180** | 2x | × | 3X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_v1.py](./libs/configs/DOTA1.0/csl/cfgs_res50_dota_v1.py) |
-| [CSL](https://arxiv.org/abs/2003.05597) | ResNet50_v1 600->800 | DOTA1.0 trainval | DOTA1.0 test | 67.38 | [Baidu Drive (g3wt)](https://pan.baidu.com/s/1nrIs-oYA53qQzlPjqYkMJQ) | H | **Cls.: Gaussian (r=1, w=10)** | smooth L1 | **180** | 2x | × | 3X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_v45.py](./libs/configs/DOTA1.0/csl/cfgs_res50_dota_v45.py) |
-| [CSL](https://arxiv.org/abs/2003.05597) | ResNet50_v1 600->800 | DOTA1.0 trainval | DOTA1.0 test | 68.73 | [Baidu Drive (3a4t)](https://pan.baidu.com/s/1yC-b9Y4ZVgVkQvpPRRLmhw) | H | **Cls.: Pulse (w=1)** | smooth L1 | **180** | 2x | × | 2X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_v41.py](./libs/configs/DOTA1.0/csl/cfgs_res50_dota_v41.py) |
-| [DCL]() | ResNet50_v1 600->800 | DOTA1.0 trainval | DOTA1.0 test | 67.39 |  | H | **Cls.: BCL (w=180/256)** | smooth L1 | 180 | 2x | × | 3X GeForce RTX 2080 Ti | 1 |  |
-| [R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 70.40 | - | H + R | Reg. | smooth L1 | 90 | 2x | × | 3X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_v1.py](./libs/configs/DOTA1.0/r3det/cfgs_res50_dota_r3det_v1.py) |
-| [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612) | ResNet101_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 73.79 | - | H + R | Reg. | iou-smooth L1 | 90 | 3x | √ | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res101_dota_r3det_v19.py](./libs/configs/DOTA1.0/r3det/cfgs_res101_dota_r3det_v19.py) |
-| [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612) | ResNet152_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 74.54 | - | H + R | Reg. | iou-smooth L1 | 90 | 3x | √ | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res152_dota_r3det_v25.py](./libs/configs/DOTA1.0/r3det/cfgs_res152_dota_r3det_v25.py) |
+| [RetinaNet-H](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 64.17 | [Baidu Drive (j5l0)](https://pan.baidu.com/s/1Qh_LE6QeGsOBYqMzjAESsA) | H | Reg. | smooth L1 | **180** | 2x | × | 3X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_v15.py](./libs/configs/DOTA1.0/baseline/cfgs_res50_dota_v15.py) |
+| [CSL](https://arxiv.org/abs/2003.05597) | ResNet50_v1 600->800 | DOTA1.0 trainval | DOTA1.0 test | 65.69 | [Baidu Drive (kgr3)](https://pan.baidu.com/s/1gvkLhyoIMqVKWsSK38wyrw) | H | **Cls.: Gaussian (r=6, w=1)** | smooth L1 | 180 | 2x | × | 3X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_v1.py](./libs/configs/DOTA1.0/csl/cfgs_res50_dota_v1.py) |
+| [CSL](https://arxiv.org/abs/2003.05597) | ResNet50_v1 600->800 | DOTA1.0 trainval | DOTA1.0 test | 67.38 | [Baidu Drive (g3wt)](https://pan.baidu.com/s/1nrIs-oYA53qQzlPjqYkMJQ) | H | **Cls.: Gaussian (r=1, w=10)** | smooth L1 | 180 | 2x | × | 3X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_v45.py](./libs/configs/DOTA1.0/csl/cfgs_res50_dota_v45.py) |
+| [CSL](https://arxiv.org/abs/2003.05597) | ResNet50_v1 600->800 | DOTA1.0 trainval | DOTA1.0 test | 68.73 | [Baidu Drive (3a4t)](https://pan.baidu.com/s/1yC-b9Y4ZVgVkQvpPRRLmhw) | H | **Cls.: Pulse (w=1)** | smooth L1 | 180 | 2x | × | 2X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_v41.py](./libs/configs/DOTA1.0/csl/cfgs_res50_dota_v41.py) |
+| [R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) | ResNet50_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 70.66 | [Baidu Drive (30lt)](https://pan.baidu.com/s/143sGeLNjXzcpxi9GV7FVyA) | H + R | Reg. | smooth L1 | 90 | 2x | × | 3X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_v1.py](./libs/configs/DOTA1.0/r3det/cfgs_res50_dota_r3det_v1.py) |
+| [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612) | ResNet101_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 73.79 | [Baidu Drive (d7qp)](https://pan.baidu.com/s/1GnRbedKDfpgeYB1rUlwObQ) | H + R | Reg. | iou-smooth L1 | 90 | 3x | √ | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res101_dota_r3det_v19.py](./libs/configs/DOTA1.0/r3det/cfgs_res101_dota_r3det_v19.py) |
+| [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612) | ResNet152_v1d 600->800 | DOTA1.0 trainval | DOTA1.0 test | 74.54 | [Baidu Drive (73bc)](https://pan.baidu.com/s/1WElLJwx15Gmu_gWUj4gE3A) | H + R | Reg. | iou-smooth L1 | 90 | 3x | √ | 4X GeForce RTX 2080 Ti | 1 | [cfgs_res152_dota_r3det_v25.py](./libs/configs/DOTA1.0/r3det/cfgs_res152_dota_r3det_v25.py) |
 | [R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) | ResNet152_v1d 600->MS (+Flip) | DOTA1.0 trainval | DOTA1.0 test | 76.23 (+0.24) | [model](https://drive.google.com/file/d/1GkpiSPN-cAnvDISk5d4kjrV3Tqti_mbj/view?usp=sharing) | H + R | Reg. | iou-smooth L1 | 90 | 4x | √ | 3X GeForce RTX 2080 Ti | 1 | [cfgs_res152_dota_r3det_v3.py](./libs/configs/DOTA1.0/r3det/cfgs_res152_dota_r3det_v3.py) |     
+<!-- | [DCL]() | ResNet50_v1 600->800 | DOTA1.0 trainval | DOTA1.0 test | 67.39 | [Baidu Drive (p9tu)](https://pan.baidu.com/s/1TZ9V0lTTQnMhiepxK1mdqg) | H | **Cls.: BCL (w=180/256)** | smooth L1 | 180 | 2x | × | 3X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_dcl_v5.py](./libs/configs/DOTA1.0/dcl/cfgs_res50_dota_dcl_v5.py) | -->
+<!-- | **[R<sup>3</sup>Det-DCL]()** | ResNet50_v1 600->800 | DOTA1.0 trainval | DOTA1.0 test | 71.21| [Baidu Drive (jueq)](https://pan.baidu.com/s/1XR31i3T-C5R16giBxQUNWw) | H->R | **Cls.: BCL (w=180/256)** | iou-smooth L1 | 90->180 | 2x | × | 3X GeForce RTX 2080 Ti | 1 | [cfgs_res50_dota_r3det_dcl_v1.py](./libs/configs/DOTA1.0/r3det_dcl/cfgs_res50_dota_r3det_dcl_v1.py) | -->
 
 [R<sup>3</sup>Det*](https://arxiv.org/abs/1908.05612): R<sup>3</sup>Det with two refinement stages      
 **Due to the improvement of the code, the performance of this repo is gradually improving, so the experimental results in other configuration files are for reference only.**        
@@ -94,7 +98,7 @@ cd $PATH_ROOT/tools
 python multi_gpu_train_r3det.py
 ```
 
-## Eval
+## Test
 ```  
 cd $PATH_ROOT/tools
 python test_dota_r3det_ms.py --test_dir='/PATH/TO/IMAGES/'  
@@ -102,6 +106,8 @@ python test_dota_r3det_ms.py --test_dir='/PATH/TO/IMAGES/'
                              -ms (multi-scale testing, optional)
                              -s (visualization, optional)
 ``` 
+
+**Notice: In order to set the breakpoint conveniently, the read and write mode of the file is' a+'. If the model of the same #VERSION needs to be tested again, the original test results need to be deleted.**      
 
 ## Tensorboard
 ```  

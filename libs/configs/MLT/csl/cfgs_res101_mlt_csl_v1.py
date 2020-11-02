@@ -5,14 +5,14 @@ import tensorflow as tf
 import math
 
 """
-2020-10-11  CSL	64.01%	75.24%	55.70%	51.13% (0.45)
-2020-10-11  CSL	63.81%	71.78%	57.43%	52.40% (0.4)
-2020-10-11  CSL	61.25%	62.30%	60.24%	54.30% (0.3)
+2020-10-07  DCL	62.67%	64.24%	61.18%	55.51% (0.3)
+2020-10-07	DCL	65.08%	73.62%	58.32%	53.52% (0.4)
+2020-10-07  DCL	65.23%	77.12%	56.52%	52.16% (0.45)
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_MLT_Baseline_2x_20201002'
+VERSION = 'RetinaNet_MLT_CSL_2x_20201007'
 NET_NAME = 'resnet101_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
@@ -72,6 +72,9 @@ PIXEL_STD = [0.229, 0.224, 0.225]  # R, G, B. In tf, channel is RGB. In openCV, 
 IMG_SHORT_SIDE_LEN = [800, 600, 1000, 1200]
 IMG_MAX_LENGTH = 1500
 CLASS_NUM = 1
+LABEL_TYPE = 0
+RADUIUS = 6
+OMEGA = 1
 
 IMG_ROTATE = True
 RGB2GRAY = True

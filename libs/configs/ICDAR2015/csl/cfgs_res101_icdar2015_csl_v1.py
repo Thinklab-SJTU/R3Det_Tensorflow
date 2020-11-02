@@ -5,15 +5,14 @@ import tensorflow as tf
 import math
 
 """
-2020-10-11  CSL	64.01%	75.24%	55.70%	51.13% (0.45)
-2020-10-11  CSL	63.81%	71.78%	57.43%	52.40% (0.4)
-2020-10-11  CSL	61.25%	62.30%	60.24%	54.30% (0.3)
+CSL + gaussian label, omega=1, r=6
+2020-10-04  CSL	80.50%	87.40%	83.81%
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_MLT_Baseline_2x_20201002'
-NET_NAME = 'resnet101_v1d'  # 'MobilenetV2'
+VERSION = 'RetinaNet_ICDAR2015_CSL_2x_20201001'
+NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config
@@ -23,7 +22,7 @@ print(ROOT_PATH)
 GPU_GROUP = "0,1,2"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
-SMRY_ITER = 200
+SMRY_ITER = 2000
 SAVE_WEIGHTS_INTE = 10000 * 2
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
@@ -53,8 +52,6 @@ CLS_WEIGHT = 1.0
 REG_WEIGHT = 1.0
 ANGLE_WEIGHT = 0.5
 REG_LOSS_MODE = None
-ALPHA = 1.0
-BETA = 1.0
 
 BATCH_SIZE = 1
 EPSILON = 1e-5
@@ -65,13 +62,16 @@ MAX_ITERATION = SAVE_WEIGHTS_INTE*20
 WARM_SETP = int(1.0 / 4.0 * SAVE_WEIGHTS_INTE)
 
 # -------------------------------------------- Data_preprocess_config
-DATASET_NAME = 'MLT'  # 'pascal', 'coco'
+DATASET_NAME = 'ICDAR2015'  # 'pascal', 'coco'
 PIXEL_MEAN = [123.68, 116.779, 103.939]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
 PIXEL_MEAN_ = [0.485, 0.456, 0.406]
 PIXEL_STD = [0.229, 0.224, 0.225]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
 IMG_SHORT_SIDE_LEN = [800, 600, 1000, 1200]
 IMG_MAX_LENGTH = 1500
 CLASS_NUM = 1
+LABEL_TYPE = 0
+RADUIUS = 6
+OMEGA = 1
 
 IMG_ROTATE = True
 RGB2GRAY = True
@@ -111,6 +111,5 @@ NMS = True
 NMS_IOU_THRESHOLD = 0.1
 MAXIMUM_DETECTIONS = 100
 FILTERED_SCORE = 0.05
-VIS_SCORE = 0.1
-
+VIS_SCORE = 0.7
 

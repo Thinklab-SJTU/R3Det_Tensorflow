@@ -5,26 +5,25 @@ import tensorflow as tf
 import math
 
 """
-2020-10-11  CSL	64.01%	75.24%	55.70%	51.13% (0.45)
-2020-10-11  CSL	63.81%	71.78%	57.43%	52.40% (0.4)
-2020-10-11  CSL	61.25%	62.30%	60.24%	54.30% (0.3)
+
+
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_MLT_Baseline_2x_20201002'
-NET_NAME = 'resnet101_v1d'  # 'MobilenetV2'
+VERSION = 'RetinaNet_DOTA_Refine_2x_20201025'
+NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config
 ROOT_PATH = os.path.abspath('../')
 print(20*"++--")
 print(ROOT_PATH)
-GPU_GROUP = "0,1,2"
+GPU_GROUP = "0,1,3"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
 SMRY_ITER = 200
-SAVE_WEIGHTS_INTE = 10000 * 2
+SAVE_WEIGHTS_INTE = 27000 * 2
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -51,10 +50,7 @@ GRADIENT_CLIPPING_BY_NORM = 10.0  # if None, will not clip
 
 CLS_WEIGHT = 1.0
 REG_WEIGHT = 1.0
-ANGLE_WEIGHT = 0.5
-REG_LOSS_MODE = None
-ALPHA = 1.0
-BETA = 1.0
+USE_IOU_FACTOR = False
 
 BATCH_SIZE = 1
 EPSILON = 1e-5
@@ -65,19 +61,19 @@ MAX_ITERATION = SAVE_WEIGHTS_INTE*20
 WARM_SETP = int(1.0 / 4.0 * SAVE_WEIGHTS_INTE)
 
 # -------------------------------------------- Data_preprocess_config
-DATASET_NAME = 'MLT'  # 'pascal', 'coco'
+DATASET_NAME = 'DOTA'  # 'pascal', 'coco'
 PIXEL_MEAN = [123.68, 116.779, 103.939]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
 PIXEL_MEAN_ = [0.485, 0.456, 0.406]
 PIXEL_STD = [0.229, 0.224, 0.225]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
-IMG_SHORT_SIDE_LEN = [800, 600, 1000, 1200]
-IMG_MAX_LENGTH = 1500
-CLASS_NUM = 1
+IMG_SHORT_SIDE_LEN = 800
+IMG_MAX_LENGTH = 800
+CLASS_NUM = 15
 
-IMG_ROTATE = True
-RGB2GRAY = True
-VERTICAL_FLIP = True
+IMG_ROTATE = False
+RGB2GRAY = False
+VERTICAL_FLIP = False
 HORIZONTAL_FLIP = True
-IMAGE_PYRAMID = True
+IMAGE_PYRAMID = False
 
 # --------------------------------------------- Network_config
 SUBNETS_WEIGHTS_INITIALIZER = tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=None)
@@ -86,6 +82,9 @@ PROBABILITY = 0.01
 FINAL_CONV_BIAS_INITIALIZER = tf.constant_initializer(value=-math.log((1.0 - PROBABILITY) / PROBABILITY))
 WEIGHT_DECAY = 1e-4
 USE_GN = False
+NUM_SUBNET_CONV = 4
+NUM_REFINE_STAGE = 1
+USE_RELU = False
 FPN_CHANNEL = 256
 
 # ---------------------------------------------Anchor config
@@ -99,18 +98,29 @@ ANCHOR_SCALE_FACTORS = None
 USE_CENTER_OFFSET = True
 METHOD = 'H'
 USE_ANGLE_COND = False
-ANGLE_RANGE = 180  # 90 or 180
+ANGLE_RANGE = 90
 
 # --------------------------------------------RPN config
 SHARE_NET = True
 USE_P5 = True
 IOU_POSITIVE_THRESHOLD = 0.5
 IOU_NEGATIVE_THRESHOLD = 0.4
+REFINE_IOU_POSITIVE_THRESHOLD = [0.6, 0.7]
+REFINE_IOU_NEGATIVE_THRESHOLD = [0.5, 0.6]
 
 NMS = True
 NMS_IOU_THRESHOLD = 0.1
 MAXIMUM_DETECTIONS = 100
 FILTERED_SCORE = 0.05
-VIS_SCORE = 0.1
+VIS_SCORE = 0.4
 
-
+# --------------------------------------------MASK config
+USE_SUPERVISED_MASK = False
+MASK_TYPE = 'r'  # r or h
+BINARY_MASK = False
+SIGMOID_ON_DOT = False
+MASK_ACT_FET = True  # weather use mask generate 256 channels to dot feat.
+GENERATE_MASK_LIST = ["P3", "P4", "P5", "P6", "P7"]
+ADDITION_LAYERS = [4, 4, 3, 2, 2]  # add 4 layer to generate P2_mask, 2 layer to generate P3_mask
+ENLAEGE_RF_LIST = ["P3", "P4", "P5", "P6", "P7"]
+SUPERVISED_MASK_LOSS_WEIGHT = 1.0

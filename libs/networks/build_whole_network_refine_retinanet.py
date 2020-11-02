@@ -351,8 +351,8 @@ class DetectionNetwork(object):
                                           scope='refine_1x1_{}'.format(level))
                 refine_feature_pyramid[level] = feature5x1 + feature_1x1
 
-        # refine_box_pred_list, refine_cls_score_list, refine_cls_prob_list = self.refine_net(refine_feature_pyramid, 'refine_net')
-        refine_box_pred_list, refine_cls_score_list, refine_cls_prob_list = self.refine_net(feature_pyramid, 'refine_net')
+        refine_box_pred_list, refine_cls_score_list, refine_cls_prob_list = self.refine_net(refine_feature_pyramid, 'refine_net')
+        # refine_box_pred_list, refine_cls_score_list, refine_cls_prob_list = self.refine_net(feature_pyramid, 'refine_net')
 
         refine_box_pred = tf.concat(refine_box_pred_list, axis=0)
         refine_cls_score = tf.concat(refine_cls_score_list, axis=0)
