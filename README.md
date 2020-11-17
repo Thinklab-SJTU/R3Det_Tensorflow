@@ -1,5 +1,8 @@
 # R<sup>3</sup>Det: Refined Single-Stage Detector with Feature Refinement for Rotating Object
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![arXiv](http://img.shields.io/badge/cs.CV-arXiv%3A1908.05612-B31B1B.svg)](https://arxiv.org/abs/1908.05612)
+
 ## Abstract
 [R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) and [R<sup>3</sup>Det++](https://arxiv.org/abs/2004.13316) are based on [Focal Loss for Dense Object Detection](https://arxiv.org/pdf/1708.02002.pdf), and it is completed by [YangXue](https://yangxue0827.github.io/).
 
