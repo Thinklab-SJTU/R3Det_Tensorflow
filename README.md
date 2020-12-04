@@ -6,7 +6,7 @@
 ## Abstract
 [R<sup>3</sup>Det](https://arxiv.org/abs/1908.05612) and [R<sup>3</sup>Det++](https://arxiv.org/abs/2004.13316) are based on [Focal Loss for Dense Object Detection](https://arxiv.org/pdf/1708.02002.pdf), and it is completed by [YangXue](https://yangxue0827.github.io/).
 
-**We also recommend a tensorflow-based [rotation detection benchmark](https://github.com/yangxue0827/RotationDetection), which is led by [YangXue](https://yangxue0827.github.io/).**
+**[mmdetection version](https://github.com/SJTU-Thinklab-Det/r3det-on-mmdetection) is released. We also recommend a tensorflow-based [rotation detection benchmark](https://github.com/yangxue0827/RotationDetection), which is led by [YangXue](https://yangxue0827.github.io/).**
 
 <!-- Techniques:      -->
 <!-- - [x] [ResNet](https://arxiv.org/abs/1512.03385), [MobileNetV2](https://arxiv.org/abs/1801.04381), [EfficientNet](https://arxiv.org/abs/1905.11946) -->
@@ -137,7 +137,7 @@ If this is useful for your research, please consider cite.
 
 @article{yang2019r3det,
     title={R3Det: Refined Single-Stage Detector with Feature Refinement for Rotating Object},
-    author={Yang, Xue and Liu, Qingqing and Yan, Junchi and Li, Ang and Zhang, Zhiqiang and Yu, Gang},
+    author={Yang, Xue and Yan, Junchi and Feng, Ziming and He, Tao},
     journal={arXiv preprint arXiv:1908.05612},
     year={2019}
 }
@@ -147,14 +147,6 @@ If this is useful for your research, please consider cite.
     author={Yang, Xue and Yan, Junchi and Yang, Xiaokang and Tang, Jin and Liao, Wenglong and He, Tao},
     journal={arXiv preprint arXiv:2004.13316},
     year={2020}
-}
-
-@inproceedings{yang2019scrdet,
-    title={SCRDet: Towards more robust detection for small, cluttered and rotated objects},
-    author={Yang, Xue and Yang, Jirui and Yan, Junchi and Zhang, Yue and Zhang, Tengfei and Guo, Zhi and Sun, Xian and Fu, Kun},
-    booktitle={Proceedings of the IEEE International Conference on Computer Vision (ICCV)},
-    pages={8232--8241},
-    year={2019}
 }
 
 @inproceedings{xia2018dota,
