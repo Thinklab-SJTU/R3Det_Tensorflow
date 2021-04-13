@@ -7,7 +7,7 @@ import tensorflow as tf
 from libs.box_utils.coordinate_convert import coordinate_present_convert, coords_regular
 
 
-def postprocess_detctions(rpn_bbox_pred, rpn_cls_prob, anchors, is_training):
+def postprocess_detctions(rpn_bbox_pred, rpn_cls_prob, anchors, is_training, gpu_id):
 
     return_boxes_pred = []
     return_scores = []
@@ -51,13 +51,15 @@ def postprocess_detctions(rpn_bbox_pred, rpn_cls_prob, anchors, is_training):
                                     Tout=[tf.float32])
             boxes_pred = tf.reshape(boxes_pred, [-1, 5])
 
+        max_output_size = 4000 if 'DOTA' in cfgs.NET_NAME else 200
         nms_indices = nms_rotate.nms_rotate(decode_boxes=boxes_pred,
                                             scores=scores,
                                             iou_threshold=cfgs.NMS_IOU_THRESHOLD,
-                                            max_output_size=100 if is_training else 1000,
+                                            max_output_size=100 if is_training else max_output_size,
                                             use_angle_condition=False,
                                             angle_threshold=15,
-                                            use_gpu=False)
+                                            use_gpu=True,
+                                            gpu_id=gpu_id)
 
         tmp_boxes_pred = tf.reshape(tf.gather(boxes_pred, nms_indices), [-1, 5])
         tmp_scores = tf.reshape(tf.gather(scores, nms_indices), [-1, ])

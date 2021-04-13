@@ -403,7 +403,8 @@ class DetectionNetwork(object):
                 boxes, scores, category = postprocess_detctions(refine_bbox_pred=refine_box_pred,
                                                                 refine_cls_prob=refine_cls_prob,
                                                                 anchors=refine_boxes,
-                                                                is_training=self.is_training)
+                                                                is_training=self.is_training,
+                                                                gpu_id=gpu_id)
                 boxes = tf.stop_gradient(boxes)
                 scores = tf.stop_gradient(scores)
                 category = tf.stop_gradient(category)

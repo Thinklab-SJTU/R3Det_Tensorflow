@@ -110,10 +110,11 @@ def postprocess_detctions(rpn_bbox_pred, rpn_cls_prob, anchors, is_training):
                                     Tout=[tf.float32])
             boxes_pred = tf.reshape(boxes_pred, [-1, 5])
 
+        max_output_size = 4000 if 'DOTA' in cfgs.NET_NAME else 200
         nms_indices = nms_rotate(decode_boxes=boxes_pred,
                                  scores=scores,
                                  iou_threshold=cfgs.NMS_IOU_THRESHOLD,
-                                 max_output_size=100 if is_training else 1000)
+                                 max_output_size=100 if is_training else max_output_size)
 
         tmp_boxes_pred = tf.reshape(tf.gather(boxes_pred, nms_indices), [-1, 5])
         tmp_scores = tf.reshape(tf.gather(scores, nms_indices), [-1, ])
