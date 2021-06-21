@@ -28,7 +28,7 @@ This is your result for task 1:
 
 The submitted information is :
 
-Description: RetinaNet_DOTA_R3Det_2x_20200713_137.7w_
+Description: RetinaNet_DOTA_R3Det_3x_20200713_137.7w_
 Username: yangxue
 Institute: DetectionTeamUCAS
 Emailadress: yangxue16@mails.ucas.ac.cn
@@ -37,7 +37,7 @@ TeamMembers: yangxue, yangjirui
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_2x_20200713'
+VERSION = 'RetinaNet_DOTA_R3Det_3x_20200713'
 NET_NAME = 'resnet152_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 

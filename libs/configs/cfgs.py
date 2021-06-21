@@ -5,82 +5,51 @@ import tensorflow as tf
 import math
 
 """
-v12 + one refine stage + resnet152 + data aug. + MS
-
-Multi-scale test
-
 This is your result for task 1:
 
-    mAP: 0.7623486563428695
-    ap of each class: plane:0.8970069480324703,
-    baseball-diamond:0.8333891707216258,
-    bridge:0.5043711291835025,
-    ground-track-field:0.6731295782071659,
-    small-vehicle:0.7897854187273754,
-    large-vehicle:0.8278325775035011,
-    ship:0.8785872624980835,
-    tennis-court:0.9081993104399961,
-    basketball-court:0.8556313751021464,
-    storage-tank:0.8532797469563389,
-    soccer-ball-field:0.6556255595096467,
-    roundabout:0.6152145549536566,
-    harbor:0.6729826099593654,
-    swimming-pool:0.7811243230807063,
-    helicopter:0.6890702802674632
-    The submitted information is :
-
-Description: RetinaNet_DOTA_R3Det_4x_20200819_183.6w_ms
-Username: SJTU-Det
-Institute: SJTU
-Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
-TeamMembers: yangxue
-
-add flip
-This is your result for task 1:
-
-    mAP: 0.7647417332616955
-    ap of each class: plane:0.8980075439345729,
-    baseball-diamond:0.8377264712427869,
-    bridge:0.48115376816317507,
-    ground-track-field:0.6677152155629779,
-    small-vehicle:0.7876448261580992,
-    large-vehicle:0.8327169902915853,
-    ship:0.8783577280870772,
-    tennis-court:0.9082236256734083,
-    basketball-court:0.8538214275625156,
-    storage-tank:0.8551179251235709,
-    soccer-ball-field:0.6566936371507965,
-    roundabout:0.6268171396548151,
-    harbor:0.6752747779498159,
-    swimming-pool:0.7856280736874842,
-    helicopter:0.7262268486827509
+    mAP: 0.7040175568277504
+    ap of each class:
+    plane:0.890153676787004,
+    baseball-diamond:0.7546823004821948,
+    bridge:0.43856818970048655,
+    ground-track-field:0.6584323172228589,
+    small-vehicle:0.758265556666476,
+    large-vehicle:0.7343692077868644,
+    ship:0.8603390134740575,
+    tennis-court:0.9056898929544596,
+    basketball-court:0.8111416145602515,
+    storage-tank:0.8284442512925325,
+    soccer-ball-field:0.5557191091213718,
+    roundabout:0.5910437513923295,
+    harbor:0.5657488814247862,
+    swimming-pool:0.7031169348003156,
+    helicopter:0.5045486547502677
 
 The submitted information is :
 
-Description: RetinaNet_DOTA_R3Det_4x_20200819_183.6w_ms_flip
+Description: RetinaNet_DOTA_R3Det_2x_20191108_75.6w
 Username: SJTU-Det
 Institute: SJTU
 Emailadress: yangxue-2019-sjtu@sjtu.edu.cn
 TeamMembers: yangxue
-
 
 
 """
 
 # ------------------------------------------------
-VERSION = 'RetinaNet_DOTA_R3Det_4x_20200819'
-NET_NAME = 'resnet152_v1d'  # 'MobilenetV2'
+VERSION = 'RetinaNet_DOTA_R3Det_2x_20191108'
+NET_NAME = 'resnet50_v1d'  # 'MobilenetV2'
 ADD_BOX_IN_TENSORBOARD = True
 
 # ---------------------------------------- System_config
 ROOT_PATH = os.path.abspath('../')
 print(20*"++--")
 print(ROOT_PATH)
-GPU_GROUP = "1,2,3"
+GPU_GROUP = "0,1,3"
 NUM_GPU = len(GPU_GROUP.strip().split(','))
 SHOW_TRAIN_INFO_INTE = 20
-SMRY_ITER = 500
-SAVE_WEIGHTS_INTE = 27000 * 4
+SMRY_ITER = 200
+SAVE_WEIGHTS_INTE = 27000 * 2
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -107,14 +76,12 @@ GRADIENT_CLIPPING_BY_NORM = 10.0  # if None, will not clip
 
 CLS_WEIGHT = 1.0
 REG_WEIGHT = 1.0
-USE_IOU_FACTOR = True
-ALPHA = 1.0
-BETA = 1.0
+USE_IOU_FACTOR = False
 
 BATCH_SIZE = 1
 EPSILON = 1e-5
 MOMENTUM = 0.9
-LR = 1e-4
+LR = 5e-4
 DECAY_STEP = [SAVE_WEIGHTS_INTE*12, SAVE_WEIGHTS_INTE*16, SAVE_WEIGHTS_INTE*20]
 MAX_ITERATION = SAVE_WEIGHTS_INTE*20
 WARM_SETP = int(1.0 / 4.0 * SAVE_WEIGHTS_INTE)
@@ -124,15 +91,15 @@ DATASET_NAME = 'DOTA'  # 'pascal', 'coco'
 PIXEL_MEAN = [123.68, 116.779, 103.939]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
 PIXEL_MEAN_ = [0.485, 0.456, 0.406]
 PIXEL_STD = [0.229, 0.224, 0.225]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
-IMG_SHORT_SIDE_LEN = [800, 640, 700, 900, 1000, 1100]
-IMG_MAX_LENGTH = 1100
+IMG_SHORT_SIDE_LEN = 800
+IMG_MAX_LENGTH = 800
 CLASS_NUM = 15
 
-IMG_ROTATE = True
-RGB2GRAY = True
-VERTICAL_FLIP = True
+IMG_ROTATE = False
+RGB2GRAY = False
+VERTICAL_FLIP = False
 HORIZONTAL_FLIP = True
-IMAGE_PYRAMID = True
+IMAGE_PYRAMID = False
 
 # --------------------------------------------- Network_config
 SUBNETS_WEIGHTS_INITIALIZER = tf.random_normal_initializer(mean=0.0, stddev=0.01, seed=None)
